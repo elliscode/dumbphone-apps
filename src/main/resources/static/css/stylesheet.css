@@ -1,0 +1,60 @@
+body {
+    padding-bottom: 30px;
+}
+
+h1 {
+    margin-top: 0px;
+    margin-bottom: 5px;
+}
+
+.ui-list {
+    list-style: none;
+    padding-left: 0px;
+    margin: 0;
+}
+
+.ui-list li {
+    padding: 5px;
+    border-radius: 20px;
+    font-size: 16px;
+}
+
+.ui-list div {
+    padding-left: 5px;
+}
+
+.top-list {
+    margin-top: 10px;
+}
+
+.top-list>li {
+    margin-bottom: 5px;
+    background-color: #eee;
+}
+
+.bottom-list>li {
+    background-color: #ddd;
+    margin-top: 5px;
+}
+
+li {
+    position: relative;
+}
+
+div#input {
+    width: 100%;
+    display: flex;
+}
+
+div#input>input {
+    flex-grow: 1;
+}
+
+.delete {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    width: 30px;
+    height: 30px;
+    border-radius: 20px;
+}

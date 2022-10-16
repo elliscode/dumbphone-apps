@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Weather for Cherry Hill</title>
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+    <style>
+    	div.weather-day {
+    		border-radius:20px;
+    		background-color:#eee;
+    	}
+    </style>
+</head>
+
+<body>
+    <h1>Weather</h1>
+    <#list weatherDays as weatherDay>
+    <div class="weather-day">
+    <h2>${weatherDay.date?date}</h2>
+    <ul>
+    	<li>Temp &mdash; ${weatherDay.temp}</li>
+    	<li>Low &mdash; ${weatherDay.low}</li>
+    	<li>High &mdash; ${weatherDay.high}</li>
+    	<li>Weather &mdash; ${weatherDay.weatherName}</li>
+    </ul>
+    </div>
+    </#list>
+</body>
+
+</html>

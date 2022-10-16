@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Shopping List</title>
+    <link rel="stylesheet" href="css/stylesheet.css" />
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+</head>
+
+<body>
+    <h1>Shopping List</h1>
+    <div id="input">
+        <input id="item-text-box" type="text">
+        <button id="add" onclick="addToList()">Add</button>
+    </div>
+
+    <ul class="ui-list top-list">
+        <#list groceryList.groups as group>
+            <li><div>${group.name}</div>
+                <ul class="ui-list bottom-list">
+                    <#list group.items as item>
+                        <li><div>${item}</div><button onclick="deleteFromList(event)" class="delete">&times;</button></li>
+                    </#list>
+                </ul>
+            </li>
+        </#list>
+    </ul>
+    <script>
+        document.addEventListener("keydown", function (e) {
+            if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+                e.preventDefault();
+            }
+        }, false);
+        document.getElementById("item-text-box")
+            .addEventListener("keyup", function (event) {
+                event.preventDefault();
+                if (event.keyCode === 13) {
+                    document.getElementById("add").click();
+                }
+            });
+        function determineUrl(task, input) {
+            let parts = input.split(",",2);
+            if(2 == parts.length) {
+                return '/' + task + '?group=' + encodeURIComponent(parts[0]) + '&name=' + (parts[1]);
+            } else {
+                return '/' + task + '?name=' + (parts[0]);
+            }
+        }
+        function addToList() {
+            const input = document.getElementById('item-text-box');
+            let url = determineUrl("add", input.value);
+            let xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", url, false); // false for synchronous request
+            xmlHttp.send(null);
+            console.log(xmlHttp.responseText);
+            input.value = '';
+            location.reload();
+        }
+        function deleteFromList(event) {
+            const groupName = event.target.parentElement.parentElement.parentElement.children[0].textContent;
+            const text = event.target.parentElement.children[0].textContent;
+            let url = '/' + 'delete' + '?group=' + encodeURIComponent(groupName) + '&name=' + (text);
+            let xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", url, false); // false for synchronous request
+            xmlHttp.send(null);
+            console.log(xmlHttp.responseText);
+            location.reload();
+        }
+    </script>
+</body>
+
+</html>
