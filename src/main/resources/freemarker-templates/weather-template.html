@@ -17,16 +17,20 @@
 <body>
     <div><a href="..">Home</a> &gt; <b>weather</b></div>
     <h1>Weather</h1>
+    <#assign first = true>
     <#list weatherDays as weatherDay>
     <div class="weather-day">
     <h2>${weatherDay.date?date}</h2>
     <ul>
+        <#if first>
     	<li>Temp &mdash; ${weatherDay.temp}</li>
+        </#if>
     	<li>Low &mdash; ${weatherDay.low}</li>
     	<li>High &mdash; ${weatherDay.high}</li>
     	<li>Weather &mdash; ${weatherDay.weatherName}</li>
     </ul>
     </div>
+    <#assign first = false>
     </#list>
 </body>
 
