@@ -1,4 +1,4 @@
-package com.programmer08054.list_rest_service.controllers;
+package com.elliscode.list_rest_service.controllers;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -25,12 +25,12 @@ import java.util.UUID;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.elliscode.list_rest_service.FileOperations;
+import com.elliscode.list_rest_service.TemplateData;
+import com.elliscode.list_rest_service.WeatherDay;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.programmer08054.list_rest_service.FileOperations;
-import com.programmer08054.list_rest_service.TemplateData;
-import com.programmer08054.list_rest_service.WeatherDay;
 
 import freemarker.core.ParseException;
 import freemarker.template.Template;

@@ -1,4 +1,4 @@
-package com.programmer08054.list_rest_service;
+package com.elliscode.list_rest_service;
 
 import java.util.Date;
 
