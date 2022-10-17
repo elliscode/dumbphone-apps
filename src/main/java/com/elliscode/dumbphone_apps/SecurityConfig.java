@@ -57,7 +57,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .failureUrl("/login?error=true")
                 .and()
                 .rememberMe()
-                .key(getKey()).tokenValiditySeconds(366 * 24 * 60* 60);
+                .key(getKey()).tokenValiditySeconds(366 * 24 * 60* 60)
+                .and()
+                .logout()
+                .logoutUrl("/logout/handle")
+                .deleteCookies("JSESSIONID");
         //@formatter:on
 	}
 
