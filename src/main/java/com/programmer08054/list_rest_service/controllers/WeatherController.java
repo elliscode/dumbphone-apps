@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.programmer08054.list_rest_service.FileOperations;
 import com.programmer08054.list_rest_service.TemplateData;
 import com.programmer08054.list_rest_service.WeatherDay;
 
@@ -39,8 +41,12 @@ public class WeatherController {
 	@RequestMapping("/weather")
 	@ResponseBody
 	public String getWeatherPage() {
-		JsonObject weatherJson = getWeatherJson();
-		JsonObject forecastJson = getForecastJson();
+		JsonObject weatherJson = getWeatherJson("weather.json",
+				"https://api.openweathermap.org/data/2.5/weather?q=Cherry%20Hill,US&appid=" + getKey());
+		;
+		JsonObject forecastJson = getWeatherJson("forecast.json",
+				"https://api.openweathermap.org/data/2.5/forecast?q=Cherry%20Hill,US&appid=" + getKey());
+		;
 
 		// create your root object
 		Map<String, Object> root = new TreeMap<>();
@@ -93,21 +99,6 @@ public class WeatherController {
 			weatherDay.setDate(time);
 			weatherDay.setWeatherName(weatherName);
 			weatherDay.setWeatherDescription(weatherDescription);
-
-//			String temp = item.getAsJsonObject().get("main").getAsJsonObject().get("temp").getAsString();
-//			String fullTimeStamp = item.getAsJsonObject().get("dt_txt").getAsString();
-//			String rawHour = fullTimeStamp.substring(fullTimeStamp.indexOf(" ") + 1, fullTimeStamp.indexOf(":"));
-//			Integer hourNumber = Integer.parseInt(rawHour);
-//			String hour = hourNumber.toString() + "AM";
-//			if (hourNumber > 12) {
-//				hour = (hourNumber - 12) + "PM";
-//			} else if (hourNumber == 0) {
-//				hour = "12AM";
-//			} else if (hourNumber == 12) {
-//				hour = "12PM";
-//			}
-//			timeAndTemp.put(fullTimeStamp.substring(0, fullTimeStamp.indexOf(" ")) + " " + hour,
-//					convertToFarenheit(temp));
 		}
 		weatherDays.addAll(weatherMap.values());
 
@@ -131,12 +122,68 @@ public class WeatherController {
 		return Math.round(farenheit);
 	}
 
-	public static JsonObject getWeatherJson() {
-		return weatherApiGet("https://api.openweathermap.org/data/2.5/weather?q=Cherry%20Hill,US&appid=" + getKey());
+	private static void weatherFileWrite(JsonObject output, String string) {
+		output.addProperty("file-date", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+
+		Path path = Paths.get(System.getProperty("user.home")).resolve("dumbphone-apps").resolve("weather")
+				.resolve(string);
+		synchronized (FileOperations.lock) {
+			try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8,
+					StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+				Gson gson = new Gson();
+				gson.toJson(output, JsonObject.class, writer);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
-	public static JsonObject getForecastJson() {
-		return weatherApiGet("https://api.openweathermap.org/data/2.5/forecast?q=Cherry%20Hill,US&appid=" + getKey());
+	private static JsonObject weatherFileGet(String string) {
+		JsonObject output = null;
+		Path path = Paths.get(System.getProperty("user.home")).resolve("dumbphone-apps").resolve("weather")
+				.resolve(string);
+		synchronized (FileOperations.lock) {
+			if (!Files.exists(path)) {
+				return output;
+			}
+			try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+				Gson gson = new Gson();
+				return gson.fromJson(reader, JsonObject.class);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return output;
+	}
+
+	public static JsonObject getWeatherJson(String fileName, String url) {
+		boolean queryTheApi = false;
+		JsonObject output = weatherFileGet(fileName);
+		if (null == output) {
+			queryTheApi = true;
+		} else {
+			String dateString = "";
+			if (output.has("file-date")) {
+				dateString = output.get("file-date").getAsString();
+			}
+			Date date = new Date();
+			try {
+				date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateString);
+			} catch (java.text.ParseException e) {
+				System.err.println("Couldn't parse the date value " + dateString + ", deleting the file...");
+				queryTheApi = true;
+			}
+			if ((new Date().getTime()) - date.getTime() > 60 * 60 * 1000) {
+				queryTheApi = true;
+			}
+		}
+		if (queryTheApi) {
+			System.out.println(
+					"Querying the weather API, this happens only when needed to avoid calls to the free version of the API");
+			output = weatherApiGet(url);
+			weatherFileWrite(output, fileName);
+		}
+		return output;
 	}
 
 	private static JsonObject weatherApiGet(String urlString) {
@@ -169,25 +216,28 @@ public class WeatherController {
 	}
 
 	private static String getKey() {
-		Path path = Paths.get(System.getenv("USERPROFILE")).resolve("grocery-list").resolve("weather.key");
+		Path path = Paths.get(System.getProperty("user.home")).resolve("dumbphone-apps").resolve("weather")
+				.resolve("weather.key");
 		String output = UUID.randomUUID().toString();
-		if (!Files.exists(path)) {
-			try {
-				Files.createDirectories(path.getParent());
+		synchronized (FileOperations.lock) {
+			if (!Files.exists(path)) {
+				try {
+					Files.createDirectories(path.getParent());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+					writer.write(output);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+				output = reader.readLine();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-				writer.write(output);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			return output;
 		}
-		try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-			output = reader.readLine();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return output;
 	}
 }

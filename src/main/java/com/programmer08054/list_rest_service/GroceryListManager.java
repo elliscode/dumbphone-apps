@@ -9,20 +9,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
 import java.util.Date;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 public class GroceryListManager {
-	private static final Object fileOperationLock = new Object();
-	private static final Path path = Paths.get(System.getProperty("user.home")).resolve("grocery-list")
-			.resolve("list.txt");
+	private static final Path path = Paths.get(System.getProperty("user.home")).resolve("dumbphone-apps")
+			.resolve("grocery-list").resolve("list.txt");
 
 	public static GroceryList readListFromFile() {
-		synchronized (fileOperationLock) {
+		synchronized (FileOperations.lock) {
 			GroceryList groceryList = new GroceryList();
 			GroceryListManager.initializeListFile();
 			try (BufferedReader reader = Files.newBufferedReader(path)) {
@@ -50,7 +44,7 @@ public class GroceryListManager {
 	}
 
 	public static void initializeListFile() {
-		synchronized (fileOperationLock) {
+		synchronized (FileOperations.lock) {
 			if (Files.exists(path)) {
 				return;
 			}
@@ -73,14 +67,14 @@ public class GroceryListManager {
 	}
 
 	public static String superSanitizeString(String input) {
-		if(null == input) {
+		if (null == input) {
 			return "";
 		}
 		return input.replaceAll("[^\\x20\\x30-\\x39\\x41-\\x5A\\x61-\\x7A]+", " ").trim();
 	}
 
 	public static void writeListToFile(GroceryList groceryList) {
-		synchronized (fileOperationLock) {
+		synchronized (FileOperations.lock) {
 			try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8,
 					StandardOpenOption.TRUNCATE_EXISTING)) {
 				writer.write("// This file was created on " + getStringDate());

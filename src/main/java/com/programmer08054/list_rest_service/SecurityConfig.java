@@ -23,7 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity
 @Profile("!https")
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-	
+
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
@@ -62,25 +62,27 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	private static String getKey() {
-		Path path = Paths.get(System.getenv("USERPROFILE")).resolve("grocery-list").resolve("remember.key");
+		Path path = Paths.get(System.getProperty("user.home")).resolve("dumbphone-apps").resolve("remember.key");
 		String output = UUID.randomUUID().toString();
-		if (!Files.exists(path)) {
-			try {
-				Files.createDirectories(path.getParent());
+		synchronized (FileOperations.lock) {
+			if (!Files.exists(path)) {
+				try {
+					Files.createDirectories(path.getParent());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+					writer.write(output);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+				output = reader.readLine();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-				writer.write(output);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			return output;
 		}
-		try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-			output = reader.readLine();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return output;
 	}
 }
