@@ -1,4 +1,4 @@
-package com.elliscode.list_rest_service;
+package com.elliscode.dumbphone_apps;
 
 import java.util.Date;
 

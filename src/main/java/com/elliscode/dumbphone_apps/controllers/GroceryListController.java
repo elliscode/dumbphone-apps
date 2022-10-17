@@ -1,4 +1,4 @@
-package com.elliscode.list_rest_service.controllers;
+package com.elliscode.dumbphone_apps.controllers;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.elliscode.list_rest_service.GroceryList;
-import com.elliscode.list_rest_service.GroceryListManager;
-import com.elliscode.list_rest_service.TemplateData;
+import com.elliscode.dumbphone_apps.GroceryList;
+import com.elliscode.dumbphone_apps.GroceryListManager;
+import com.elliscode.dumbphone_apps.TemplateData;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
