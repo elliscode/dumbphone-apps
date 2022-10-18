@@ -2,6 +2,8 @@ package com.elliscode.dumbphone_apps.controllers;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.elliscode.dumbphone_apps.GroceryList;
 import com.elliscode.dumbphone_apps.GroceryListManager;
+import com.elliscode.dumbphone_apps.ListGroup;
 import com.elliscode.dumbphone_apps.TemplateData;
 
 import freemarker.template.Template;
@@ -74,6 +77,49 @@ public class GroceryListController {
 		groceryList.deleteItem(groupSanitized, nameSanitized);
 		GroceryListManager.writeListToFile(groceryList);
 		return new ResponseEntity<>("Deleted " + nameSanitized + " from " + groupSanitized + "!", HttpStatus.OK);
+	}
+
+	@RequestMapping("/move")
+	@ResponseBody
+	public ResponseEntity<String> move(@RequestParam String direction, @RequestParam String group) {
+		final String groupSanitized = GroceryListManager.superSanitizeString(group);
+		if (groupSanitized.isEmpty()) {
+			return new ResponseEntity<>("Failed to move " + groupSanitized + "!", HttpStatus.BAD_REQUEST);
+		}
+		GroceryList groceryList = GroceryListManager.readListFromFile();
+		groceryList = moveGroup(direction, group, groceryList);
+		GroceryListManager.writeListToFile(groceryList);
+		return new ResponseEntity<>("Moved " + groupSanitized + "!", HttpStatus.OK);
+	}
+
+	private GroceryList moveGroup(String direction, String group, GroceryList groceryList) {
+		List<ListGroup> groups = new ArrayList<>(groceryList.getGroups());
+		int index = -1;
+		for(int i = 0; i < groups.size(); i++) {
+			ListGroup groupObj = groups.get(i);
+			if(groupObj.getName().equals(group)) {
+				index = i;
+				break;
+			}
+		}
+		if(index < 0) {
+			System.err.println("index < 0");
+			return groceryList;
+		}
+		int newIndex = -1;
+		if(direction.equals("up")) {
+			newIndex = index - 1;
+		} else {
+			newIndex = index + 1;
+		}
+		if(newIndex < 0 || newIndex >= groups.size()) {
+			System.err.println("newIndex = " + newIndex);
+			return groceryList;
+		}
+		ListGroup temp = groups.get(index);
+		groups.set(index, groups.get(newIndex));
+		groups.set(newIndex, temp);
+		return new GroceryList(groups);
 	}
 
 }

@@ -15,7 +15,7 @@
 </head>
 
 <body>
-    <div><a href="..">Home</a> &gt; <b>weather</b></div>
+    <div><b><a href="..">Home</a></b> &gt; <b>weather</b></div>
     <h1>Weather</h1>
     <#assign first = true>
     <#list weatherDays as weatherDay>
@@ -32,6 +32,9 @@
     </div>
     <#assign first = false>
     </#list>
+    <form class="logout" action="/logout/handle" method="post">
+        <button type="submit">Log out</button>
+    </form>
 </body>
 
 </html>

@@ -3,12 +3,22 @@ package com.elliscode.dumbphone_apps;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GroceryList {
 	public static final String DEFAULT_GROUP = "Groceries";
 	private final Object modificationLock = new Object();
 	private Map<String, ListGroup> groups = new LinkedHashMap<>();
+
+	public GroceryList() {
+	}
+
+	public GroceryList(List<ListGroup> groups) {
+		for (ListGroup group : groups) {
+			this.groups.put(group.getName(), group);
+		}
+	}
 
 	public Collection<ListGroup> getGroups() {
 		synchronized (modificationLock) {
@@ -43,8 +53,8 @@ public class GroceryList {
 
 	public void addItem(String groupName, String item) {
 		synchronized (modificationLock) {
-			for(String key : groups.keySet()) {
-				if(key.toLowerCase().equals(groupName.toLowerCase())) {
+			for (String key : groups.keySet()) {
+				if (key.toLowerCase().equals(groupName.toLowerCase())) {
 					groupName = key;
 				}
 			}
