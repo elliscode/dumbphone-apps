@@ -17,6 +17,7 @@ import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -32,7 +33,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import freemarker.core.ParseException;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
@@ -59,7 +59,7 @@ public class WeatherController {
 		for (JsonElement item : forecastJson.get("list").getAsJsonArray()) {
 			elementsToParse.add(item);
 		}
-		Map<Integer, WeatherDay> weatherMap = new TreeMap<>();
+		Map<Integer, WeatherDay> weatherMap = new LinkedHashMap<>();
 		for (JsonElement item : elementsToParse) {
 
 			long temp = WeatherController
