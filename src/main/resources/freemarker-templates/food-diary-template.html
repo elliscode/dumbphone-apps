@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Shopping List</title>
+    <link rel="stylesheet" href="css/stylesheet.css" />
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+    <style>
+        #suggestions {
+            display:none;
+            position: absolute;
+            top: 20px;
+            left: 0px;
+            background-color: #fff;
+            padding: 0px;
+            margin: 0px;
+        }
+        #suggestions li {
+            list-style:none;
+            padding:5px;
+            border:1px black solid;
+        }
+    </style>
+</head>
+
+<body>
+    <div><b><a href="..">Home</a></b> &gt; <b>food-diary</b></div>
+    <h1>Food Diary</h1>
+    <div style="position:relative;">
+        <div id="input">
+            <input id="item-text-box" type="text">
+            <button id="add" onclick="addToList(event)">Add</button>
+        </div>
+        <ul id="suggestions"></ul>
+    </div>
+    <table>
+        <tr><th>Food</th><th>Servings</th><th>Calories (kcal)</th><th></th></tr>
+        <#list entries as entry>
+            <tr><td>${entry.food.name}</td><td>${entry.food.mass} g</td><td>${entry.food.calories} kcal</td><td><button onclick="deleteEntry(event)" id="${entry.hash}">&times;</button></td></tr>
+        </#list>
+        <tr><td>Total</td><td></td><td>${total} kcal</td><td></td></tr>
+    </table>
+    <form class="logout" action="/logout/handle" method="post">
+        <button type="submit">Log out</button>
+    </form>
+    <script>
+        document.addEventListener("keydown", function (e) {
+            if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+                e.preventDefault();
+            }
+        }, false);
+        document.getElementById("item-text-box")
+            .addEventListener("keyup", function (event) {
+                event.preventDefault();
+                if (event.keyCode === 13) {
+                    document.getElementById("add").click();
+                }
+            });
+        document.getElementById("item-text-box")
+            .addEventListener("keyup", search);
+        function addToList(event) {
+            const caller = event.target;
+            const input = caller.parentElement.getElementsByTagName("input")[0];
+            const foodName = input.value;
+            let xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", '/food-diary/add?foodName=' + encodeURIComponent(foodName), false); // false for synchronous request
+            xmlHttp.send(null);
+            console.log(xmlHttp.responseText);
+            input.value = '';
+            location.reload();
+        }
+        function search(event) {
+            const caller = event.target;
+            const input = caller.parentElement.getElementsByTagName("input")[0];
+            const query = input.value;
+            let xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", '/food-diary/search?query=' + encodeURIComponent(query), false); // false for synchronous request
+            xmlHttp.send(null);
+            const suggestions = document.getElementById("suggestions");
+            while(suggestions.firstChild) {
+                suggestions.removeChild(suggestions.firstChild);
+            }
+            let items = JSON.parse(xmlHttp.responseText);
+            for(const item of items) {
+                const li = document.createElement("li");
+                li.innerText = item;
+                li.addEventListener("click",setTextAndAdd);
+                li.style.cursor="pointer";
+                suggestions.appendChild(li);   
+            }
+            suggestions.style.display = 'block';
+        }
+        function setTextAndAdd(event) {
+            const caller = event.target;
+            const newValue = caller.innerText;
+            const textBox = document.getElementById("item-text-box");
+            textBox.value = newValue;
+            const suggestions = document.getElementById("suggestions");
+            while(suggestions.firstChild) {
+                suggestions.removeChild(suggestions.firstChild);
+            }
+            suggestions.style.display="none";
+            // addToList({'target':textBox});
+        }
+        function deleteEntry(event) {
+            const caller = event.target;
+            const hash = caller.id;
+            let xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", '/food-diary/delete?hash=' + encodeURIComponent(hash), false); // false for synchronous request
+            xmlHttp.send(null);
+            console.log(xmlHttp.responseText);
+            input.value = '';
+            location.reload();
+        }
+    </script>
+</body>
+
+</html>
