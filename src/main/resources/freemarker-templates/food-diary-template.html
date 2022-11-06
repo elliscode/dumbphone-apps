@@ -3,12 +3,12 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Shopping List</title>
+    <title>Food Diary</title>
     <link rel="stylesheet" href="css/stylesheet.css" />
     <link rel="icon" type="image/png" href="img/favicon.png" />
     <style>
         #suggestions {
-            display:none;
+            display: none;
             position: absolute;
             top: 20px;
             left: 0px;
@@ -16,10 +16,11 @@
             padding: 0px;
             margin: 0px;
         }
+
         #suggestions li {
-            list-style:none;
-            padding:5px;
-            border:1px black solid;
+            list-style: none;
+            padding: 5px;
+            border: 1px black solid;
         }
     </style>
 </head>
@@ -29,17 +30,29 @@
     <h1>Food Diary</h1>
     <div style="position:relative;">
         <div id="input">
-            <input id="item-text-box" type="text">
+            <input id="item-text-box" type="text" onkeyup="search(event)">
             <button id="add" onclick="addToList(event)">Add</button>
         </div>
         <ul id="suggestions"></ul>
     </div>
     <table>
-        <tr><th>Food</th><th>Servings</th><th>Calories (kcal)</th><th></th></tr>
+        <tr>
+            <th>Food</th>
+            <th>Calories (kcal)</th>
+            <th></th>
+        </tr>
         <#list entries as entry>
-            <tr><td>${entry.food.name}</td><td>${entry.food.mass} g</td><td>${entry.food.calories} kcal</td><td><button onclick="deleteEntry(event)" id="${entry.hash}">&times;</button></td></tr>
+            <tr>
+                <td>${entry.food.name}</td>
+                <td style="text-align:right;">${entry.food.calories?round} kcal</td>
+                <td><button onclick="deleteEntry(event)" id="${entry.hash}">&times;</button></td>
+            </tr>
         </#list>
-        <tr><td>Total</td><td></td><td>${total} kcal</td><td></td></tr>
+        <tr>
+            <td>Total</td>
+            <td style="text-align:right;">${total?round} kcal</td>
+            <td></td>
+        </tr>
     </table>
     <form class="logout" action="/logout/handle" method="post">
         <button type="submit">Log out</button>
@@ -57,8 +70,6 @@
                     document.getElementById("add").click();
                 }
             });
-        document.getElementById("item-text-box")
-            .addEventListener("keyup", search);
         function addToList(event) {
             const caller = event.target;
             const input = caller.parentElement.getElementsByTagName("input")[0];
@@ -78,16 +89,17 @@
             xmlHttp.open("GET", '/food-diary/search?query=' + encodeURIComponent(query), false); // false for synchronous request
             xmlHttp.send(null);
             const suggestions = document.getElementById("suggestions");
-            while(suggestions.firstChild) {
+            while (suggestions.firstChild) {
                 suggestions.removeChild(suggestions.firstChild);
             }
             let items = JSON.parse(xmlHttp.responseText);
-            for(const item of items) {
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
                 const li = document.createElement("li");
                 li.innerText = item;
-                li.addEventListener("click",setTextAndAdd);
-                li.style.cursor="pointer";
-                suggestions.appendChild(li);   
+                li.addEventListener("click", setTextAndAdd);
+                li.style.cursor = "pointer";
+                suggestions.appendChild(li);
             }
             suggestions.style.display = 'block';
         }
@@ -97,11 +109,11 @@
             const textBox = document.getElementById("item-text-box");
             textBox.value = newValue;
             const suggestions = document.getElementById("suggestions");
-            while(suggestions.firstChild) {
+            while (suggestions.firstChild) {
                 suggestions.removeChild(suggestions.firstChild);
             }
-            suggestions.style.display="none";
-            // addToList({'target':textBox});
+            suggestions.style.display = "none";
+            addToList({'target':textBox});
         }
         function deleteEntry(event) {
             const caller = event.target;

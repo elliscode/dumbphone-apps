@@ -41,6 +41,9 @@ public class Food {
 	private double fats;
 	@Column(name = "protein")
 	private double protein;
+	@Column(name = "alcohol")
+	private double alcohol;
+
 	public UUID getHash() {
 		return hash;
 	}
@@ -96,4 +99,11 @@ public class Food {
 	public void setProtein(double protein) {
 		this.protein = protein;
 	}	
+	public double getAlcohol() {
+		return alcohol;
+	}
+
+	public void setAlcohol(double alcohol) {
+		this.alcohol = alcohol;
+	}
 }

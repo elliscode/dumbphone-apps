@@ -79,6 +79,7 @@ public class FoodDiaryController {
 	@RequestMapping("/food-diary/add")
 	@ResponseBody
 	public ResponseEntity<String> add(@RequestParam String foodName) {
+		foodName = foodName.toLowerCase().trim();
 		if (foodName.isEmpty()) {
 			return new ResponseEntity<>("Failed to add!", HttpStatus.BAD_REQUEST);
 		}
@@ -106,9 +107,10 @@ public class FoodDiaryController {
 	@RequestMapping("/food-diary/search")
 	@ResponseBody
 	public ResponseEntity<String> search(@RequestParam String query) {
-		List<Food> foods = foodRepository.findByNameContaining(query);
+		query = query.toLowerCase().trim();
+		List<Food> foods = foodRepository.findFirst10ByNameContainingOrderByName(query);
 		JsonArray output = new JsonArray();
-		for(int i = 0; i < Math.min(10, foods.size()); i++) {
+		for(int i = 0; i < foods.size(); i++) {
 			Food food = foods.get(i);
 			output.add(food.getName());
 		}
