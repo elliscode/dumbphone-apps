@@ -47,7 +47,7 @@ public class GroceryListController {
 		return writer.toString();
 	}
 
-	@RequestMapping("/add")
+	@RequestMapping("/grocery-list/add")
 	@ResponseBody
 	public ResponseEntity<String> add(@RequestParam(defaultValue = GroceryList.DEFAULT_GROUP) String group,
 			@RequestParam String name) {
@@ -63,7 +63,7 @@ public class GroceryListController {
 		return new ResponseEntity<>("Added " + nameSanitized + " to " + groupSanitized + "!", HttpStatus.OK);
 	}
 
-	@RequestMapping("/delete")
+	@RequestMapping("/grocery-list/delete")
 	@ResponseBody
 	public ResponseEntity<String> delete(@RequestParam(defaultValue = GroceryList.DEFAULT_GROUP) String group,
 			@RequestParam String name) {
@@ -79,7 +79,7 @@ public class GroceryListController {
 		return new ResponseEntity<>("Deleted " + nameSanitized + " from " + groupSanitized + "!", HttpStatus.OK);
 	}
 
-	@RequestMapping("/move")
+	@RequestMapping("/grocery-list/move")
 	@ResponseBody
 	public ResponseEntity<String> move(@RequestParam String direction, @RequestParam String group) {
 		final String groupSanitized = GroceryListManager.superSanitizeString(group);
