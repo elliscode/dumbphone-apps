@@ -9,6 +9,6 @@ import com.elliscode.dumbphone_apps.food_diary.entities.Food;
 
 public interface FoodRepository extends JpaRepository<Food, UUID>  {
 	List<Food> findByNameEquals(String name);
-	List<Food> findByNameContainingOrderByName(String query);
-	List<Food> findFirst10ByNameContainingOrderByName(String query);
+	List<Food> findByNameIgnoreCaseContainingOrderByName(String query);
+	List<Food> findFirst10ByNameIgnoreCaseContainingOrderByName(String query);
 }

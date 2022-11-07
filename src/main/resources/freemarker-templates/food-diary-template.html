@@ -43,8 +43,8 @@
         </tr>
         <#list entries as entry>
             <tr>
-                <td>${entry.food.name}</td>
-                <td style="text-align:right;">${entry.food.calories?round} kcal</td>
+                <td>${entry.serving.food.name}</td>
+                <td style="text-align:right;">${entry.servingQuantity*entry.serving.calories?round} kcal</td>
                 <td><button onclick="deleteEntry(event)" id="${entry.hash}">&times;</button></td>
             </tr>
         </#list>

@@ -12,37 +12,40 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Formula;
+
 @Entity
 @Table(name = "diary_entries")
 public class DiaryEntry {
 	public DiaryEntry() {
-		user = new User();
-		food = new Food();
-		timeStamp = new Date();
 	}
-	
-	public DiaryEntry(User user, Food food) {
+
+	public DiaryEntry(User user, Serving serving) {
 		this.user = user;
-		this.food = food;
+		this.serving = serving;
+		this.servingQuantity = 1;
 		timeStamp = new Date();
 	}
-	
+
 	@Id
-	@GeneratedValue( strategy=GenerationType.AUTO )
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "hash")
 	private UUID hash;
-	
+
 	@ManyToOne
-    @JoinColumn(name = "user_hash")
-    private User user;
-	
+	@JoinColumn(name = "user_hash")
+	private User user;
+
 	@ManyToOne
-    @JoinColumn(name = "food_hash")
-    private Food food; 
-	
+	@JoinColumn(name = "serving_hash")
+	private Serving serving;
+
+	@Column(name = "serving_quantity")
+	private double servingQuantity;
+
 	@Column(name = "time_stamp")
 	private Date timeStamp;
-	
+
 	public UUID getHash() {
 		return hash;
 	}
@@ -59,12 +62,12 @@ public class DiaryEntry {
 		this.user = user;
 	}
 
-	public Food getFood() {
-		return food;
+	public Serving getServing() {
+		return serving;
 	}
 
-	public void setFood(Food food) {
-		this.food = food;
+	public void setServing(Serving serving) {
+		this.serving = serving;
 	}
 
 	public Date getTimeStamp() {
@@ -75,8 +78,17 @@ public class DiaryEntry {
 		this.timeStamp = timeStamp;
 	}
 
+	public double getServingQuantity() {
+		return servingQuantity;
+	}
+
+	public void setServingQuantity(double servingQuantity) {
+		this.servingQuantity = servingQuantity;
+	}
+
 	@Override
 	public String toString() {
-		return "\n[" + "User: " + user.getName() + ", " + "Food: " + food.getName() + ", " + "Timestamp: " + timeStamp.toString() + "]";
+		return "\n[" + "User: " + user.getName() + ", " + "Food: " + serving.getFood().getName() + ", " + "Timestamp: "
+				+ timeStamp.toString() + "]";
 	}
 }

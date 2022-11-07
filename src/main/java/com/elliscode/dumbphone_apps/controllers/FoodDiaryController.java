@@ -20,9 +20,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.elliscode.dumbphone_apps.TemplateData;
 import com.elliscode.dumbphone_apps.food_diary.entities.DiaryEntry;
 import com.elliscode.dumbphone_apps.food_diary.entities.Food;
+import com.elliscode.dumbphone_apps.food_diary.entities.Serving;
 import com.elliscode.dumbphone_apps.food_diary.entities.User;
 import com.elliscode.dumbphone_apps.food_diary.repositories.DiaryEntryRepository;
 import com.elliscode.dumbphone_apps.food_diary.repositories.FoodRepository;
+import com.elliscode.dumbphone_apps.food_diary.repositories.ServingRepository;
 import com.elliscode.dumbphone_apps.food_diary.repositories.UserRepository;
 import com.google.gson.JsonArray;
 
@@ -37,6 +39,8 @@ public class FoodDiaryController {
 	FoodRepository foodRepository;
 	@Autowired
 	DiaryEntryRepository diaryEntryRepository;
+	@Autowired
+	ServingRepository servingRepository;
 
 	@RequestMapping("/food-diary")
 	@ResponseBody
@@ -45,8 +49,13 @@ public class FoodDiaryController {
 		// get current user and update database
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		String currentPrincipalName = authentication.getName();
-		User user = new User(currentPrincipalName);
-		userRepository.save(user);
+		List<User> users = userRepository.findByNameEquals(currentPrincipalName);
+		if (users.isEmpty()) {
+			User item = new User(currentPrincipalName);
+			userRepository.save(item);
+			users.add(item);
+		}
+		User user = users.get(0);
 
 		// get current day and get date range
 		Date currentTime = new Date();
@@ -60,7 +69,7 @@ public class FoodDiaryController {
 		// create your root object
 		Map<String, Object> root = new TreeMap<>();
 		root.put("entries", entries);
-		root.put("total", entries.stream().mapToDouble(entry -> entry.getFood().getCalories()).sum());
+		root.put("total", entries.stream().mapToDouble(entry -> entry.getServing().getCalories()).sum());
 
 		Template template = TemplateData.getInstance().getTemplate("food-diary-template.html");
 		StringWriter writer = new StringWriter();
@@ -79,7 +88,7 @@ public class FoodDiaryController {
 	@RequestMapping("/food-diary/add")
 	@ResponseBody
 	public ResponseEntity<String> add(@RequestParam String foodName) {
-		foodName = foodName.toLowerCase().trim();
+		foodName = foodName.trim();
 		if (foodName.isEmpty()) {
 			return new ResponseEntity<>("Failed to add!", HttpStatus.BAD_REQUEST);
 		}
@@ -87,18 +96,31 @@ public class FoodDiaryController {
 		// get current user and update database
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		String currentPrincipalName = authentication.getName();
-		User user = new User(currentPrincipalName);
-		userRepository.save(user);
+		List<User> users = userRepository.findByNameEquals(currentPrincipalName);
+		if (users.isEmpty()) {
+			User item = new User(currentPrincipalName);
+			userRepository.save(item);
+			users.add(item);
+		}
+		User user = users.get(0);
 
 		List<Food> foods = foodRepository.findByNameEquals(foodName);
 		if (foods.isEmpty()) {
-			foods.add(new Food(foodName));
+			Food item = new Food(foodName);
+			foods.add(item);
+			foodRepository.save(item);
 		}
-		
 		Food food = foods.get(0);
-		foodRepository.save(food);
 		
-		DiaryEntry entry = new DiaryEntry(user, food);
+		List<Serving> servings = servingRepository.findByFoodHashEquals(food.getHash());
+		if (servings.isEmpty()) {
+			Serving item = new Serving(food, "serving");
+			servings.add(item);
+			servingRepository.save(item);
+		}
+		Serving serving = servings.get(0);
+
+		DiaryEntry entry = new DiaryEntry(user, serving);
 		diaryEntryRepository.save(entry);
 
 		return new ResponseEntity<>("Added " + entry + "!", HttpStatus.OK);
@@ -107,10 +129,10 @@ public class FoodDiaryController {
 	@RequestMapping("/food-diary/search")
 	@ResponseBody
 	public ResponseEntity<String> search(@RequestParam String query) {
-		query = query.toLowerCase().trim();
-		List<Food> foods = foodRepository.findFirst10ByNameContainingOrderByName(query);
+		query = query.trim();
+		List<Food> foods = foodRepository.findFirst10ByNameIgnoreCaseContainingOrderByName(query);
 		JsonArray output = new JsonArray();
-		for(int i = 0; i < foods.size(); i++) {
+		for (int i = 0; i < foods.size(); i++) {
 			Food food = foods.get(i);
 			output.add(food.getName());
 		}
