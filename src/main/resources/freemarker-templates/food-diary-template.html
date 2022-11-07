@@ -38,20 +38,23 @@
     <table>
         <tr>
             <th>Food</th>
-            <th>Calories (kcal)</th>
+            <th>Calories</th>
             <th></th>
         </tr>
+        <#assign totalCalories = 0>
         <#list entries as entry>
+            <#assign calories=entry.servingQuantity*entry.serving.calories>
+            <#assign totalCalories = totalCalories + calories>
             <tr>
                 <td>${entry.serving.food.name}</td>
-                <td style="text-align:right;">${entry.servingQuantity*entry.serving.calories?round} kcal</td>
+                <td style="text-align:right;">${calories?round}</td>
                 <td><button onclick="deleteEntry(event)" id="${entry.hash}">&times;</button></td>
             </tr>
         </#list>
         <tr>
             <td>Total</td>
-            <td style="text-align:right;">${total?round} kcal</td>
-            <td></td>
+            <td style="text-align:right;">${totalCalories?round}</td>
+            <td style="border:none;"></td>
         </tr>
     </table>
     <form class="logout" action="/logout/handle" method="post">
