@@ -1,4 +1,5 @@
 from pathlib import Path
+from os.path import isfile
 
 def get_list_path():
     # read list from file
@@ -8,6 +9,11 @@ def get_list_path():
 def get_list():
     output = {}
     list_path = get_list_path()
+    if not isfile(list_path):
+        list_file = open(list_path, 'w')
+        list_file.write('Example List,Item 1' + '\n')
+        list_file.write('Example List,Item 2' + '\n')
+        list_file.close()
     list_file = open(list_path, 'r')
     Lines = list_file.readlines()
     for line in Lines:
