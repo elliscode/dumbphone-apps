@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dumbphone Apps</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}" />
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}" />
+</head>
+
+<body>
+    <div><b>Home</b></div>
+    <h1>Dumbphone Apps</h1>
+    <ul>
+        <li><a href="/lists">Lists</a></li>
+        <li><a href="/weather">Weather</a></li>
+        <li><a href="/food-diary">Food Diary</a></li>
+    </ul>
+    <form class="logout" action="/logout/handle" method="post">
+        <button type="submit">Log out</button>
+    </form>
+</body>
+
+</html>
