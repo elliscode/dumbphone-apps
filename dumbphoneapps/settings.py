@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+import secrets
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,7 +22,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-_*mm001wubx70h)d)%ztyloj-iab2*#02mamk*7n(*lv1#uwme'
+# We will check if there exists a secret, if not, write one out and use it
+home = Path.home()
+secret_path = home / 'dumbphone-apps' / 'secret-key.txt'
+if not os.path.isfile(secret_path):
+    secret_file = open(secret_path, 'w')
+    secret_file.write(secrets.token_urlsafe())
+    secret_file.close()
+secret_file = open(secret_path, 'r')
+SECRET_KEY = secret_file.readline()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
