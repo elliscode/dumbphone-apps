@@ -22,7 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# We will check if there exists a secret, if not, write one out and use it
+# We will check if there exists a secret, if not, write out a
+# randomly generated key, and use it
 home = Path.home()
 secret_path = home / 'dumbphone-apps' / 'secret-key.txt'
 if not os.path.isfile(secret_path):
