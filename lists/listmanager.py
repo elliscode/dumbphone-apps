@@ -2,20 +2,22 @@ from pathlib import Path
 from os.path import isfile
 import datetime
 
+
 def get_list_path():
     # read list from file
     home = Path.home()
     return home / 'dumbphone-apps' / 'grocery-list' / 'list.txt'
 
+
 def get_list():
     output = {}
     list_path = get_list_path()
     if not isfile(list_path):
-        write_list({'Example':['Item 1', 'Item 2']})
+        write_list({'Example': ['Item 1', 'Item 2']})
     list_file = open(list_path, 'r')
-    Lines = list_file.readlines()
-    for line in Lines:
-        if(line.startswith('//')):
+    lines = list_file.readlines()
+    for line in lines:
+        if line.startswith('//'):
             continue
         parts = line.split(',', 2)
         if 2 > len(parts):
@@ -26,6 +28,7 @@ def get_list():
             output[key] = []
         output[key].append(value.strip())
     return output
+
 
 def write_list(list_content):
     current_time = datetime.datetime.now()

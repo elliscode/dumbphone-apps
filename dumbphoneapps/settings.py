@@ -17,7 +17,6 @@ import secrets
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -36,8 +35,7 @@ SECRET_KEY = secret_file.readline()
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['localhost', '108.24.167.239']
 
 # Application definition
 
@@ -60,6 +58,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+LOGIN_REDIRECT_URL = '/accounts/login'
+
 ROOT_URLCONF = 'dumbphoneapps.urls'
 
 TEMPLATES = [
@@ -81,17 +81,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'dumbphoneapps.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+home = Path.home()
+postgres_password_path = home / 'dumbphone-apps' / 'database-password.txt'
+postgres_password_file = open(secret_path, 'r')
+DATABASE_PASSWORD = postgres_password_file.readline()
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgres',
+        'USER': 'user',
+        'PASSWORD': DATABASE_PASSWORD,
+        'HOST': '127.0.0.1',
+        'PORT': '5431',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -111,7 +118,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -122,7 +128,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/

@@ -42,7 +42,8 @@
             </li>
         {% endfor %}
     </ul>
-    <form class="logout" action="/logout/handle" method="post">
+    <form class="logout" action="/accounts/logout/?next=/" method="post">
+        {% csrf_token %}
         <button type="submit">Log out</button>
     </form>
     <script>

@@ -4,8 +4,21 @@ currently converting to python, this will be my notepad
 
 # Prerequisites
 
-- python installed on your system, with the install directory added to your `PATH` variable
-- django module installed using `pip`
+- python installed on your system, with the install directory and the Scripts directory added to your `PATH` variable
+
+```
+pip install django
+```
+
+```
+pip install psycopg2
+```
+
+- make sure you have a postgres database running on port `5431`
+
+```
+python manage.py migrate
+```
 
 # Running
 
