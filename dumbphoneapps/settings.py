@@ -35,7 +35,7 @@ SECRET_KEY = secret_file.readline()
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '108.24.167.239']
+# ALLOWED_HOSTS = ['localhost', '108.24.167.239']
 
 # Application definition
 
@@ -46,6 +46,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'fooddiary',
+    'home',
+    'lists'
 ]
 
 MIDDLEWARE = [
