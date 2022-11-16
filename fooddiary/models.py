@@ -8,7 +8,7 @@ from datetime import datetime
 # Create your models here.
 class Food(models.Model):
     hash = models.UUIDField(primary_key=True,
-                            default=uuid.uuid4(),
+                            default=uuid.uuid4,
                             verbose_name='Random UUID representing this particular food',
                             editable=False, )
     name = models.TextField(verbose_name='Human readable title for this particular food')
@@ -19,7 +19,7 @@ class Food(models.Model):
 
 class DiaryEntry(models.Model):
     hash = models.UUIDField(primary_key=True,
-                            default=uuid.uuid4(),
+                            default=uuid.uuid4,
                             verbose_name='Random UUID representing this diary entry',
                             editable=False, )
     quantity = models.FloatField(default=1.0,

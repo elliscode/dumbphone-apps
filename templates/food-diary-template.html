@@ -4,8 +4,10 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Food Diary</title>
-    <link rel="stylesheet" href="css/stylesheet.css" />
-    <link rel="icon" type="image/png" href="img/favicon.png" />
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}" />
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}" />
     <style>
         #suggestions {
             display: none;
@@ -41,23 +43,21 @@
             <th>Calories</th>
             <th></th>
         </tr>
-        <#assign totalCalories = 0>
-        <#list entries as entry>
-            <#assign calories=entry.servingQuantity*entry.serving.calories>
-            <#assign totalCalories = totalCalories + calories>
+        {% for entry in entries %}
             <tr>
-                <td>${entry.serving.food.name}</td>
-                <td style="text-align:right;">${calories?round}</td>
+                <td>{{entry.food_hash.name}}</td>
+                <td style="text-align:right;">{{entry.food_hash}}</td>
                 <td><button onclick="deleteEntry(event)" id="${entry.hash}">&times;</button></td>
             </tr>
-        </#list>
+        {% endfor %}
         <tr>
             <td>Total</td>
-            <td style="text-align:right;">${totalCalories?round}</td>
+            <td style="text-align:right;">{{total}}</td>
             <td style="border:none;"></td>
         </tr>
     </table>
-    <form class="logout" action="/logout/handle" method="post">
+    <form class="logout" action="/accounts/logout/?next=/" method="post">
+        {% csrf_token %}
         <button type="submit">Log out</button>
     </form>
     <script>
