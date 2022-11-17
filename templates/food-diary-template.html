@@ -2,12 +2,12 @@
 <html>
 
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Food Diary</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}"/>
     {% load static %}
-    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}" />
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}"/>
     <style>
         #suggestions {
             display: none;
@@ -24,43 +24,46 @@
             padding: 5px;
             border: 1px black solid;
         }
+
     </style>
 </head>
 
 <body>
-    <div><b><a href="..">Home</a></b> &gt; <b>food-diary</b></div>
-    <h1>Food Diary</h1>
-    <div style="position:relative;">
-        <div id="input">
-            <input id="item-text-box" type="text" onkeyup="search(event)">
-            <button id="add" onclick="addToList(event)">Add</button>
-        </div>
-        <ul id="suggestions"></ul>
+<div><b><a href="..">Home</a></b> &gt; <b>food-diary</b></div>
+<h1>Food Diary</h1>
+<div style="position:relative;">
+    <div id="input">
+        <input id="item-text-box" type="text" onkeyup="queueSearch(event)">
+        <button id="add" onclick="addToList(event)">Add</button>
     </div>
-    <table>
-        <tr>
-            <th>Food</th>
-            <th>Calories</th>
-            <th></th>
-        </tr>
-        {% for entry in entries %}
-            <tr>
-                <td>{{entry.food_hash.name}}</td>
-                <td style="text-align:right;">{{entry.food_hash}}</td>
-                <td><button onclick="deleteEntry(event)" id="${entry.hash}">&times;</button></td>
-            </tr>
-        {% endfor %}
-        <tr>
-            <td>Total</td>
-            <td style="text-align:right;">{{total}}</td>
-            <td style="border:none;"></td>
-        </tr>
-    </table>
-    <form class="logout" action="/accounts/logout/?next=/" method="post">
-        {% csrf_token %}
-        <button type="submit">Log out</button>
-    </form>
-    <script>
+    <ul id="suggestions"></ul>
+</div>
+<table>
+    <tr>
+        <th>Food</th>
+        <th>Calories</th>
+        <th></th>
+    </tr>
+    {% for entry in entries %}
+    <tr>
+        <td>{{entry.food.name}}</td>
+        <td style="text-align:right;">{{entry.food.metadata.calories}}</td>
+        <td>
+            <button onclick="deleteEntry(event)" id="{{entry.hash}}">&times;</button>
+        </td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <td>Total</td>
+        <td style="text-align:right;">{{total}}</td>
+        <td style="border:none;"></td>
+    </tr>
+</table>
+<form class="logout" action="/accounts/logout/?next=/" method="post">
+    {% csrf_token %}
+    <button type="submit">Log out</button>
+</form>
+<script>
         document.addEventListener("keydown", function (e) {
             if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
                 e.preventDefault();
@@ -76,21 +79,47 @@
         function addToList(event) {
             const caller = event.target;
             const input = caller.parentElement.getElementsByTagName("input")[0];
-            const foodName = input.value;
+            let text = input.value;
+            const fieldValues = {'calories':0,'fat':0,'carbs':0,'protein':0};
+            for(const field of Object.keys(fieldValues)) {
+                let result = new RegExp(field + ':\\s*([0-9]+)').exec(text)
+                if(result) {
+                    fieldValues[field] = result[1];
+                    text = text.substring(0,result.index) + text.substring(result.index + result[0].length, text.length)
+                }
+            }
+            const foodName = text.trim();
             let xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", '/food-diary/add?foodName=' + encodeURIComponent(foodName), false); // false for synchronous request
+            xmlHttp.open("GET", '/food-diary/add?foodName=' + encodeURIComponent(foodName)
+                + '&calories=' + encodeURIComponent(fieldValues.calories)
+                + '&fat=' + encodeURIComponent(fieldValues.fat)
+                + '&carbs=' + encodeURIComponent(fieldValues.carbs)
+                + '&protein=' + encodeURIComponent(fieldValues.protein), true);
+            xmlHttp.onload = refreshPage;
             xmlHttp.send(null);
+        }
+        function refreshPage(event) {
+            let xmlHttp = event.target;
             console.log(xmlHttp.responseText);
             input.value = '';
             location.reload();
+        }
+        let searchTimeout = undefined;
+        function queueSearch(event) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(search, 300, event);
         }
         function search(event) {
             const caller = event.target;
             const input = caller.parentElement.getElementsByTagName("input")[0];
             const query = input.value;
             let xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", '/food-diary/search?query=' + encodeURIComponent(query), false); // false for synchronous request
+            xmlHttp.open("GET", '/food-diary/search?query=' + encodeURIComponent(query), true);
+            xmlHttp.onload = displaySearch;
             xmlHttp.send(null);
+        }
+        function displaySearch(event) {
+            let xmlHttp = event.target;
             const suggestions = document.getElementById("suggestions");
             while (suggestions.firstChild) {
                 suggestions.removeChild(suggestions.firstChild);
@@ -122,13 +151,12 @@
             const caller = event.target;
             const hash = caller.id;
             let xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", '/food-diary/delete?hash=' + encodeURIComponent(hash), false); // false for synchronous request
+            xmlHttp.open("GET", '/food-diary/delete?hash=' + encodeURIComponent(hash), true);
+            xmlHttp.onload = refreshPage;
             xmlHttp.send(null);
-            console.log(xmlHttp.responseText);
-            input.value = '';
-            location.reload();
         }
-    </script>
+
+</script>
 </body>
 
 </html>
