@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from dumbphoneapps.settings import LOGIN_REDIRECT_URL
 from fooddiary.models import Food, DiaryEntry
-from fooddiary.template_classes import TemplateEntry
+from fooddiary.template_classes import TemplateEntry, TemplateFood, TemplateServing
 import json
 
 
@@ -19,10 +19,9 @@ def index(request):
     total = 0
     for diary_entry in diary_entries:
         template_entry = TemplateEntry(diary_entry)
-        if 'calories' in template_entry.food.metadata:
-            total += int(template_entry.food.metadata['calories'])
+        total += template_entry.derived_values.calories
         template_entries.append(template_entry)
-    return render(request, 'food-diary-template.html', context={'total': total, 'entries': template_entries, })
+    return render(request, 'food-diary-template.html', context={'total': round(total), 'entries': template_entries, })
 
 
 @login_required(login_url=LOGIN_REDIRECT_URL)
@@ -48,7 +47,9 @@ def add(request):
 @login_required(login_url=LOGIN_REDIRECT_URL)
 def search(request):
     query = request.GET.get('query')
-    foods = Food.objects.filter(name__icontains=query).order_by('name')[:10]
+    if not query:
+        return JsonResponse({}, safe=False)
+    foods = Food.objects.filter(name__icontains=query).order_by('name')[:1000]
     output = []
     for food in foods:
         output.append(food.name)
@@ -56,7 +57,30 @@ def search(request):
 
 
 @login_required(login_url=LOGIN_REDIRECT_URL)
+def get_serving(request):
+    hash_to_get = request.GET.get('hash')
+    item = DiaryEntry.objects.filter(hash=hash_to_get).first()
+
+    return JsonResponse(TemplateEntry(item).to_dict(), safe=False)
+
+
+@login_required(login_url=LOGIN_REDIRECT_URL)
+def set_serving(request):
+    serving_name = request.GET.get('name')
+    serving_quantity = float(request.GET.get('amount'))
+    hash_to_get = request.GET.get('hash')
+    item: DiaryEntry = DiaryEntry.objects.filter(hash=hash_to_get).first()
+    food: TemplateFood = TemplateFood(item.food)
+    serving: TemplateServing = food.metadata.get_serving(serving_name)
+    derived_quantity = serving_quantity / serving.amount
+    item.quantity = derived_quantity
+    item.serving = serving_name
+    item.save()
+    return HttpResponse('updated ' + hash_to_get)
+
+
+@login_required(login_url=LOGIN_REDIRECT_URL)
 def delete(request):
     hash_to_delete = request.GET.get('hash')
     DiaryEntry.objects.filter(hash=hash_to_delete).delete()
-    return HttpResponse('not implemented')
+    return HttpResponse('deleted ' + hash_to_delete)

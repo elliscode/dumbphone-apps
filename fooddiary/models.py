@@ -28,6 +28,9 @@ class DiaryEntry(models.Model):
                              on_delete=models.CASCADE, )
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE, )
+    serving = models.TextField(verbose_name='String representation of the serving, as shown in the metadata field of '
+                                            'the food',
+                               default='serving',)
     time_stamp = models.DateTimeField(default=datetime.now(),
                                       verbose_name='time the entry was created',
                                       editable=False, )

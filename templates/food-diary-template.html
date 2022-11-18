@@ -17,6 +17,9 @@
             background-color: #fff;
             padding: 0px;
             margin: 0px;
+            max-height: 300px;
+            overflow-y: auto;
+            overflow-x: none;
         }
 
         #suggestions li {
@@ -25,6 +28,20 @@
             border: 1px black solid;
         }
 
+        #servings {
+            display:none;
+            position: absolute;
+            top: -5px;
+            left: 20px;
+            background-color: #fff;
+            z-index:2;
+            padding:5px;
+            border:1px black solid;
+        }
+
+        #servings-amount {
+            width:100px;
+        }
     </style>
 </head>
 
@@ -38,22 +55,36 @@
     </div>
     <ul id="suggestions"></ul>
 </div>
-<table>
-    <tr>
+<div id="servings">
+    <input id="servings-amount" type="text"></input>
+    <select id="servings-name" onchange="servingChange(event)">
+        <option>Test One</option>
+        <option>Test Two</option>
+    </select>
+    <button id="servings-save" onclick="saveServing(event)">Save</button>
+    <button onclick="closeServings(event)">&times;</button>
+</div>
+<table style="border:none;">
+    <tr style="position:relative;">
+        <th style="border:none;"></th>
         <th>Food</th>
-        <th>Calories</th>
-        <th></th>
+        <th>kcal</th>
+        <th style="border:none;"></th>
     </tr>
     {% for entry in entries %}
-    <tr>
-        <td>{{entry.food.name}}</td>
-        <td style="text-align:right;">{{entry.food.metadata.calories}}</td>
+    <tr style="position:relative;">
         <td>
-            <button onclick="deleteEntry(event)" id="{{entry.hash}}">&times;</button>
+            <button onclick="changeQuantity(event)" hash="{{entry.hash}}">&#35;</button>
+        </td>
+        <td>{{entry.food.name}}</td>
+        <td style="text-align:right;">{{entry.derived_values.calories}}</td>
+        <td>
+            <button onclick="deleteEntry(event)" hash="{{entry.hash}}">&times;</button>
         </td>
     </tr>
     {% endfor %}
-    <tr>
+    <tr style="position:relative;">
+        <td style="border:none;"></td>
         <td>Total</td>
         <td style="text-align:right;">{{total}}</td>
         <td style="border:none;"></td>
@@ -107,7 +138,7 @@
         let searchTimeout = undefined;
         function queueSearch(event) {
             clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(search, 300, event);
+            searchTimeout = setTimeout(search, 200, event);
         }
         function search(event) {
             const caller = event.target;
@@ -149,13 +180,73 @@
         }
         function deleteEntry(event) {
             const caller = event.target;
-            const hash = caller.id;
+            const hash = caller.getAttribute('hash');
             let xmlHttp = new XMLHttpRequest();
             xmlHttp.open("GET", '/food-diary/delete?hash=' + encodeURIComponent(hash), true);
             xmlHttp.onload = refreshPage;
             xmlHttp.send(null);
         }
-
+        function changeQuantity(event) {
+            const caller = event.target;
+            let servings = document.getElementById('servings');
+            caller.parentElement.appendChild(servings);
+            const hash = caller.getAttribute('hash');
+            let xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", '/food-diary/get_serving?hash=' + encodeURIComponent(hash), true);
+            xmlHttp.onload = displayServing;
+            xmlHttp.send(null);
+        }
+        function closeServings(event) {
+            let servings = document.getElementById('servings');
+            servings.style.display = 'none';
+        }
+        function displayServing(event) {
+            let xmlHttp = event.target;
+            let item = JSON.parse(xmlHttp.responseText);
+            console.log(item);
+            let servings = document.getElementById('servings');
+            servings.style.display = 'block';
+            let textBox = document.getElementById('servings-amount');
+            let select = document.getElementById('servings-name');
+            while(select.firstChild) {
+                select.firstChild.remove();
+            }
+            {
+                let option = document.createElement('option');
+                option.innerText = 'kcal';
+                option.setAttribute('amount', item.food.metadata.calories);
+                select.appendChild(option);
+                textBox.value = item.food.metadata.calories;
+            }
+            for(let serving of item.food.metadata.servings) {
+                let option = document.createElement('option');
+                option.innerText = serving.name;
+                option.setAttribute('amount', serving.amount);
+                select.appendChild(option);
+            }
+            let save = document.getElementById('servings-save');
+            save.setAttribute('hash',item.hash);
+        }
+        function servingChange(event) {
+            let select = event.target;
+            let option = select.options[select.selectedIndex];
+            console.log(option)
+            let amount = option.getAttribute('amount');
+            let textBox = document.getElementById('servings-amount');
+            textBox.value = amount;
+        }
+        function saveServing(event) {
+            const caller = event.target;
+            const hash = caller.getAttribute('hash');
+            let textBox = document.getElementById('servings-amount');
+            let select = document.getElementById('servings-name');
+            const name = select.value;
+            const quantity = textBox.value;
+            let xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", '/food-diary/set_serving?hash=' + encodeURIComponent(hash) + '&name=' + encodeURIComponent(name) + '&amount=' + encodeURIComponent(quantity), true);
+            xmlHttp.onload = refreshPage;
+            xmlHttp.send(null);
+        }
 </script>
 </body>
 
