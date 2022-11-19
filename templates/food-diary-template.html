@@ -20,6 +20,7 @@
             max-height: 300px;
             overflow-y: auto;
             overflow-x: none;
+            z-index:2;
         }
 
         #suggestions li {
@@ -42,6 +43,26 @@
         #servings-amount {
             width:100px;
         }
+        #food-edit {
+            display:none;
+            position: absolute;
+            top: 20px;
+            left: 0px;
+            background-color: #fff;
+            z-index:2;
+            padding:5px;
+            border:1px black solid;
+        }
+
+        #food-edit table, #food-edit td, #food-edit tr {
+            border:none;
+        }
+
+        .food {
+            cursor:pointer;
+        }
+
+
     </style>
 </head>
 
@@ -64,6 +85,45 @@
     <button id="servings-save" onclick="saveServing(event)">Save</button>
     <button onclick="closeServings(event)">&times;</button>
 </div>
+<div id="food-edit">
+    <input style="display:none;" id="food-edit-quantity" type="text"></input>
+    <select style="display:none;" id="food-edit-servings" onchange="foodServingChange(event)">
+        <option>Test One</option>
+        <option>Test Two</option>
+    </select>
+    <table>
+        <tr>
+            <td>Name:</td>
+            <td><input id="food-edit-name" type="text"></input></td>
+        </tr>
+        <tr>
+            <td>Calories:</td>
+            <td><input id="food-edit-calories" type="text"></input></td>
+        </tr>
+        <tr>
+            <td>Protein:</td>
+            <td><input id="food-edit-protein" type="text"></input></td>
+        </tr>
+        <tr>
+            <td>Fat:</td>
+            <td><input id="food-edit-fat" type="text"></input></td>
+        </tr>
+        <tr>
+            <td>Carbs:</td>
+            <td><input id="food-edit-carbs" type="text"></input></td>
+        </tr>
+        <tr>
+            <td>Alcohol:</td>
+            <td><input id="food-edit-alcohol" type="text"></input></td>
+        </tr>
+        <tr>
+            <td>Caffeine:</td>
+            <td><input id="food-edit-caffeine" type="text"></input></td>
+        </tr>
+    </table>
+    <button id="food-edit-save" onclick="saveFood(event)">Save</button>
+    <button onclick="closeFood(event)">&times;</button>
+</div>
 <table style="border:none;">
     <tr style="position:relative;">
         <th style="border:none;"></th>
@@ -74,10 +134,11 @@
     {% for entry in entries %}
     <tr style="position:relative;">
         <td>
-            <button onclick="changeQuantity(event)" hash="{{entry.hash}}">&#35;</button>
+            <button onclick="changeQuantity(event)" food-hash="{{entry.food.hash}}" hash="{{entry.hash}}">&#35;</button>
         </td>
-        <td>{{entry.food.name}}</td>
-        <td style="text-align:right;">{{entry.derived_values.calories}}</td>
+        <td style="position:relative;"><span class="food" onclick="changeFood(event)" hash="{{entry.food.hash}}">{{entry.food.name}}</span>
+        </td>
+        <td style="text-align:right;">{{entry.derived_values.calories|floatformat:0}}</td>
         <td>
             <button onclick="deleteEntry(event)" hash="{{entry.hash}}">&times;</button>
         </td>
@@ -94,159 +155,21 @@
     {% csrf_token %}
     <button type="submit">Log out</button>
 </form>
+{% load static %}
+<script src="{% static 'js/food-diary.js' %}"></script>
 <script>
-        document.addEventListener("keydown", function (e) {
-            if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
-                e.preventDefault();
+    document.addEventListener("keydown", function (e) {
+        if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+            e.preventDefault();
+        }
+    }, false);
+    document.getElementById("item-text-box")
+        .addEventListener("keyup", function (event) {
+            event.preventDefault();
+            if (event.keyCode === 13) {
+                document.getElementById("add").click();
             }
-        }, false);
-        document.getElementById("item-text-box")
-            .addEventListener("keyup", function (event) {
-                event.preventDefault();
-                if (event.keyCode === 13) {
-                    document.getElementById("add").click();
-                }
-            });
-        function addToList(event) {
-            const caller = event.target;
-            const input = caller.parentElement.getElementsByTagName("input")[0];
-            let text = input.value;
-            const fieldValues = {'calories':0,'fat':0,'carbs':0,'protein':0};
-            for(const field of Object.keys(fieldValues)) {
-                let result = new RegExp(field + ':\\s*([0-9]+)').exec(text)
-                if(result) {
-                    fieldValues[field] = result[1];
-                    text = text.substring(0,result.index) + text.substring(result.index + result[0].length, text.length)
-                }
-            }
-            const foodName = text.trim();
-            let xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", '/food-diary/add?foodName=' + encodeURIComponent(foodName)
-                + '&calories=' + encodeURIComponent(fieldValues.calories)
-                + '&fat=' + encodeURIComponent(fieldValues.fat)
-                + '&carbs=' + encodeURIComponent(fieldValues.carbs)
-                + '&protein=' + encodeURIComponent(fieldValues.protein), true);
-            xmlHttp.onload = refreshPage;
-            xmlHttp.send(null);
-        }
-        function refreshPage(event) {
-            let xmlHttp = event.target;
-            console.log(xmlHttp.responseText);
-            input.value = '';
-            location.reload();
-        }
-        let searchTimeout = undefined;
-        function queueSearch(event) {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(search, 200, event);
-        }
-        function search(event) {
-            const caller = event.target;
-            const input = caller.parentElement.getElementsByTagName("input")[0];
-            const query = input.value;
-            let xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", '/food-diary/search?query=' + encodeURIComponent(query), true);
-            xmlHttp.onload = displaySearch;
-            xmlHttp.send(null);
-        }
-        function displaySearch(event) {
-            let xmlHttp = event.target;
-            const suggestions = document.getElementById("suggestions");
-            while (suggestions.firstChild) {
-                suggestions.removeChild(suggestions.firstChild);
-            }
-            let items = JSON.parse(xmlHttp.responseText);
-            for (let i = 0; i < items.length; i++) {
-                const item = items[i];
-                const li = document.createElement("li");
-                li.innerText = item;
-                li.addEventListener("click", setTextAndAdd);
-                li.style.cursor = "pointer";
-                suggestions.appendChild(li);
-            }
-            suggestions.style.display = 'block';
-        }
-        function setTextAndAdd(event) {
-            const caller = event.target;
-            const newValue = caller.innerText;
-            const textBox = document.getElementById("item-text-box");
-            textBox.value = newValue;
-            const suggestions = document.getElementById("suggestions");
-            while (suggestions.firstChild) {
-                suggestions.removeChild(suggestions.firstChild);
-            }
-            suggestions.style.display = "none";
-            addToList({'target':textBox});
-        }
-        function deleteEntry(event) {
-            const caller = event.target;
-            const hash = caller.getAttribute('hash');
-            let xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", '/food-diary/delete?hash=' + encodeURIComponent(hash), true);
-            xmlHttp.onload = refreshPage;
-            xmlHttp.send(null);
-        }
-        function changeQuantity(event) {
-            const caller = event.target;
-            let servings = document.getElementById('servings');
-            caller.parentElement.appendChild(servings);
-            const hash = caller.getAttribute('hash');
-            let xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", '/food-diary/get_serving?hash=' + encodeURIComponent(hash), true);
-            xmlHttp.onload = displayServing;
-            xmlHttp.send(null);
-        }
-        function closeServings(event) {
-            let servings = document.getElementById('servings');
-            servings.style.display = 'none';
-        }
-        function displayServing(event) {
-            let xmlHttp = event.target;
-            let item = JSON.parse(xmlHttp.responseText);
-            console.log(item);
-            let servings = document.getElementById('servings');
-            servings.style.display = 'block';
-            let textBox = document.getElementById('servings-amount');
-            let select = document.getElementById('servings-name');
-            while(select.firstChild) {
-                select.firstChild.remove();
-            }
-            {
-                let option = document.createElement('option');
-                option.innerText = 'kcal';
-                option.setAttribute('amount', item.food.metadata.calories);
-                select.appendChild(option);
-                textBox.value = item.food.metadata.calories;
-            }
-            for(let serving of item.food.metadata.servings) {
-                let option = document.createElement('option');
-                option.innerText = serving.name;
-                option.setAttribute('amount', serving.amount);
-                select.appendChild(option);
-            }
-            let save = document.getElementById('servings-save');
-            save.setAttribute('hash',item.hash);
-        }
-        function servingChange(event) {
-            let select = event.target;
-            let option = select.options[select.selectedIndex];
-            console.log(option)
-            let amount = option.getAttribute('amount');
-            let textBox = document.getElementById('servings-amount');
-            textBox.value = amount;
-        }
-        function saveServing(event) {
-            const caller = event.target;
-            const hash = caller.getAttribute('hash');
-            let textBox = document.getElementById('servings-amount');
-            let select = document.getElementById('servings-name');
-            const name = select.value;
-            const quantity = textBox.value;
-            let xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", '/food-diary/set_serving?hash=' + encodeURIComponent(hash) + '&name=' + encodeURIComponent(name) + '&amount=' + encodeURIComponent(quantity), true);
-            xmlHttp.onload = refreshPage;
-            xmlHttp.send(null);
-        }
+        });
 </script>
 </body>
 

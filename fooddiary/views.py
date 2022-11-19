@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from dumbphoneapps.settings import LOGIN_REDIRECT_URL
 from fooddiary.models import Food, DiaryEntry
-from fooddiary.template_classes import TemplateEntry, TemplateFood, TemplateServing
+from fooddiary.template_classes import TemplateEntry, TemplateFood, TemplateServing, TemplateMetadata
 import json
 
 
@@ -33,8 +33,9 @@ def add(request):
         carbs = request.GET.get('carbs', 0)
         fat = request.GET.get('fat', 0)
         protein = request.GET.get('protein', 0)
+        metadata = TemplateMetadata(json.dumps({'calories': calories, 'carbs': carbs, 'fat': fat, 'protein': protein, }))
         food = Food(name=food_name,
-                    metadata=json.dumps({'calories': calories, 'carbs': carbs, 'fat': fat, 'protein': protein, }), )
+                    metadata=json.dumps(metadata.to_dict()), )
         food.save()
 
     current_user = request.user
@@ -52,16 +53,15 @@ def search(request):
     foods = Food.objects.filter(name__icontains=query).order_by('name')[:1000]
     output = []
     for food in foods:
-        output.append(food.name)
+        output.append({'hash': food.hash, 'name': food.name, })
     return JsonResponse(output, safe=False)
 
 
 @login_required(login_url=LOGIN_REDIRECT_URL)
 def get_serving(request):
     hash_to_get = request.GET.get('hash')
-    item = DiaryEntry.objects.filter(hash=hash_to_get).first()
-
-    return JsonResponse(TemplateEntry(item).to_dict(), safe=False)
+    item = Food.objects.filter(hash=hash_to_get).first()
+    return JsonResponse(TemplateFood(item).to_dict(), safe=False)
 
 
 @login_required(login_url=LOGIN_REDIRECT_URL)
@@ -80,7 +80,38 @@ def set_serving(request):
 
 
 @login_required(login_url=LOGIN_REDIRECT_URL)
+def get_food(request):
+    hash_to_get = request.GET.get('hash')
+    item = Food.objects.filter(hash=hash_to_get).first()
+    return JsonResponse(TemplateFood(item).to_dict(), safe=False)
+
+
+@login_required(login_url=LOGIN_REDIRECT_URL)
+def set_food(request):
+    hash_to_get = request.GET.get('hash')
+    item: Food = Food.objects.filter(hash=hash_to_get).first()
+    metadata: TemplateMetadata = TemplateFood(item).metadata;
+    item.name = request.GET.get('name');
+    metadata.calories = float(request.GET.get('calories'))
+    metadata.protein = float(request.GET.get('protein'))
+    metadata.carbs = float(request.GET.get('carbs'))
+    metadata.fat = float(request.GET.get('fat'))
+    metadata.alcohol = float(request.GET.get('alcohol'))
+    metadata.caffeine = float(request.GET.get('caffeine'))
+    item.metadata = json.dumps(metadata.to_dict());
+    item.save()
+    return HttpResponse('updated ' + hash_to_get)
+
+
+@login_required(login_url=LOGIN_REDIRECT_URL)
 def delete(request):
     hash_to_delete = request.GET.get('hash')
     DiaryEntry.objects.filter(hash=hash_to_delete).delete()
+    return HttpResponse('deleted ' + hash_to_delete)
+
+
+@login_required(login_url=LOGIN_REDIRECT_URL)
+def delete_food(request):
+    hash_to_delete = request.GET.get('hash')
+    Food.objects.filter(hash=hash_to_delete).delete()
     return HttpResponse('deleted ' + hash_to_delete)

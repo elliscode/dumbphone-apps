@@ -38,20 +38,19 @@ class TemplateFood:
 
 
 class TemplateServing:
-    def __init__(self):
-        self.multiplier = 1
-        self.amount = 1
-        self.name = 'serving'
-
     def __init__(self, calories=None, serving=None):
         if calories is not None:
-            self.multiplier = 1
+            self.multiplier = float(1)
             self.amount = calories
             self.name = 'kcal'
         elif serving is not None:
-            self.multiplier = serving.get('multiplier', 1)
+            self.multiplier = float(serving.get('multiplier', 1))
             self.amount = serving.get('amount', 1)
             self.name = serving.get('name', 'undefined')
+        else:
+            self.multiplier = float(1)
+            self.amount = 1
+            self.name = 'serving'
 
     def to_dict(self):
         return {'multiplier': self.multiplier,
@@ -60,8 +59,11 @@ class TemplateServing:
 
 
 class TemplateDerivedValues:
-    def __init__(self, food: TemplateFood, serving: TemplateServing, quantity):
-        self.calories = round(food.metadata.calories * serving.multiplier * quantity)
+    def __init__(self, food: TemplateFood, serving: TemplateServing, quantity: float):
+        print(type(food.metadata.calories))
+        print(type(serving.multiplier))
+        print(type(quantity))
+        self.calories = food.metadata.calories * serving.multiplier * quantity
         self.protein = food.metadata.protein * serving.multiplier * quantity
         self.fat = food.metadata.fat * serving.multiplier * quantity
         self.carbs = food.metadata.carbs * serving.multiplier * quantity
@@ -80,16 +82,18 @@ class TemplateDerivedValues:
 class TemplateMetadata:
     def __init__(self, string: str):
         metadata = json.loads(string)
-        self.calories = metadata.get('calories', 0)
-        self.protein = metadata.get('protein', 0)
-        self.fat = metadata.get('fat', 0)
-        self.carbs = metadata.get('carbs', 0)
-        self.alcohol = metadata.get('alcohol', 0)
-        self.caffeine = metadata.get('caffeine', 0)
+        self.calories: float = float(metadata.get('calories', 0))
+        self.protein: float = float(metadata.get('protein', 0))
+        self.fat: float = float(metadata.get('fat', 0))
+        self.carbs: float = float(metadata.get('carbs', 0))
+        self.alcohol: float = float(metadata.get('alcohol', 0))
+        self.caffeine: float = float(metadata.get('caffeine', 0))
         self.servings = {}
         for serving in metadata.get('servings', []):
             item = TemplateServing(serving=serving)
             self.servings[item.name] = item
+        if not self.servings:
+            self.servings['serving'] = TemplateServing()
 
     def to_dict(self):
         return {'calories': self.calories,
