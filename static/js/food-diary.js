@@ -4,7 +4,7 @@ function addToList(event) {
     let text = input.value;
     const fieldValues = {'calories':0,'fat':0,'carbs':0,'protein':0};
     for(const field of Object.keys(fieldValues)) {
-        let result = new RegExp(field + ':\\s*([0-9]+)').exec(text)
+        let result = new RegExp(field + ':\\s*([0-9]+[\\.]*[0-9]*)').exec(text)
         if(result) {
             fieldValues[field] = result[1];
             text = text.substring(0,result.index) + text.substring(result.index + result[0].length, text.length)
@@ -22,7 +22,6 @@ function addToList(event) {
 }
 function refreshPage(event) {
     let xmlHttp = event.target;
-    console.log(xmlHttp.responseText);
     input.value = '';
     location.reload();
 }
@@ -102,6 +101,8 @@ function deleteEntry(event) {
     xmlHttp.send(null);
 }
 function changeQuantity(event) {
+    closeFood();
+    closeServings();
     const caller = event.target;
     let servings = document.getElementById('servings');
     caller.parentElement.appendChild(servings);
@@ -121,11 +122,12 @@ function closeServings(event) {
 function displayServing(event) {
     let xmlHttp = event.target;
     let item = JSON.parse(xmlHttp.responseText);
-    console.log(item);
     let servings = document.getElementById('servings');
     servings.style.display = 'block';
     let textBox = document.getElementById('servings-amount');
     let select = document.getElementById('servings-name');
+    let edit = document.getElementById('servings-edit');
+    edit.style.display = 'none';
     while(select.firstChild) {
         select.firstChild.remove();
     }
@@ -144,22 +146,16 @@ function displayServing(event) {
     }
 }
 function changeFood(event) {
+    closeFood();
+    closeServings();
     const caller = event.target;
     let foodEdit = document.getElementById('food-edit');
     caller.parentElement.appendChild(foodEdit);
     const hash = caller.getAttribute('hash');
-    {
-        let xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("GET", '/food-diary/get_food?hash=' + encodeURIComponent(hash), true);
-        xmlHttp.onload = displayFood;
-        xmlHttp.send(null);
-    }
-    {
-        let xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("GET", '/food-diary/get_serving?hash=' + encodeURIComponent(hash), true);
-        xmlHttp.onload = displayFoodServings;
-        xmlHttp.send(null);
-    }
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", '/food-diary/get_food?hash=' + encodeURIComponent(hash), true);
+    xmlHttp.onload = displayFood;
+    xmlHttp.send(null);
 }
 function closeFood(event) {
     let servings = document.getElementById('food-edit');
@@ -168,7 +164,6 @@ function closeFood(event) {
 function displayFood(event) {
     let xmlHttp = event.target;
     let item = JSON.parse(xmlHttp.responseText);
-    console.log(item);
     let foodEdit = document.getElementById('food-edit');
     document.getElementById('food-edit-name').value = item.name;
     document.getElementById('food-edit-calories').value = item.metadata.calories;
@@ -179,27 +174,6 @@ function displayFood(event) {
     document.getElementById('food-edit-caffeine').value = item.metadata.caffeine;
     document.getElementById('food-edit-save').setAttribute("hash",item.hash);
     foodEdit.style.display = 'block';
-}
-function displayFoodServings(event) {
-    let xmlHttp = event.target;
-    let item = JSON.parse(xmlHttp.responseText);
-    console.log(item);
-    let textBox = document.getElementById('food-edit-quantity');
-    let select = document.getElementById('food-edit-servings');
-    while(select.firstChild) {
-        select.firstChild.remove();
-    }
-    let set = false;
-    for(let serving of item.metadata.servings) {
-        let option = document.createElement('option');
-        option.innerText = serving.name;
-        option.setAttribute('amount', serving.amount);
-        select.appendChild(option);
-        if(!set) {
-            textBox.value = serving.amount;
-            set = true;
-        }
-    }
 }
 function saveFood(event) {
     const caller = event.target;
@@ -217,8 +191,6 @@ function saveFood(event) {
                 + '&carbs=' + encodeURIComponent(document.getElementById('food-edit-carbs').value)
                 + '&alcohol=' + encodeURIComponent(document.getElementById('food-edit-alcohol').value)
                 + '&caffeine=' + encodeURIComponent(document.getElementById('food-edit-caffeine').value)
-                + '&serving=' + encodeURIComponent(document.getElementById('food-edit-servings').value)
-                + '&quantity=' + encodeURIComponent(document.getElementById('food-edit-quantity').value)
                 , true);
     xmlHttp.onload = refreshPage;
     xmlHttp.send(null);
@@ -226,18 +198,15 @@ function saveFood(event) {
 function servingChange(event) {
     let select = event.target;
     let option = select.options[select.selectedIndex];
-    console.log(option)
     let amount = option.getAttribute('amount');
     let textBox = document.getElementById('servings-amount');
     textBox.value = amount;
-}
-function foodServingChange(event) {
-    let select = event.target;
-    let option = select.options[select.selectedIndex];
-    console.log(option)
-    let amount = option.getAttribute('amount');
-    let textBox = document.getElementById('food-edit-quantity');
-    textBox.value = amount;
+    let edit = document.getElementById('servings-edit');
+    if('kcal' == option.value) {
+        edit.style.display = 'none';
+    } else {
+        edit.style.display = 'inline-block';
+    }
 }
 function saveServing(event) {
     const caller = event.target;

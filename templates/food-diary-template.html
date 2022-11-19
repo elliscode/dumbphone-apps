@@ -7,63 +7,9 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}"/>
     {% load static %}
+    <link rel="stylesheet" href="{% static 'css/food-diary.css' %}"/>
+    {% load static %}
     <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}"/>
-    <style>
-        #suggestions {
-            display: none;
-            position: absolute;
-            top: 20px;
-            left: 0px;
-            background-color: #fff;
-            padding: 0px;
-            margin: 0px;
-            max-height: 300px;
-            overflow-y: auto;
-            overflow-x: none;
-            z-index:2;
-        }
-
-        #suggestions li {
-            list-style: none;
-            padding: 5px;
-            border: 1px black solid;
-        }
-
-        #servings {
-            display:none;
-            position: absolute;
-            top: -5px;
-            left: 20px;
-            background-color: #fff;
-            z-index:2;
-            padding:5px;
-            border:1px black solid;
-        }
-
-        #servings-amount {
-            width:100px;
-        }
-        #food-edit {
-            display:none;
-            position: absolute;
-            top: 20px;
-            left: 0px;
-            background-color: #fff;
-            z-index:2;
-            padding:5px;
-            border:1px black solid;
-        }
-
-        #food-edit table, #food-edit td, #food-edit tr {
-            border:none;
-        }
-
-        .food {
-            cursor:pointer;
-        }
-
-
-    </style>
 </head>
 
 <body>
@@ -82,15 +28,11 @@
         <option>Test One</option>
         <option>Test Two</option>
     </select>
+    <button style="display:none;" id="servings-edit">&#x270E;</button>
     <button id="servings-save" onclick="saveServing(event)">Save</button>
     <button onclick="closeServings(event)">&times;</button>
 </div>
 <div id="food-edit">
-    <input style="display:none;" id="food-edit-quantity" type="text"></input>
-    <select style="display:none;" id="food-edit-servings" onchange="foodServingChange(event)">
-        <option>Test One</option>
-        <option>Test Two</option>
-    </select>
     <table>
         <tr>
             <td>Name:</td>

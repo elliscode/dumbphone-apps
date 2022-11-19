@@ -60,9 +60,6 @@ class TemplateServing:
 
 class TemplateDerivedValues:
     def __init__(self, food: TemplateFood, serving: TemplateServing, quantity: float):
-        print(type(food.metadata.calories))
-        print(type(serving.multiplier))
-        print(type(quantity))
         self.calories = food.metadata.calories * serving.multiplier * quantity
         self.protein = food.metadata.protein * serving.multiplier * quantity
         self.fat = food.metadata.fat * serving.multiplier * quantity
