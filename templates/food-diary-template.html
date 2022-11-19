@@ -28,41 +28,21 @@
         <option>Test One</option>
         <option>Test Two</option>
     </select>
-    <button style="display:none;" id="servings-edit">&#x270E;</button>
+    <button style="display:none;" id="servings-edit" onclick="editServing(event)">&#x270E;</button>
     <button id="servings-save" onclick="saveServing(event)">Save</button>
     <button onclick="closeServings(event)">&times;</button>
 </div>
 <div id="food-edit">
     <table>
-        <tr>
-            <td>Name:</td>
-            <td><input id="food-edit-name" type="text"></input></td>
-        </tr>
-        <tr>
-            <td>Calories:</td>
-            <td><input id="food-edit-calories" type="text"></input></td>
-        </tr>
-        <tr>
-            <td>Protein:</td>
-            <td><input id="food-edit-protein" type="text"></input></td>
-        </tr>
-        <tr>
-            <td>Fat:</td>
-            <td><input id="food-edit-fat" type="text"></input></td>
-        </tr>
-        <tr>
-            <td>Carbs:</td>
-            <td><input id="food-edit-carbs" type="text"></input></td>
-        </tr>
-        <tr>
-            <td>Alcohol:</td>
-            <td><input id="food-edit-alcohol" type="text"></input></td>
-        </tr>
-        <tr>
-            <td>Caffeine:</td>
-            <td><input id="food-edit-caffeine" type="text"></input></td>
-        </tr>
+        <tr><td>Name:</td><td><input id="food-edit-name" type="text"></input></td></tr>
+        <tr><td>Calories:</td><td><input id="food-edit-calories" type="text"></input></td></tr>
+        <tr><td>Protein:</td><td><input id="food-edit-protein" type="text"></input></td></tr>
+        <tr><td>Fat:</td><td><input id="food-edit-fat" type="text"></input></td></tr>
+        <tr><td>Carbs:</td><td><input id="food-edit-carbs" type="text"></input></td></tr>
+        <tr><td>Alcohol:</td><td><input id="food-edit-alcohol" type="text"></input></td></tr>
+        <tr><td>Caffeine:</td><td><input id="food-edit-caffeine" type="text"></input></td></tr>
     </table>
+    <button id="food-edit-recipe" onclick="editRecipe(event)">Edit Recipe</button>
     <button id="food-edit-save" onclick="saveFood(event)">Save</button>
     <button onclick="closeFood(event)">&times;</button>
 </div>

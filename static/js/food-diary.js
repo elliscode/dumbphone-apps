@@ -220,3 +220,11 @@ function saveServing(event) {
     xmlHttp.onload = refreshPage;
     xmlHttp.send(null);
 }
+function editServing(event) {
+    console.log(event);
+    console.log('Not implemented :)');
+}
+function editRecipe(event) {
+    console.log(event);
+    console.log('Not implemented :)');
+}
