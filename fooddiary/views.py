@@ -2,14 +2,14 @@ import datetime
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from dumbphoneapps.settings import LOGIN_REDIRECT_URL
+from dumbphoneapps.settings import LOGIN_URL
 from fooddiary.models import Food, DiaryEntry
 from fooddiary.template_classes import TemplateEntry, TemplateFood, TemplateServing, TemplateMetadata
 import json
 
 
 # Create your views here.
-@login_required(login_url=LOGIN_REDIRECT_URL)
+@login_required(login_url=LOGIN_URL)
 def index(request):
     today = datetime.datetime.today()
     tomorrow = today + datetime.timedelta(days=1)
@@ -24,7 +24,7 @@ def index(request):
     return render(request, 'food-diary-template.html', context={'total': round(total), 'entries': template_entries, })
 
 
-@login_required(login_url=LOGIN_REDIRECT_URL)
+@login_required(login_url=LOGIN_URL)
 def add(request):
     food_name = request.GET.get('foodName')
     food = Food.objects.filter(name=food_name).first()
@@ -45,7 +45,7 @@ def add(request):
     return HttpResponse('Saved a diary entry')
 
 
-@login_required(login_url=LOGIN_REDIRECT_URL)
+@login_required(login_url=LOGIN_URL)
 def search(request):
     query = request.GET.get('query')
     if not query:
@@ -57,14 +57,14 @@ def search(request):
     return JsonResponse(output, safe=False)
 
 
-@login_required(login_url=LOGIN_REDIRECT_URL)
+@login_required(login_url=LOGIN_URL)
 def get_serving(request):
     hash_to_get = request.GET.get('hash')
     item = Food.objects.filter(hash=hash_to_get).first()
     return JsonResponse(TemplateFood(item).to_dict(), safe=False)
 
 
-@login_required(login_url=LOGIN_REDIRECT_URL)
+@login_required(login_url=LOGIN_URL)
 def set_serving(request):
     serving_name = request.GET.get('name')
     serving_quantity = float(request.GET.get('amount'))
@@ -79,14 +79,14 @@ def set_serving(request):
     return HttpResponse('updated ' + hash_to_get)
 
 
-@login_required(login_url=LOGIN_REDIRECT_URL)
+@login_required(login_url=LOGIN_URL)
 def get_food(request):
     hash_to_get = request.GET.get('hash')
     item = Food.objects.filter(hash=hash_to_get).first()
     return JsonResponse(TemplateFood(item).to_dict(), safe=False)
 
 
-@login_required(login_url=LOGIN_REDIRECT_URL)
+@login_required(login_url=LOGIN_URL)
 def set_food(request):
     hash_to_get = request.GET.get('hash')
     item: Food = Food.objects.filter(hash=hash_to_get).first()
@@ -103,14 +103,14 @@ def set_food(request):
     return HttpResponse('updated ' + hash_to_get)
 
 
-@login_required(login_url=LOGIN_REDIRECT_URL)
+@login_required(login_url=LOGIN_URL)
 def delete(request):
     hash_to_delete = request.GET.get('hash')
     DiaryEntry.objects.filter(hash=hash_to_delete).delete()
     return HttpResponse('deleted ' + hash_to_delete)
 
 
-@login_required(login_url=LOGIN_REDIRECT_URL)
+@login_required(login_url=LOGIN_URL)
 def delete_food(request):
     hash_to_delete = request.GET.get('hash')
     Food.objects.filter(hash=hash_to_delete).delete()

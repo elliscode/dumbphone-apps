@@ -1,4 +1,4 @@
-from django.conf.global_settings import LOGIN_REDIRECT_URL
+from dumbphoneapps.settings import LOGIN_URL
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -6,7 +6,7 @@ from .listmanager import get_list, write_list
 
 
 # Create your views here.
-@login_required(login_url=LOGIN_REDIRECT_URL)
+@login_required(login_url=LOGIN_URL)
 def index(request):
     # read list from file
     # list_path = get_list_path()
@@ -15,7 +15,7 @@ def index(request):
     return render(request, 'list-template.html', context={'list': list_content})
 
 
-@login_required(login_url=LOGIN_REDIRECT_URL)
+@login_required(login_url=LOGIN_URL)
 def delete(request):
     group = request.GET.get('group', '')
     name = request.GET.get('name', '')
@@ -26,7 +26,7 @@ def delete(request):
     return HttpResponse('Successfully deleted')
 
 
-@login_required(login_url=LOGIN_REDIRECT_URL)
+@login_required(login_url=LOGIN_URL)
 def add(request):
     group = request.GET.get('group', 'Groceries')
     name = request.GET.get('name', '')
@@ -38,7 +38,7 @@ def add(request):
     return HttpResponse('Successfully added')
 
 
-@login_required(login_url=LOGIN_REDIRECT_URL)
+@login_required(login_url=LOGIN_URL)
 def move(request):
     direction = request.GET.get('direction', 'up')
     group = request.GET.get('group', '')

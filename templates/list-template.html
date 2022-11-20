@@ -75,11 +75,11 @@
             let groupName = json.groupName;
             let parts = input.split(",", 2);
             if (2 == parts.length) {
-                return '/lists/' + 'add' + '?group=' + encodeURIComponent(parts[0]) + '&name=' + encodeURIComponent(parts[1]);
+                return '/grocery-list/' + 'add' + '?group=' + encodeURIComponent(parts[0]) + '&name=' + encodeURIComponent(parts[1]);
             } else if (!!groupName) {
-                return '/lists/' + 'add' + '?group=' + encodeURIComponent(groupName) + '&name=' + encodeURIComponent(parts[0]);
+                return '/grocery-list/' + 'add' + '?group=' + encodeURIComponent(groupName) + '&name=' + encodeURIComponent(parts[0]);
             } else {
-                return '/lists/' + 'add' + '?name=' + encodeURIComponent(parts[0]);
+                return '/grocery-list/' + 'add' + '?name=' + encodeURIComponent(parts[0]);
             }
         }
         function addToList(event) {
@@ -100,7 +100,7 @@
         function deleteFromList(event) {
             const groupName = event.target.parentElement.parentElement.parentElement.children[0].children[0].textContent;
             const text = event.target.parentElement.children[0].textContent;
-            let url = '/lists/' + 'delete' + '?group=' + encodeURIComponent(groupName) + '&name=' + (text);
+            let url = '/grocery-list/' + 'delete' + '?group=' + encodeURIComponent(groupName) + '&name=' + (text);
             let xmlHttp = new XMLHttpRequest();
             xmlHttp.open("GET", url, false); // false for synchronous request
             xmlHttp.send(null);
@@ -110,7 +110,7 @@
         function moveUp(event) {
             const caller = event.target;
             let groupName = caller.parentElement.firstElementChild.textContent;
-            let url = '/lists/' + 'move' + '?direction=' + 'up' + '&group=' + encodeURIComponent(groupName);
+            let url = '/grocery-list/' + 'move' + '?direction=' + 'up' + '&group=' + encodeURIComponent(groupName);
             let xmlHttp = new XMLHttpRequest();
             xmlHttp.open("GET", url, false); // false for synchronous request
             xmlHttp.send(null);
@@ -120,7 +120,7 @@
         function moveDown(event) {
             const caller = event.target;
             let groupName = caller.parentElement.firstElementChild.textContent;
-            let url = '/lists/' + 'move' + '?direction=' + 'down' + '&group=' + encodeURIComponent(groupName);
+            let url = '/grocery-list/' + 'move' + '?direction=' + 'down' + '&group=' + encodeURIComponent(groupName);
             let xmlHttp = new XMLHttpRequest();
             xmlHttp.open("GET", url, false); // false for synchronous request
             xmlHttp.send(null);

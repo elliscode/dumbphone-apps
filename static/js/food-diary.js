@@ -3,7 +3,9 @@ function addToList(event) {
     const input = caller.parentElement.getElementsByTagName("input")[0];
     let text = input.value;
     const fieldValues = {'calories':0,'fat':0,'carbs':0,'protein':0};
-    for(const field of Object.keys(fieldValues)) {
+    let keys = Object.keys(fieldValues);
+    for(let i = 0; i < keys.length; i++) {
+        field = keys[i];
         let result = new RegExp(field + ':\\s*([0-9]+[\\.]*[0-9]*)').exec(text)
         if(result) {
             fieldValues[field] = result[1];
@@ -138,7 +140,8 @@ function displayServing(event) {
         select.appendChild(option);
         textBox.value = item.metadata.calories;
     }
-    for(let serving of item.metadata.servings) {
+    for(let i = 0; i < item.metadata.servings.length; i++) {
+        let serving = item.metadata.servings[i];
         let option = document.createElement('option');
         option.innerText = serving.name;
         option.setAttribute('amount', serving.amount);

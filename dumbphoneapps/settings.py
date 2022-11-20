@@ -35,7 +35,7 @@ SECRET_KEY = secret_file.readline()
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# ALLOWED_HOSTS = ['localhost', '108.24.167.239']
+ALLOWED_HOSTS = ['localhost', '108.24.167.239']
 
 # Application definition
 
@@ -61,7 +61,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-LOGIN_REDIRECT_URL = '/accounts/login'
+LOGIN_URL = '/accounts/login/'
 
 ROOT_URLCONF = 'dumbphoneapps.urls'
 
