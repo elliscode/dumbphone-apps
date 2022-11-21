@@ -13,8 +13,10 @@ import json
 def index(request):
     today = datetime.datetime.today()
     tomorrow = today + datetime.timedelta(days=1)
-    diary_entries = DiaryEntry.objects.filter(
-        time_stamp__range=[today.strftime('%Y-%m-%d'), tomorrow.strftime('%Y-%m-%d')])
+    current_user = request.user
+    diary_entries = DiaryEntry.objects.filter(user=current_user,
+                                              time_stamp__range=[today.strftime('%Y-%m-%d'),
+                                                                 tomorrow.strftime('%Y-%m-%d')])
     template_entries = []
     total = 0
     for diary_entry in diary_entries:
@@ -33,7 +35,8 @@ def add(request):
         carbs = request.GET.get('carbs', 0)
         fat = request.GET.get('fat', 0)
         protein = request.GET.get('protein', 0)
-        metadata = TemplateMetadata(json.dumps({'calories': calories, 'carbs': carbs, 'fat': fat, 'protein': protein, }))
+        metadata = TemplateMetadata(
+            json.dumps({'calories': calories, 'carbs': carbs, 'fat': fat, 'protein': protein, }))
         food = Food(name=food_name,
                     metadata=json.dumps(metadata.to_dict()), )
         food.save()
