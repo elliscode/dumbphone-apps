@@ -1,10 +1,6 @@
-# Converting to python
-
-currently converting to python, this will be my notepad
-
 # Prerequisites
 
-- python installed on your system, with the install directory and the Scripts directory added to your `PATH` variable
+- python installed on your system
 
 ```
 pip install django
