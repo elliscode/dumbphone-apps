@@ -1,25 +1,33 @@
-# Prerequisites
+# Setup
 
-- python installed on your system
-
-```
-pip install django
-```
+Create virtual environment:
 
 ```
-pip install psycopg2
+python -m venv env
 ```
 
-- make sure you have a postgres database running on port `5431`
+Activate virtual environment:
 
 ```
-python manage.py migrate
+cd env/Scripts/ && . activate && cd ../../
 ```
 
-# Running
+Install requirements:
 
 ```
-python manage.py runserver 8080
+pip install -r requirements.txt
+```
+
+Collect static files:
+
+```
+python manage.py collectstatic
+```
+
+Run WSGI server:
+
+```
+python server.py
 ```
 
 # Cache and secrets folder layout
@@ -28,3 +36,15 @@ python manage.py runserver 8080
     - `grocery-list`
         - `list.txt` &mdash; automatically generated on the first call to the `/lists` endpoint
     - `secret-key.txt` &mdash; automatically generated on the startup of the server, see `/dumbphoneapps/settings.py`
+```python
+# We will check if there exists a secret, if not, write out a
+# randomly generated key, and use it
+home = Path.home()
+secret_path = home / 'dumbphone-apps' / 'secret-key.txt'
+if not os.path.isfile(secret_path):
+    secret_file = open(secret_path, 'w')
+    secret_file.write(secrets.token_urlsafe())
+    secret_file.close()
+secret_file = open(secret_path, 'r')
+SECRET_KEY = secret_file.readline()
+```
