@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Food Diary</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}"/>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/food-diary.css' %}"/>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}"/>
+</head>
+
+<body>
+<div><b><a href="..">Home</a></b> &gt; <b>food-diary</b></div>
+<h1>Food Diary</h1>
+<div style="position:relative;">
+    <div id="input">
+        <input id="item-text-box" type="text" onkeyup="queueSearch(event)">
+        <button id="add" onclick="addToList(event)">Add</button>
+    </div>
+    <ul id="suggestions"></ul>
+</div>
+<div id="servings">
+    <input id="servings-amount" type="text"></input>
+    <select id="servings-name" onchange="servingChange(event)">
+        <option>Test One</option>
+        <option>Test Two</option>
+    </select>
+    <button style="display:none;" id="servings-edit" onclick="editServing(event)">&#x270E;</button>
+    <button id="servings-save" onclick="saveServing(event)">Save</button>
+    <button onclick="closeServings(event)">&times;</button>
+</div>
+<div id="food-edit">
+    <table>
+        <tr><td>Name:</td><td><input id="food-edit-name" type="text"></input></td></tr>
+        <tr><td>Calories:</td><td><input id="food-edit-calories" type="text"></input></td></tr>
+        <tr><td>Protein:</td><td><input id="food-edit-protein" type="text"></input></td></tr>
+        <tr><td>Fat:</td><td><input id="food-edit-fat" type="text"></input></td></tr>
+        <tr><td>Carbs:</td><td><input id="food-edit-carbs" type="text"></input></td></tr>
+        <tr><td>Alcohol:</td><td><input id="food-edit-alcohol" type="text"></input></td></tr>
+        <tr><td>Caffeine:</td><td><input id="food-edit-caffeine" type="text"></input></td></tr>
+    </table>
+    <button id="food-edit-recipe" onclick="editRecipe(event)">Edit Recipe</button>
+    <button id="food-edit-save" onclick="saveFood(event)">Save</button>
+    <button onclick="closeFood(event)">&times;</button>
+</div>
+<table style="border:none;">
+    <tr style="position:relative;">
+        <th style="border:none;"></th>
+        <th>Food</th>
+        <th>kcal</th>
+        <th style="border:none;"></th>
+    </tr>
+    {% for entry in entries %}
+    <tr style="position:relative;">
+        <td>
+            <button onclick="changeQuantity(event)" food-hash="{{entry.food.hash}}" hash="{{entry.hash}}">&#35;</button>
+        </td>
+        <td style="position:relative;"><span class="food" onclick="changeFood(event)" hash="{{entry.food.hash}}">{{entry.food.name}}</span>
+        </td>
+        <td style="text-align:right;">{{entry.derived_values.calories|floatformat:0}}</td>
+        <td>
+            <button onclick="deleteEntry(event)" hash="{{entry.hash}}">&times;</button>
+        </td>
+    </tr>
+    {% endfor %}
+    <tr style="position:relative;">
+        <td style="border:none;"></td>
+        <td>Total</td>
+        <td style="text-align:right;">{{total}}</td>
+        <td style="border:none;"></td>
+    </tr>
+</table>
+<form class="logout" action="/accounts/logout/?next=/" method="post">
+    {% csrf_token %}
+    <button type="submit">Log out</button>
+</form>
+{% load static %}
+<script src="{% static 'js/food-diary.js' %}"></script>
+<script>
+    document.addEventListener("keydown", function (e) {
+        if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+            e.preventDefault();
+        }
+    }, false);
+    document.getElementById("item-text-box")
+        .addEventListener("keyup", function (event) {
+            event.preventDefault();
+            if (event.keyCode === 13) {
+                document.getElementById("add").click();
+            }
+        });
+</script>
+</body>
+
+</html>

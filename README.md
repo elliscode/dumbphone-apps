@@ -1,20 +1,50 @@
-# Running
+# Setup
+
+Create virtual environment:
 
 ```
-export PGDATA=~/pgsql-data && ./postgres.exe
+python -m venv env
 ```
 
+Activate virtual environment:
+
 ```
-export JAVA_HOME=~/.ellis-artifacts/jdk-11.0.2/ && ~/.ellis-artifacts/gradle-7.5.1/bin/gradle bootRun
+cd env/Scripts/ && . activate && cd ../../
+```
+
+Install requirements:
+
+```
+pip install -r requirements.txt
+```
+
+Collect static files:
+
+```
+python manage.py collectstatic
+```
+
+Run WSGI server:
+
+```
+python server.py
 ```
 
 # Cache and secrets folder layout
 
 - `$HOME/dumbphone-apps`
     - `grocery-list`
-        - `list.txt` &mdash; automatically generated on the first call to the `/grocery-list` endpoint
-    - `weather`
-        - `forecast.json` &mdash; automatically generated on the first call to the `/weather` endpoint
-        - `weather.json` &mdash; automatically generated on the first call to the `/weather` endpoint
-        - `weather.key` &mdash; needs to be populated with your valid API key for [the OpenWeatherMap.org API](https://openweathermap.org/api)
-    - `remember.key` &mdash; automatically generated on the startup of the program, a random UUID used for the **Remember Me** login checkbox
+        - `list.txt` &mdash; automatically generated on the first call to the `/lists` endpoint
+    - `secret-key.txt` &mdash; automatically generated on the startup of the server, see `/dumbphoneapps/settings.py`
+```python
+# We will check if there exists a secret, if not, write out a
+# randomly generated key, and use it
+home = Path.home()
+secret_path = home / 'dumbphone-apps' / 'secret-key.txt'
+if not os.path.isfile(secret_path):
+    secret_file = open(secret_path, 'w')
+    secret_file.write(secrets.token_urlsafe())
+    secret_file.close()
+secret_file = open(secret_path, 'r')
+SECRET_KEY = secret_file.readline()
+```
