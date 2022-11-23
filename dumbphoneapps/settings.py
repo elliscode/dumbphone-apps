@@ -33,7 +33,7 @@ secret_file = open(secret_path, 'r')
 SECRET_KEY = secret_file.readline()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', 'dumbphoneapps.com']
 

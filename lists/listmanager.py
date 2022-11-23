@@ -34,8 +34,22 @@ def write_list(list_content):
     current_time = datetime.datetime.now()
     list_path = get_list_path()
     list_file = open(list_path, 'w')
-    list_file.write('// This file was created on ' + current_time.strftime('%b/%d/%Y') + '\n')
+    list_file.write('// This file was created on ' + current_time.strftime('%b/%d/%Y %H:%M:%S') + '\n')
     for group, items in list_content.items():
         for item in items:
             list_file.write(group + ',' + item + '\n')
     list_file.close()
+
+
+def determine_group_name(list_content, group):
+    for item in list_content.keys():
+        if item.lower() == group.lower():
+            return item
+    return group
+
+
+def determine_item_name(list_content, group, name):
+    for item in list_content[group]:
+        if item.lower() == name.lower():
+            return ''
+    return name

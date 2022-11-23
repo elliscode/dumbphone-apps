@@ -18,35 +18,35 @@
         <button id="add" onclick="addToList(event)">Add</button>
     </div>
 
-    <ul class="ui-list top-list">
-        {% for group, items in list.items %}
-            <li>
-                <div class="add-to-group">
-                    <div class="name">{{group}}</div>
-                    <div class="fill"></div>
-                    <!--
-                    <input class="group-text-box" type="text">
-                    <button class="add" onclick="addToList(event)">Add</button>
-                    -->
-                    <button class="up" onclick="moveUp(event)">&#9650;</button>
-                    <button class="down" onclick="moveDown(event)">&#9660;</button>
-                </div>
-                <ul class="ui-list bottom-list">
-                    {% for item in items %}
-                        <li>
-                            <div class="name">{{item}}</div><button onclick="deleteFromList(event)"
-                                class="delete">&times;</button>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </li>
-        {% endfor %}
+    <ul id="main-list" class="ui-list top-list">
     </ul>
     <form class="logout" action="/accounts/logout/?next=/" method="post">
         {% csrf_token %}
         <button type="submit">Log out</button>
     </form>
     <script>
+        let listContent = {
+            {% for group, items in list.items %}
+                '{{group}}': [
+                    {% for item in items %}
+                    '{{item}}',
+                    {% endfor %}
+                ],
+            {% endfor %}
+        };
+
+        String.prototype.hashCode = function() {
+            var hash = 0,
+            i, chr;
+            if (this.length === 0) return hash;
+            for (i = 0; i < this.length; i++) {
+                chr = this.charCodeAt(i);
+                hash = ((hash << 5) - hash) + chr;
+                hash |= 0; // Convert to 32bit integer
+            }
+            return hash;
+        }
+
         document.addEventListener("keydown", function (e) {
             if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
                 e.preventDefault();
@@ -91,41 +91,153 @@
             }
             let url = determineAddUrl({ 'groupName': groupName, 'input': input.value });
             let xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", url, false); // false for synchronous request
+            xmlHttp.open("GET", url, true);
             xmlHttp.send(null);
-            console.log(xmlHttp.responseText);
+            xmlHttp.onload = handleAddList;
             input.value = '';
-            location.reload();
+        }
+        function handleAddList(event) {
+            let xmlHttp = event.target;
+            let result = JSON.parse(xmlHttp.responseText);
+            if(result.hasOwnProperty('group') && result.hasOwnProperty('name')) {
+                addItem(result.group, result.name);
+            }
         }
         function deleteFromList(event) {
             const groupName = event.target.parentElement.parentElement.parentElement.children[0].children[0].textContent;
             const text = event.target.parentElement.children[0].textContent;
             let url = '/grocery-list/' + 'delete' + '?group=' + encodeURIComponent(groupName) + '&name=' + (text);
             let xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", url, false); // false for synchronous request
+            xmlHttp.open("GET", url, true); // false for synchronous request
+            xmlHttp.onload = handleDeleteList;
             xmlHttp.send(null);
-            console.log(xmlHttp.responseText);
-            location.reload();
+        }
+        function handleDeleteList(event) {
+            let xmlHttp = event.target;
+            let result = JSON.parse(xmlHttp.responseText);
+            removeItem(result.group, result.name);
         }
         function moveUp(event) {
             const caller = event.target;
             let groupName = caller.parentElement.firstElementChild.textContent;
             let url = '/grocery-list/' + 'move' + '?direction=' + 'up' + '&group=' + encodeURIComponent(groupName);
             let xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", url, false); // false for synchronous request
+            xmlHttp.open("GET", url, true); // false for synchronous request
+            xmlHttp.onload = handleMoveList;
             xmlHttp.send(null);
-            console.log(xmlHttp.responseText);
-            location.reload();
         }
         function moveDown(event) {
             const caller = event.target;
             let groupName = caller.parentElement.firstElementChild.textContent;
             let url = '/grocery-list/' + 'move' + '?direction=' + 'down' + '&group=' + encodeURIComponent(groupName);
             let xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", url, false); // false for synchronous request
+            xmlHttp.open("GET", url, true); // false for synchronous request
+            xmlHttp.onload = handleMoveList;
             xmlHttp.send(null);
-            console.log(xmlHttp.responseText);
-            location.reload();
+        }
+
+        function handleMoveList(event) {
+            let xmlHttp = event.target;
+            let result = JSON.parse(xmlHttp.responseText);
+            if(result.hasOwnProperty('groups')) {
+                swapGroups(result.groups[0], result.groups[1]);
+            }
+        }
+
+        function swapGroups(groupOne, groupTwo) {
+            let mainList = document.getElementById('main-list');
+
+            const groupOneId = groupOne.hashCode();
+            let groupOneLi = document.getElementById(groupOneId);
+            const groupTwoId = groupTwo.hashCode();
+            let groupTwoLi = document.getElementById(groupTwoId);
+
+            mainList.insertBefore(groupOneLi, groupTwoLi);
+        }
+
+        function addItem(group, item) {
+            let mainList = document.getElementById('main-list');
+
+            const groupId = group.hashCode();
+            let groupLi = document.getElementById(groupId);
+            if(!groupLi) {
+                groupLi = document.createElement('li');
+                groupLi.id = groupId;
+                groupLi.appendChild(createAddToDiv(group));
+                let itemsList = document.createElement('ul');
+                itemsList.classList.add('ui-list');
+                itemsList.classList.add('bottom-list');
+                groupLi.appendChild(itemsList);
+                mainList.appendChild(groupLi);
+            }
+
+            let itemUl = groupLi.getElementsByClassName('ui-list')[0];
+
+
+            const itemId = (group + String.fromCharCode(2) + item).hashCode();
+            let itemLi = document.getElementById(itemId);
+            if(!itemLi) {
+                let itemLi = document.createElement('li');
+                itemLi.id = itemId;
+                let nameDiv = document.createElement('div');
+                nameDiv.classList.add('name');
+                nameDiv.innerHTML = item;
+                itemLi.appendChild(nameDiv);
+                let deleteButton = document.createElement('button');
+                deleteButton.onclick = deleteFromList;
+                deleteButton.classList.add('delete');
+                deleteButton.innerHTML = '&times;'
+                itemLi.appendChild(deleteButton);
+                itemUl.appendChild(itemLi);
+            }
+
+
+        }
+
+        function createAddToDiv(group) {
+            let addToGroupDiv = document.createElement('div');
+            addToGroupDiv.classList.add('add-to-group');
+            let nameDiv = document.createElement('div');
+            nameDiv.classList.add('name');
+            nameDiv.textContent = group;
+            addToGroupDiv.appendChild(nameDiv);
+            let fillDiv = document.createElement('div');
+            fillDiv.classList.add('fill');
+            addToGroupDiv.appendChild(fillDiv);
+            let upButton = document.createElement('button');
+            upButton.classList.add('up');
+            upButton.onclick = moveUp;
+            upButton.innerHTML = '&#9650;';
+            addToGroupDiv.appendChild(upButton);
+            let downButton = document.createElement('button');
+            downButton.classList.add('down');
+            downButton.onclick = moveDown;
+            downButton.innerHTML = '&#9660;';
+            addToGroupDiv.appendChild(downButton);
+            return addToGroupDiv;
+        }
+
+        function removeItem(group, item) {
+            const groupId = group.hashCode();
+            const itemId = (group + String.fromCharCode(2) + item).hashCode();
+            document.getElementById(itemId).remove();
+            let groupLi = document.getElementById(groupId);
+            let itemUl = groupLi.getElementsByClassName('ui-list')[0];
+            if(!itemUl.firstElementChild) {
+                groupLi.remove();
+            }
+        }
+
+        {
+            let groups = Object.keys(listContent);
+            for(let i = 0; i < groups.length; i++) {
+                let group = groups[i];
+                let items = listContent[group];
+                for(let j = 0; j < items.length; j++) {
+                    let item = items[j];
+                    addItem(group, item);
+                }
+            }
         }
     </script>
 </body>
