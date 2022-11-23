@@ -36,6 +36,7 @@ python server.py
     - `grocery-list`
         - `list.txt` &mdash; automatically generated on the first call to the `/lists` endpoint
     - `secret-key.txt` &mdash; automatically generated on the startup of the server, see `/dumbphoneapps/settings.py`
+
 ```python
 # We will check if there exists a secret, if not, write out a
 # randomly generated key, and use it
