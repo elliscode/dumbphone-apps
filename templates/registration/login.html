@@ -1,6 +1,24 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Food Diary</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}"/>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}"/>
+</head>
+
+<body>
+
 <h2>Log In</h2>
 <form method="post">
   {% csrf_token %}
   {{ form.as_p }}
   <button type="submit">Log In</button>
 </form>
+
+</body>
+
+</html>
