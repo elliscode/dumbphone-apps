@@ -8,6 +8,15 @@
     <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}"/>
     {% load static %}
     <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}"/>
+
+    <style>
+        #json {
+            font-family:monospace;
+            white-space:pre;
+        }
+
+
+    </style>
 </head>
 
 <body>
@@ -15,8 +24,10 @@
 <h1>Dumbphone Apps</h1>
 
 <button onclick="getCherryHill(event)">Get Weather for Cherry Hill</button>
-<button onclick="getLocation(event)">Get Weather for Current Location</button>
-<p id="demo"></p>
+<!--<button onclick="getLocation(event)">Get Weather for Current Location</button>-->
+<p id="temp"></p>
+
+<p id="json"></p>
 
 <form class="logout" action="/accounts/logout/?next=/" method="post">
     {% csrf_token %}
@@ -24,12 +35,12 @@
 </form>
 
 <script>
-let x = document.getElementById("demo");
+let json = document.getElementById("json");
 function getLocation() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(showPosition);
   } else {
-    x.innerHTML = "Geolocation is not supported by this browser.";
+    json.innerHTML = "Geolocation is not supported by this browser.";
   }
 }
 
@@ -49,10 +60,14 @@ function showPosition(position) {
     xmlHttp.send(null);
 }
 
+let temp = document.getElementById('temp');
+
 function writeResult(event) {
     let xmlHttp = event.target;
     let result = JSON.parse(xmlHttp.responseText);
-    x.innerText = JSON.stringify(result);
+    json.innerText = JSON.stringify(result, null, 2);
+    let fahrenheit = ((9.0*(result.main.temp-273.15))/5)+32;
+    temp.innerText = Math.round(fahrenheit * 10) / 10;
 }
 </script>
 </body>
