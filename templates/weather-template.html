@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Dumbphone Apps</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}"/>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}"/>
+</head>
+
+<body>
+<div><b>Home</b></div>
+<h1>Dumbphone Apps</h1>
+
+<button onclick="getCherryHill(event)">Get Weather for Cherry Hill</button>
+<button onclick="getLocation(event)">Get Weather for Current Location</button>
+<p id="demo"></p>
+
+<form class="logout" action="/accounts/logout/?next=/" method="post">
+    {% csrf_token %}
+    <button type="submit">Log out</button>
+</form>
+
+<script>
+let x = document.getElementById("demo");
+function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(showPosition);
+  } else {
+    x.innerHTML = "Geolocation is not supported by this browser.";
+  }
+}
+
+function getCherryHill() {
+    let url = '/weather/get_weather?lat=' + encodeURIComponent('39.8688') + '&lon=' + encodeURIComponent('-75.006');
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", url, true); // false for synchronous request
+    xmlHttp.onload = writeResult;
+    xmlHttp.send(null);
+}
+
+function showPosition(position) {
+    let url = '/weather/get_weather?lat=' + encodeURIComponent(position.coords.latitude) + '&lon=' + encodeURIComponent(position.coords.longitude);
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", url, true); // false for synchronous request
+    xmlHttp.onload = writeResult;
+    xmlHttp.send(null);
+}
+
+function writeResult(event) {
+    let xmlHttp = event.target;
+    let result = JSON.parse(xmlHttp.responseText);
+    x.innerText = JSON.stringify(result);
+}
+</script>
+</body>
+
+</html>
