@@ -5,7 +5,7 @@ from pathlib import Path
 import logging
 
 logger = logging.getLogger("mylogger")
-SECONDS_LIMIT = 3600
+SECONDS_LIMIT = 60
 
 
 def get_api_key():
