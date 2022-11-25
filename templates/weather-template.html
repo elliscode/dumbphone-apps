@@ -3,29 +3,47 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Dumbphone Apps</title>
+    <title>Weather</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}"/>
     {% load static %}
     <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}"/>
 
     <style>
+        #weather {
+            position:relative;
+            display: flex;
+            align-items: center;
+        }
+        #icon {
+            max-width: 50px;
+            display:inline;
+        }
+        #temp {
+            display:inline;
+            font-size:2em;
+            vertical-align:middle;
+            margin:0px;
+            padding:0px;
+        }
         #json {
             font-family:monospace;
             white-space:pre;
         }
-
-
     </style>
 </head>
 
 <body>
-<div><b>Home</b></div>
-<h1>Dumbphone Apps</h1>
+    <div><b><a href="..">Home</a></b> &gt; <b>weather</b></div>
+    <h1>Weather</h1>
 
 <button onclick="getCherryHill(event)">Get Weather for Cherry Hill</button>
 <!--<button onclick="getLocation(event)">Get Weather for Current Location</button>-->
-<p id="temp"></p>
+
+    <div id="weather">
+        <img id="icon"/>
+        <p id="temp"></p>
+    </div>
 
 <p id="json"></p>
 
@@ -61,13 +79,14 @@ function showPosition(position) {
 }
 
 let temp = document.getElementById('temp');
-
+let icon = document.getElementById('icon');
 function writeResult(event) {
     let xmlHttp = event.target;
     let result = JSON.parse(xmlHttp.responseText);
     json.innerText = JSON.stringify(result, null, 2);
     let fahrenheit = ((9.0*(result.main.temp-273.15))/5)+32;
-    temp.innerText = Math.round(fahrenheit * 10) / 10;
+    temp.innerHTML = Math.round(fahrenheit * 10) / 10 + '&#8457;';
+    icon.src = '/static/img/' + result.weather[0].icon + '.png';
 }
 </script>
 </body>

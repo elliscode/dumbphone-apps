@@ -35,6 +35,8 @@ python server.py
 - `$HOME/dumbphone-apps`
     - `grocery-list`
         - `list.txt` &mdash; automatically generated on the first call to the `/lists` endpoint
+    - `weather`
+        - `api-key.txt` &mdash; should contain the API key for [Open Weather Map](https://openweathermap.org/)
     - `secret-key.txt` &mdash; automatically generated on the startup of the server, see `/dumbphoneapps/settings.py`
 
 ```python

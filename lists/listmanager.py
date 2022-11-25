@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from os.path import isfile
 import datetime
@@ -14,7 +15,7 @@ def get_list():
     list_path = get_list_path()
     if not isfile(list_path):
         write_list({'Example': ['Item 1', 'Item 2']})
-    list_file = open(list_path, 'r')
+    list_file = open(list_path, 'r', encoding='utf-8')
     lines = list_file.readlines()
     for line in lines:
         if line.startswith('//'):
@@ -33,7 +34,9 @@ def get_list():
 def write_list(list_content):
     current_time = datetime.datetime.now()
     list_path = get_list_path()
-    list_file = open(list_path, 'w')
+    if list_path.exists():
+        os.rename(list_path, list_path.parent / (current_time.strftime('%Y_%m_%d__%H_%M_%S') + '.txt'))
+    list_file = open(list_path, 'w', encoding='utf-8')
     list_file.write('// This file was created on ' + current_time.strftime('%b/%d/%Y %H:%M:%S') + '\n')
     for group, items in list_content.items():
         for item in items:
