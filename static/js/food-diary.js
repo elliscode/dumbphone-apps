@@ -30,7 +30,7 @@ function refreshPage(event) {
 let searchTimeout = undefined;
 function queueSearch(event) {
     clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(search, 200, event);
+    searchTimeout = setTimeout(search, 400, event);
 }
 function search(event) {
     const caller = event.target;
