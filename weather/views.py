@@ -20,10 +20,13 @@ def get_weather(request):
     lat = request.GET.get('lat')
     lon = request.GET.get('lon')
     api_key = get_api_key()
-    result = get_from_file_if_recent_enough()
-    if not result:
-        r = requests.get('https://api.openweathermap.org/data/2.5/weather',
-                         params={'lat': lat, 'lon': lon, 'appid': api_key})
-        result = r.json()
-        write_result(result)
+    # result = get_from_file_if_recent_enough()
+    # if not result:
+    #     r = requests.get('https://api.openweathermap.org/data/2.5/weather',
+    #                      params={'lat': lat, 'lon': lon, 'appid': api_key})
+    #     result = r.json()
+    #     write_result(result)
+    r = requests.get('https://api.openweathermap.org/data/2.5/weather',
+                     params={'lat': lat, 'lon': lon, 'appid': api_key})
+    result = r.json()
     return JsonResponse(result, safe=False)
