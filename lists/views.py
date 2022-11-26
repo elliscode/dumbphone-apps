@@ -21,7 +21,8 @@ def delete(request):
     name = request.GET.get('name', '')
     list_content = get_list()
     if group in list_content:
-        list_content[group].remove(name)
+        if name in list_content[group]:
+            list_content[group].remove(name)
     write_list(list_content)
     return JsonResponse({'group': group, 'name': name}, safe=False)
 

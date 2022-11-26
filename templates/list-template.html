@@ -106,7 +106,7 @@
         function deleteFromList(event) {
             const groupName = event.target.parentElement.parentElement.parentElement.children[0].children[0].textContent;
             const text = event.target.parentElement.children[0].textContent;
-            let url = '/grocery-list/' + 'delete' + '?group=' + encodeURIComponent(groupName) + '&name=' + (text);
+            let url = '/grocery-list/' + 'delete' + '?group=' + encodeURIComponent(groupName) + '&name=' + encodeURIComponent(text);
             let xmlHttp = new XMLHttpRequest();
             xmlHttp.open("GET", url, true); // false for synchronous request
             xmlHttp.onload = handleDeleteList;
