@@ -15,7 +15,8 @@ import json
 def index(request):
     today = datetime.datetime.now(tz=ZoneInfo("America/New_York"))
     today = today - datetime.timedelta(hours=today.hour) - datetime.timedelta(
-        minutes=today.minute) - datetime.timedelta(seconds=today.second)
+        minutes=today.minute) - datetime.timedelta(seconds=today.second) - datetime.timedelta(
+        microseconds=today.microsecond)
     tomorrow = today + datetime.timedelta(days=1)
     current_user = request.user
     diary_entries = DiaryEntry.objects.filter(user=current_user,

@@ -14,7 +14,6 @@
 
 <body>
 <div><b><a href="..">Home</a></b> &gt; <b>food-diary</b></div>
-<h1>Food Diary</h1>
 <div style="position:relative;">
     <div id="input">
         <input id="item-text-box" type="text" onkeyup="queueSearch(event)">
@@ -55,7 +54,7 @@
     </tr>
     {% for entry in entries %}
     <tr style="position:relative;">
-        <td>
+        <td style="position:relative;">
             <button onclick="changeQuantity(event)" food-hash="{{entry.food.hash}}" hash="{{entry.hash}}">&#35;</button>
         </td>
         <td style="position:relative;"><span class="food" onclick="changeFood(event)" hash="{{entry.food.hash}}">{{entry.food.name}}</span>
