@@ -1,4 +1,6 @@
 import datetime
+from zoneinfo import ZoneInfo
+
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
@@ -11,12 +13,14 @@ import json
 # Create your views here.
 @login_required(login_url=LOGIN_URL)
 def index(request):
-    today = datetime.datetime.today()
+    today = datetime.datetime.now(tz=ZoneInfo("America/New_York"))
+    today = today - datetime.timedelta(hours=today.hour) - datetime.timedelta(
+        minutes=today.minute) - datetime.timedelta(seconds=today.second)
     tomorrow = today + datetime.timedelta(days=1)
     current_user = request.user
     diary_entries = DiaryEntry.objects.filter(user=current_user,
-                                              time_stamp__range=[today.strftime('%Y-%m-%d'),
-                                                                 tomorrow.strftime('%Y-%m-%d')])
+                                              time_stamp__range=[today,
+                                                                 tomorrow])
     template_entries = []
     total = 0
     for diary_entry in diary_entries:

@@ -2,7 +2,7 @@ import uuid
 
 from django.db import models
 from django.conf import settings
-from datetime import datetime
+import datetime
 
 
 # Create your models here.
@@ -31,6 +31,6 @@ class DiaryEntry(models.Model):
     serving = models.TextField(verbose_name='String representation of the serving, as shown in the metadata field of '
                                             'the food',
                                default='serving', )
-    time_stamp = models.DateTimeField(default=datetime.now,
+    time_stamp = models.DateTimeField(default=datetime.datetime.now,
                                       verbose_name='time the entry was created',
                                       editable=False, )
