@@ -21,7 +21,7 @@ def index(request):
     current_user = request.user
     diary_entries = DiaryEntry.objects.filter(user=current_user,
                                               time_stamp__range=[today,
-                                                                 tomorrow])
+                                                                 tomorrow]).order_by('time_stamp')
     template_entries = []
     total = 0
     for diary_entry in diary_entries:
