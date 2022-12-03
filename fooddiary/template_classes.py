@@ -77,7 +77,7 @@ class TemplateDerivedValues:
 
 
 class TemplateMetadata:
-    def __init__(self, string: str):
+    def __init__(self, string: str, serving: TemplateServing = None, ):
         metadata = json.loads(string)
         self.calories: float = float(metadata.get('calories', 0))
         self.protein: float = float(metadata.get('protein', 0))
@@ -86,11 +86,14 @@ class TemplateMetadata:
         self.alcohol: float = float(metadata.get('alcohol', 0))
         self.caffeine: float = float(metadata.get('caffeine', 0))
         self.servings = {}
-        for serving in metadata.get('servings', []):
-            item = TemplateServing(serving=serving)
-            self.servings[item.name] = item
-        if not self.servings:
-            self.servings['serving'] = TemplateServing()
+        if serving is not None:
+            self.servings[serving.name] = serving
+        else:
+            for servingItem in metadata.get('servings', []):
+                item = TemplateServing(serving=servingItem)
+                self.servings[item.name] = item
+            if not self.servings:
+                self.servings['serving'] = TemplateServing()
 
     def to_dict(self):
         return {'calories': self.calories,

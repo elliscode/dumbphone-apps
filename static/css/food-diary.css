@@ -1,4 +1,4 @@
-#suggestions {
+.suggestions {
     display: none;
     position: absolute;
     top: 20px;
@@ -12,7 +12,7 @@
     z-index:2;
 }
 
-#suggestions li {
+.suggestions li {
     list-style: none;
     padding: 5px;
     border: 1px black solid;
@@ -28,11 +28,16 @@
     padding:5px;
     border:1px black solid;
 }
-
-#servings-amount {
-    width:100px;
+#servings {
+    width:250px;
 }
-#food-edit {
+#servings-amount {
+    width:50px;
+}
+#servings-name {
+    width:75px;
+}
+#food-or-recipe-edit {
     display:none;
     position: absolute;
     top: 20px;
@@ -41,6 +46,7 @@
     z-index:2;
     padding:5px;
     border:1px black solid;
+    width:250px;
 }
 
 #food-edit table, #food-edit td, #food-edit tr {

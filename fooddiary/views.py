@@ -5,6 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from dumbphoneapps.settings import LOGIN_URL
+from fooddiary.food_methods import parse_serving
 from fooddiary.models import Food, DiaryEntry
 from fooddiary.template_classes import TemplateEntry, TemplateFood, TemplateServing, TemplateMetadata
 import json
@@ -40,8 +41,15 @@ def add(request):
         carbs = request.GET.get('carbs', 0)
         fat = request.GET.get('fat', 0)
         protein = request.GET.get('protein', 0)
+        caffeine = request.GET.get('caffeine', 0)
+        alcohol = request.GET.get('alcohol', 0)
+        serving_string = request.GET.get('serving', '1 serving')
+        serving: TemplateServing = parse_serving(serving_string)
         metadata = TemplateMetadata(
-            json.dumps({'calories': calories, 'carbs': carbs, 'fat': fat, 'protein': protein, }))
+            string=json.dumps(
+                {'calories': calories, 'carbs': carbs, 'fat': fat, 'protein': protein, 'caffeine': caffeine,
+                 'alcohol': alcohol, }),
+            serving=serving, )
         food = Food(name=food_name,
                     metadata=json.dumps(metadata.to_dict()), )
         food.save()
