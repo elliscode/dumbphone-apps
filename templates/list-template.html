@@ -105,6 +105,9 @@
         function deleteFromList(event) {
             const groupName = event.target.parentElement.parentElement.parentElement.children[0].children[0].textContent;
             const text = event.target.parentElement.children[0].textContent;
+
+            removeItem(groupName, text);
+
             let url = '/grocery-list/' + 'delete' + '?group=' + encodeURIComponent(groupName) + '&name=' + encodeURIComponent(text);
             let xmlHttp = new XMLHttpRequest();
             xmlHttp.open("GET", url, true); // false for synchronous request
@@ -114,11 +117,17 @@
         function handleDeleteList(event) {
             let xmlHttp = event.target;
             let result = JSON.parse(xmlHttp.responseText);
-            removeItem(result.group, result.name);
+            console.log(JSON.stringify(result));
         }
         function moveUp(event) {
             const caller = event.target;
             let groupName = caller.parentElement.firstElementChild.textContent;
+
+            otherGroup = caller.parentElement.parentElement.previousElementSibling;
+            if(otherGroup) {
+                swapGroups(groupName, otherGroup.firstElementChild.firstElementChild.textContent);
+            }
+
             let url = '/grocery-list/' + 'move' + '?direction=' + 'up' + '&group=' + encodeURIComponent(groupName);
             let xmlHttp = new XMLHttpRequest();
             xmlHttp.open("GET", url, true); // false for synchronous request
@@ -128,6 +137,11 @@
         function moveDown(event) {
             const caller = event.target;
             let groupName = caller.parentElement.firstElementChild.textContent;
+            otherGroup = caller.parentElement.parentElement.nextElementSibling;
+            if(otherGroup) {
+                swapGroups(otherGroup.firstElementChild.firstElementChild.textContent, groupName);
+            }
+
             let url = '/grocery-list/' + 'move' + '?direction=' + 'down' + '&group=' + encodeURIComponent(groupName);
             let xmlHttp = new XMLHttpRequest();
             xmlHttp.open("GET", url, true); // false for synchronous request
@@ -138,9 +152,7 @@
         function handleMoveList(event) {
             let xmlHttp = event.target;
             let result = JSON.parse(xmlHttp.responseText);
-            if(result.hasOwnProperty('groups')) {
-                swapGroups(result.groups[0], result.groups[1]);
-            }
+            console.log(JSON.stringify(result));
         }
 
         function swapGroups(groupOne, groupTwo) {
