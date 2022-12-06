@@ -87,6 +87,50 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'dumbphoneapps.wsgi.application'
 
+# email
+home = Path.home()
+email_path = home / 'dumbphone-apps' / 'email-credentials.txt'
+if not os.path.isfile(email_path):
+    email_file = open(email_path, 'w')
+    email_file.write("EMAIL_BACKEND=" + "\n")
+    email_file.write("EMAIL_HOST=" + "\n")
+    email_file.write("EMAIL_PORT=" + "\n")
+    email_file.write("EMAIL_HOST_USER=" + "\n")
+    email_file.write("EMAIL_HOST_PASSWORD=" + "\n")
+    email_file.write("EMAIL_USE_TLS=" + "\n")
+    email_file.write("EMAIL_USE_SSL=" + "\n")
+    email_file.close()
+secret_file = open(secret_path, 'r')
+for line in secret_file.readlines():
+    if line.startswith("EMAIL_BACKEND="):
+        value = line[len("EMAIL_BACKEND="):]
+        if value:
+            EMAIL_BACKEND = value
+    if line.startswith("EMAIL_HOST="):
+        value = line[len("EMAIL_HOST="):]
+        if value:
+            EMAIL_HOST = value
+    elif line.startswith("EMAIL_PORT="):
+        value = line[len("EMAIL_PORT="):]
+        if value:
+            EMAIL_PORT = value
+    elif line.startswith("EMAIL_HOST_USER="):
+        value = line[len("EMAIL_HOST_USER="):]
+        if value:
+            EMAIL_HOST_USER = value
+    elif line.startswith("EMAIL_HOST_PASSWORD="):
+        value = line[len("EMAIL_HOST_PASSWORD="):]
+        if value:
+            EMAIL_HOST_PASSWORD = value
+    elif line.startswith("EMAIL_USE_TLS="):
+        value = line[len("EMAIL_USE_TLS="):]
+        if value:
+            EMAIL_USE_TLS = ("True" == value)
+    elif line.startswith("EMAIL_USE_SSL="):
+        value = line[len("EMAIL_USE_SSL="):]
+        if value:
+            EMAIL_USE_SSL = ("True" == value)
+
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
