@@ -35,9 +35,9 @@ def write_list(list_content):
     current_time = datetime.datetime.now()
     list_path = get_list_path()
     if list_path.exists():
-        os.rename(list_path, list_path.parent / (current_time.strftime('%Y_%m_%d__%H_%M_%S') + '.txt'))
+        os.rename(list_path, list_path.parent / (current_time.strftime('%Y_%m_%d__%H_%M_%S_%f') + '.txt'))
     list_file = open(list_path, 'w', encoding='utf-8')
-    list_file.write('// This file was created on ' + current_time.strftime('%b/%d/%Y %H:%M:%S') + '\n')
+    list_file.write('// This file was created on ' + current_time.strftime('%b/%d/%Y %H:%M:%S.%f') + '\n')
     for group, items in list_content.items():
         for item in items:
             list_file.write(group + ',' + item + '\n')

@@ -24,7 +24,7 @@ def delete(request):
         if name in list_content[group]:
             list_content[group].remove(name)
     write_list(list_content)
-    return JsonResponse({'group': group, 'name': name}, safe=False)
+    return JsonResponse({'group': group, 'name': name})
 
 
 @login_required(login_url=LOGIN_URL)
@@ -41,10 +41,10 @@ def add(request):
     name = determine_item_name(list_content, group, name)
 
     if not name:
-        return JsonResponse({}, safe=False)
+        return JsonResponse({})
     list_content[group].append(name)
     write_list(list_content)
-    return JsonResponse({'group': group, 'name': name}, safe=False)
+    return JsonResponse({'group': group, 'name': name})
 
 
 @login_required(login_url=LOGIN_URL)
@@ -54,18 +54,18 @@ def move(request):
     list_content = get_list()
     groups = list(list_content.keys())
     if group not in groups:
-        return JsonResponse({}, safe=False)
+        return JsonResponse({})
     group_index = groups.index(group)
     if 'up' == direction:
         if 0 == group_index:
-            return JsonResponse({}, safe=False)
+            return JsonResponse({})
         target_group = groups[group_index - 1]
         groups[group_index - 1] = group
         groups[group_index] = target_group
         output = {'groups': [group, target_group]};
     else:
         if len(groups) - 1 == group_index:
-            return JsonResponse({}, safe=False)
+            return JsonResponse({})
         target_group = groups[group_index + 1]
         groups[group_index + 1] = group
         groups[group_index] = target_group
@@ -74,4 +74,4 @@ def move(request):
     for item in groups:
         reordered_list[item] = list_content[item]
     write_list(reordered_list)
-    return JsonResponse(output, safe=False)
+    return JsonResponse(output)

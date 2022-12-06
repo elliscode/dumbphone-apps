@@ -104,9 +104,10 @@
         }
         function deleteFromList(event) {
             const groupName = event.target.parentElement.parentElement.parentElement.children[0].children[0].textContent;
-            const text = event.target.parentElement.children[0].textContent;
+            const textItem = event.target.parentElement;
+            const text = textItem.children[0].textContent;
 
-            removeItem(groupName, text);
+            removeItem(textItem);
 
             let url = '/grocery-list/' + 'delete' + '?group=' + encodeURIComponent(groupName) + '&name=' + encodeURIComponent(text);
             let xmlHttp = new XMLHttpRequest();
@@ -185,7 +186,7 @@
             let itemUl = groupLi.getElementsByClassName('ui-list')[0];
 
 
-            const itemId = (group + String.fromCharCode(2) + item).hashCode();
+            const itemId = generateItemId(group, item);
             let itemLi = document.getElementById(itemId);
             if(!itemLi) {
                 let itemLi = document.createElement('li');
@@ -228,16 +229,20 @@
             return addToGroupDiv;
         }
 
-        function removeItem(group, item) {
-            const groupId = group.hashCode();
-            const itemId = (group + String.fromCharCode(2) + item).hashCode();
-            document.getElementById(itemId).remove();
-            let groupLi = document.getElementById(groupId);
+        function removeItem(item) {
+            let groupLi = item.parentElement.parentElement;
+            item.remove();
+
             let itemUl = groupLi.getElementsByClassName('ui-list')[0];
             if(!itemUl.firstElementChild) {
                 groupLi.remove();
             }
         }
+
+        function generateItemId(group, item) {
+            return (group + String.fromCharCode(2) + item).hashCode();
+        }
+
 
         {
             let groups = Object.keys(listContent);
