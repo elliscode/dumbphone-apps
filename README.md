@@ -43,7 +43,7 @@ python server.py
 # We will check if there exists a secret, if not, write out a
 # randomly generated key, and use it
 home = Path.home()
-secret_path = home / 'dumbphone-apps' / 'secret-key.txt'
+secret_path = home / USER_FOLDER_NAME / 'secret-key.txt'
 if not os.path.isfile(secret_path):
     secret_file = open(secret_path, 'w')
     secret_file.write(secrets.token_urlsafe())

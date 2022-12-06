@@ -13,9 +13,16 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 import os
 import secrets
+from warnings import filterwarnings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# this is the name of the directory that will be used in the USER area
+USER_FOLDER_NAME = 'd2mbphone-apps'
+home = Path.home()
+if not os.path.exists(home / USER_FOLDER_NAME):
+    os.makedirs(home / USER_FOLDER_NAME)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -24,7 +31,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # We will check if there exists a secret, if not, write out a
 # randomly generated key, and use it
 home = Path.home()
-secret_path = home / 'dumbphone-apps' / 'secret-key.txt'
+secret_path = home / USER_FOLDER_NAME / 'secret-key.txt'
 if not os.path.isfile(secret_path):
     secret_file = open(secret_path, 'w')
     secret_file.write(secrets.token_urlsafe())
@@ -33,7 +40,7 @@ secret_file = open(secret_path, 'r')
 SECRET_KEY = secret_file.readline()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', 'dumbphoneapps.com']
 
@@ -89,7 +96,7 @@ WSGI_APPLICATION = 'dumbphoneapps.wsgi.application'
 
 # email
 home = Path.home()
-email_path = home / 'dumbphone-apps' / 'email-credentials.txt'
+email_path = home / USER_FOLDER_NAME / 'email-credentials.txt'
 if not os.path.isfile(email_path):
     email_file = open(email_path, 'w')
     email_file.write("EMAIL_BACKEND=" + "\n")
@@ -134,8 +141,11 @@ for line in secret_file.readlines():
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# Command to create a database:
+# ~/pgsql/bin/initdb.exe --encoding=UTF8 --username=user --pgdata=${HOME}/pgsql-data-3
+
 home = Path.home()
-postgres_password_path = home / 'dumbphone-apps' / 'database-password.txt'
+postgres_password_path = home / USER_FOLDER_NAME / 'database-password.txt'
 postgres_password_file = open(secret_path, 'r')
 DATABASE_PASSWORD = postgres_password_file.readline()
 
@@ -146,9 +156,12 @@ DATABASES = {
         'USER': 'user',
         'PASSWORD': DATABASE_PASSWORD,
         'HOST': '127.0.0.1',
-        'PORT': '5431',
+        'PORT': '5432',
     }
 }
+
+# this is to stop the annoying timezone warning
+filterwarnings('ignore', message=r'.*received a naive datetime')
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators

@@ -2,12 +2,17 @@ import os
 from pathlib import Path
 from os.path import isfile
 import datetime
+from dumbphoneapps.settings import USER_FOLDER_NAME
+
 
 
 def get_list_path():
     # read list from file
     home = Path.home()
-    return home / 'dumbphone-apps' / 'grocery-list' / 'list.txt'
+    lists_folder = home / USER_FOLDER_NAME / 'grocery-list'
+    if not os.path.exists(lists_folder):
+        os.makedirs(lists_folder)
+    return lists_folder / 'list.txt'
 
 
 def get_list():
