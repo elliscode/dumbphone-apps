@@ -37,18 +37,5 @@ python server.py
         - `list.txt` &mdash; automatically generated on the first call to the `/lists` endpoint
     - `weather`
         - `api-key.txt` &mdash; should contain the API key for [Open Weather Map](https://openweathermap.org/)
-    - `email-credentials.txt` &mdash; automatically generated on the startup of the server, [populate with credentials for your email address](https://docs.djangoproject.com/en/4.1/topics/email/)
+    - `email-credentials.txt` &mdash; automatically generated on the startup of the server, [populate with credentials for your email address](https://docs.djangoproject.com/en/4.1/topics/email/), see `/dumbphoneapps/settings.py`
     - `secret-key.txt` &mdash; automatically generated on the startup of the server, see `/dumbphoneapps/settings.py`
-
-```python
-# We will check if there exists a secret, if not, write out a
-# randomly generated key, and use it
-home = Path.home()
-secret_path = home / USER_FOLDER_NAME / 'secret-key.txt'
-if not os.path.isfile(secret_path):
-    secret_file = open(secret_path, 'w')
-    secret_file.write(secrets.token_urlsafe())
-    secret_file.close()
-secret_file = open(secret_path, 'r')
-SECRET_KEY = secret_file.readline()
-```
