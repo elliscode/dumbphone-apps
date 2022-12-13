@@ -101,33 +101,21 @@ TEMPLATES = [
 WSGI_APPLICATION = 'dumbphoneapps.wsgi.application'
 
 # email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
 home = Path.home()
 email_path = home / USER_FOLDER_NAME / 'email-credentials.txt'
 if not os.path.isfile(email_path):
     email_file = open(email_path, 'w')
-    email_file.write("EMAIL_BACKEND=" + "\n")
-    email_file.write("EMAIL_HOST=" + "\n")
-    email_file.write("EMAIL_PORT=" + "\n")
     email_file.write("EMAIL_HOST_USER=" + "\n")
     email_file.write("EMAIL_HOST_PASSWORD=" + "\n")
-    email_file.write("EMAIL_USE_TLS=" + "\n")
-    email_file.write("EMAIL_USE_SSL=" + "\n")
     email_file.close()
 email_file = open(email_path, 'r')
 for line in email_file.readlines():
-    if line.startswith("EMAIL_BACKEND="):
-        value = line[len("EMAIL_BACKEND="):].strip()
-        if value:
-            EMAIL_BACKEND = value
-    if line.startswith("EMAIL_HOST="):
-        value = line[len("EMAIL_HOST="):].strip()
-        if value:
-            EMAIL_HOST = value
-    elif line.startswith("EMAIL_PORT="):
-        value = line[len("EMAIL_PORT="):].strip()
-        if value:
-            EMAIL_PORT = value
-    elif line.startswith("EMAIL_HOST_USER="):
+    if line.startswith("EMAIL_HOST_USER="):
         value = line[len("EMAIL_HOST_USER="):].strip()
         if value:
             EMAIL_HOST_USER = value
@@ -135,14 +123,6 @@ for line in email_file.readlines():
         value = line[len("EMAIL_HOST_PASSWORD="):].strip()
         if value:
             EMAIL_HOST_PASSWORD = value
-    elif line.startswith("EMAIL_USE_TLS="):
-        value = line[len("EMAIL_USE_TLS="):].strip()
-        if value:
-            EMAIL_USE_TLS = ("True" == value)
-    elif line.startswith("EMAIL_USE_SSL="):
-        value = line[len("EMAIL_USE_SSL="):].strip()
-        if value:
-            EMAIL_USE_SSL = ("True" == value)
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
