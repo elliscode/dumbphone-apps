@@ -27,9 +27,10 @@ if not os.path.exists(home / USER_FOLDER_NAME):
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-# We will check if there exists a secret, if not, write out a
-# randomly generated key, and use it
+# We will check if there exists a secret.
+#
+# If not, or if it is older than 30 days,
+# we will write out a new one.
 home = Path.home()
 secret_path = home / USER_FOLDER_NAME / 'secret-key.txt'
 should_create_file = not os.path.isfile(secret_path)
