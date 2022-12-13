@@ -12,9 +12,13 @@
 
 <body>
 <h1>Signup</h1>
+
+{% comment %}
 <button onclick="showPhone(event)">Signup with phone number</button>
 <button onclick="showEmail(event)">Signup with email</button>
 <button onclick="showPass(event)">Signup with username and password</button>
+{% endcomment %}
+{% comment %}
 <form method="post" action="/accounts/signup/phone" id="signup-with-phone">
   {% csrf_token %}
   <p>
@@ -23,14 +27,16 @@
   </p>
   <button type="submit">Sign Up</button>
 </form>
+{% endcomment %}
 <form method="post" action="/accounts/signup/email" id="signup-with-email">
   {% csrf_token %}
   <p>
-    <label for="email">Username:</label>
+    <label for="email">Email Address:</label>
     <input type="email" id="email" name="email">
   </p>
   <button type="submit">Sign Up</button>
 </form>
+{% comment %}
 <form method="post" action="/accounts/signup/user" id="signup-with-username-and-password">
   {% csrf_token %}
   <p>
@@ -43,14 +49,21 @@
   </p>
   <button type="submit">Sign Up</button>
 </form>
+{% endcomment %}
 <script>
     let signupPhone = document.getElementById('signup-with-phone');
     let signupEmail = document.getElementById('signup-with-email');
     let signupPass = document.getElementById('signup-with-username-and-password');
     function hideAll() {
-        signupPhone.style.display = 'none';
-        signupEmail.style.display = 'none';
-        signupPass.style.display = 'none';
+        if(signupPhone) {
+            signupPhone.style.display = 'none';
+        }
+        if(signupEmail) {
+            signupEmail.style.display = 'none';
+        }
+        if(signupPass) {
+            signupPass.style.display = 'none';
+        }
     }
     function showPhone(event) {
         hideAll();
@@ -65,6 +78,7 @@
         signupPass.style.display = 'block';
     }
     hideAll();
+    showEmail();
 </script>
 </body>
 

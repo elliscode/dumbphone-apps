@@ -107,34 +107,34 @@ if not os.path.isfile(email_path):
     email_file.write("EMAIL_USE_TLS=" + "\n")
     email_file.write("EMAIL_USE_SSL=" + "\n")
     email_file.close()
-secret_file = open(secret_path, 'r')
-for line in secret_file.readlines():
+email_file = open(email_path, 'r')
+for line in email_file.readlines():
     if line.startswith("EMAIL_BACKEND="):
-        value = line[len("EMAIL_BACKEND="):]
+        value = line[len("EMAIL_BACKEND="):].strip()
         if value:
             EMAIL_BACKEND = value
     if line.startswith("EMAIL_HOST="):
-        value = line[len("EMAIL_HOST="):]
+        value = line[len("EMAIL_HOST="):].strip()
         if value:
             EMAIL_HOST = value
     elif line.startswith("EMAIL_PORT="):
-        value = line[len("EMAIL_PORT="):]
+        value = line[len("EMAIL_PORT="):].strip()
         if value:
             EMAIL_PORT = value
     elif line.startswith("EMAIL_HOST_USER="):
-        value = line[len("EMAIL_HOST_USER="):]
+        value = line[len("EMAIL_HOST_USER="):].strip()
         if value:
             EMAIL_HOST_USER = value
     elif line.startswith("EMAIL_HOST_PASSWORD="):
-        value = line[len("EMAIL_HOST_PASSWORD="):]
+        value = line[len("EMAIL_HOST_PASSWORD="):].strip()
         if value:
             EMAIL_HOST_PASSWORD = value
     elif line.startswith("EMAIL_USE_TLS="):
-        value = line[len("EMAIL_USE_TLS="):]
+        value = line[len("EMAIL_USE_TLS="):].strip()
         if value:
             EMAIL_USE_TLS = ("True" == value)
     elif line.startswith("EMAIL_USE_SSL="):
-        value = line[len("EMAIL_USE_SSL="):]
+        value = line[len("EMAIL_USE_SSL="):].strip()
         if value:
             EMAIL_USE_SSL = ("True" == value)
 
