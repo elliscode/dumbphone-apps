@@ -37,6 +37,7 @@ python server.py
         - `list.txt` &mdash; automatically generated on the first call to the `/lists` endpoint
     - `weather`
         - `api-key.txt` &mdash; should contain the API key for [Open Weather Map](https://openweathermap.org/)
+    - `email-credentials.txt` &mdash; automatically generated on the startup of the server, [populate with credentials for your email address](https://docs.djangoproject.com/en/4.1/topics/email/)
     - `secret-key.txt` &mdash; automatically generated on the startup of the server, see `/dumbphoneapps/settings.py`
 
 ```python
