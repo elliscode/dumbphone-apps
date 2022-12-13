@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+import datetime
 from pathlib import Path
 import os
 import secrets
@@ -32,7 +32,12 @@ if not os.path.exists(home / USER_FOLDER_NAME):
 # randomly generated key, and use it
 home = Path.home()
 secret_path = home / USER_FOLDER_NAME / 'secret-key.txt'
-if not os.path.isfile(secret_path):
+should_create_file = not os.path.isfile(secret_path)
+if not should_create_file:
+    file_age = datetime.datetime.now() - datetime.datetime.fromtimestamp(os.path.getmtime(secret_path))
+    if file_age.days >= 30:
+        should_create_file = True
+if should_create_file:
     secret_file = open(secret_path, 'w')
     secret_file.write(secrets.token_urlsafe())
     secret_file.close()
@@ -184,7 +189,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Session expiration stuff
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_AGE = 1 * 60 * 60 * 24 * 365
+SESSION_COOKIE_AGE = 1 * 60 * 60 * 24 * 7  # one week
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
