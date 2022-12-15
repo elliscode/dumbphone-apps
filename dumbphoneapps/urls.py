@@ -16,18 +16,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from . import views
+import misc
 
 urlpatterns = [
     path('', include('home.urls')),
     path("accounts/", include("django.contrib.auth.urls")),
-    path("accounts/signup", views.signup, name='signup'),
-    path("accounts/signup/phone", views.signup_with_phone, name='signup_with_phone'),
-    path("accounts/signup/email", views.signup_with_email, name='signup_with_email'),
-    path("accounts/signup/user", views.signup_with_username_and_password, name='signup_with_username_and_password'),
     path('grocery-list/', include('lists.urls')),
     path('food-diary/', include('fooddiary.urls')),
     path('weather/', include('weather.urls')),
+    path('accounts/', include('misc.urls')),
+    path('hello-twilio', misc.views.hello, name='hello_twilio'),
     path('admin/', admin.site.urls),
-    path('hello-twilio/', views.hello, name='hello_twilio'),
 ]

@@ -63,7 +63,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'fooddiary',
     'home',
-    'lists'
+    'lists',
+    'misc',
 ]
 
 MIDDLEWARE = [

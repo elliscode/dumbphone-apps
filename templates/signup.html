@@ -28,14 +28,7 @@
   <button type="submit">Sign Up</button>
 </form>
 {% endcomment %}
-<form method="post" action="/accounts/signup/email" id="signup-with-email">
-  {% csrf_token %}
-  <p>
-    <label for="email">Email Address:</label>
-    <input type="email" id="email" name="email">
-  </p>
-  <button type="submit">Sign Up</button>
-</form>
+
 {% comment %}
 <form method="post" action="/accounts/signup/user" id="signup-with-username-and-password">
   {% csrf_token %}
