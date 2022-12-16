@@ -2,62 +2,57 @@ import os
 from pathlib import Path
 from os.path import isfile
 import datetime
+from zoneinfo import ZoneInfo
+
 from dumbphoneapps.settings import USER_FOLDER_NAME
+from lists.models import ListItem, ListGroup, UserGroupRelation
 
 
-
-def get_list_path():
-    # read list from file
-    home = Path.home()
-    lists_folder = home / USER_FOLDER_NAME / 'grocery-list'
-    if not os.path.exists(lists_folder):
-        os.makedirs(lists_folder)
-    return lists_folder / 'list.txt'
-
-
-def get_list():
+def get_list(user):
     output = {}
-    list_path = get_list_path()
-    if not isfile(list_path):
-        write_list({'Example': ['Item 1', 'Item 2']})
-    list_file = open(list_path, 'r', encoding='utf-8')
-    lines = list_file.readlines()
-    for line in lines:
-        if line.startswith('//'):
-            continue
-        parts = line.split(',', 2)
-        if 2 > len(parts):
-            continue
-        key = parts[0]
-        value = parts[1]
-        if key not in output:
-            output[key] = []
-        output[key].append(value.strip())
+    relations: UserGroupRelation = UserGroupRelation.objects.filter(user=user, )
+    for relation in relations:
+        if relation.group.group not in output:
+            output[relation.group.group] = []
+        items: ListItem = ListItem.objects.filter(group=relation.group, )
+        for item in items:
+            output[relation.group.group].append(item.name)
     return output
 
 
-def write_list(list_content):
-    current_time = datetime.datetime.now()
-    list_path = get_list_path()
-    if list_path.exists():
-        os.rename(list_path, list_path.parent / (current_time.strftime('%Y_%m_%d__%H_%M_%S_%f') + '.txt'))
-    list_file = open(list_path, 'w', encoding='utf-8')
-    list_file.write('// This file was created on ' + current_time.strftime('%b/%d/%Y %H:%M:%S.%f') + '\n')
-    for group, items in list_content.items():
-        for item in items:
-            list_file.write(group + ',' + item + '\n')
-    list_file.close()
+def delete_item(user, group, item):
+    groups: ListGroup = ListGroup.objects.filter(group=group, )
+    if not groups:
+        return
+    found_group = None
+    for group in groups:
+        relation: UserGroupRelation = UserGroupRelation.objects.filter(user=user, group=group)
+        if relation:
+            found_group = group
+            break
+    if not found_group:
+        return
+    item: ListItem = ListItem.objects.filter(group=group, name=item, )
+    if not item:
+        return
+    item.delete()
 
 
-def determine_group_name(list_content, group):
-    for item in list_content.keys():
-        if item.lower() == group.lower():
-            return item
-    return group
-
-
-def determine_item_name(list_content, group, name):
-    for item in list_content[group]:
-        if item.lower() == name.lower():
-            return ''
-    return name
+def add_item(user, group, item):
+    groups: ListGroup = ListGroup.objects.filter(group__iexact=group, )
+    found_group = None
+    for group in groups:
+        relation: UserGroupRelation = UserGroupRelation.objects.filter(user=user, group=group).first()
+        if relation:
+            found_group = group
+            break
+    if not found_group:
+        found_group = ListGroup(group=group, )
+        found_group.save()
+        relation = UserGroupRelation(user=user, group=found_group, )
+        relation.save()
+    item_obj: ListItem = ListItem.objects.filter(group=found_group, name__iexact=item, ).first()
+    if not item_obj:
+        item_obj = ListItem(group=found_group, name=item,
+                            time_stamp=datetime.datetime.now(tz=ZoneInfo("America/New_York")), )
+        item_obj.save()

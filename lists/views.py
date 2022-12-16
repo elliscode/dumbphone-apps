@@ -2,16 +2,14 @@ from dumbphoneapps.settings import LOGIN_URL
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from .listmanager import get_list, write_list, determine_group_name, determine_item_name
+from .listmanager import get_list, delete_item, add_item
 
 
 # Create your views here.
 @login_required(login_url=LOGIN_URL)
 def index(request):
     # read list from file
-    # list_path = get_list_path()
-    # print(list_path)
-    list_content = get_list()
+    list_content = get_list(request.user)
     return render(request, 'list-template.html', context={'list': list_content})
 
 
@@ -19,11 +17,7 @@ def index(request):
 def delete(request):
     group = request.GET.get('group', '')
     name = request.GET.get('name', '')
-    list_content = get_list()
-    if group in list_content:
-        if name in list_content[group]:
-            list_content[group].remove(name)
-    write_list(list_content)
+    delete_item(request.user, group, name)
     return JsonResponse({'group': group, 'name': name})
 
 
@@ -32,18 +26,7 @@ def add(request):
     # get arguments
     group = request.GET.get('group', 'Groceries').strip()
     name = request.GET.get('name', '').strip()
-
-    # verify arguments
-    list_content = get_list()
-    group = determine_group_name(list_content, group)
-    if group not in list_content:
-        list_content[group] = []
-    name = determine_item_name(list_content, group, name)
-
-    if not name:
-        return JsonResponse({})
-    list_content[group].append(name)
-    write_list(list_content)
+    add_item(request.user, group, name)
     return JsonResponse({'group': group, 'name': name})
 
 
@@ -73,5 +56,4 @@ def move(request):
     reordered_list = {}
     for item in groups:
         reordered_list[item] = list_content[item]
-    write_list(reordered_list)
     return JsonResponse(output)

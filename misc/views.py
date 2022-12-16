@@ -11,9 +11,9 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 
 import home
-from dumbphoneapps.code_manager import generate_verification_code
+from .code_manager import generate_verification_code
 from .models import OneTimePassCode
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login
 
 
 def hello(request):
@@ -26,6 +26,7 @@ def signup_with_email(request: HttpRequest):
         validate_email(email_address)
     except ValidationError as e:
         return HttpResponse(status=500)
+
     verification_code = generate_verification_code()
 
     user = User.objects.filter(email=email_address).first()
@@ -43,7 +44,7 @@ def signup_with_email(request: HttpRequest):
     otp.save()
 
     send_mail(subject='Your dumbphoneapps.com verification code',
-              message=('Your dumbphoneapps.com verification code is: ' + str(verification_code)),
+              message=(str(verification_code) + '\n\n' + 'Your dumbphoneapps.com verification code is: ' + str(verification_code)),
               from_email='dumbphoneapps@gmail.com',
               recipient_list=[email_address], fail_silently=False, )
 
