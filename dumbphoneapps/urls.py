@@ -24,6 +24,5 @@ urlpatterns = [
     path('grocery-list/', include('lists.urls')),
     path('food-diary/', include('fooddiary.urls')),
     path('weather/', include('weather.urls')),
-    path('admin/', admin.site.urls),
     path('hello-twilio/', views.hello, name='hello_twilio'),
 ]
