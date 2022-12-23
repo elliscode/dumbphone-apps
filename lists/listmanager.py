@@ -10,18 +10,18 @@ from lists.models import ListItem, ListGroup, UserGroupRelation
 
 def get_list(user):
     output = {}
-    relations: UserGroupRelation = UserGroupRelation.objects.filter(user=user, )
+    relations: UserGroupRelation = UserGroupRelation.objects.filter(user=user, ).order_by('index')
     for relation in relations:
-        if relation.group.group not in output:
-            output[relation.group.group] = []
+        if relation.group.name not in output:
+            output[relation.group.name] = {'name': relation.group.name, 'hash': relation.group.hash, 'items': [], }
         items: ListItem = ListItem.objects.filter(group=relation.group, )
         for item in items:
-            output[relation.group.group].append(item.name)
+            output[relation.group.name]['items'].append({'name': item.name, 'hash': item.hash, })
     return output
 
 
 def delete_item(user, group, item):
-    groups: ListGroup = ListGroup.objects.filter(group=group, )
+    groups: ListGroup = ListGroup.objects.filter(name=group, )
     if not groups:
         return
     found_group = None
@@ -39,7 +39,7 @@ def delete_item(user, group, item):
 
 
 def add_item(user, group, item):
-    groups: ListGroup = ListGroup.objects.filter(group__iexact=group, )
+    groups: ListGroup = ListGroup.objects.filter(name__iexact=group, )
     found_group = None
     for group in groups:
         relation: UserGroupRelation = UserGroupRelation.objects.filter(user=user, group=group).first()
@@ -47,7 +47,7 @@ def add_item(user, group, item):
             found_group = group
             break
     if not found_group:
-        found_group = ListGroup(group=group, )
+        found_group = ListGroup(name=group, )
         found_group.save()
         relation = UserGroupRelation(user=user, group=found_group, )
         relation.save()
@@ -56,3 +56,4 @@ def add_item(user, group, item):
         item_obj = ListItem(group=found_group, name=item,
                             time_stamp=datetime.datetime.now(tz=ZoneInfo("America/New_York")), )
         item_obj.save()
+    return {'group': found_group, 'item': item_obj, }

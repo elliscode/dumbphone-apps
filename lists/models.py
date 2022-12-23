@@ -10,9 +10,9 @@ class ListGroup(models.Model):
                             default=uuid.uuid4,
                             verbose_name='Random UUID representing this list entry',
                             editable=False, )
-    group = models.TextField(default="Groceries",
-                             verbose_name='Group the list item belongs to',
-                             editable=True, )
+    name = models.TextField(default="Groceries",
+                            verbose_name='Group the list item belongs to',
+                            editable=True, )
 
 
 class UserGroupRelation(models.Model):
@@ -22,7 +22,11 @@ class UserGroupRelation(models.Model):
                             editable=False, )
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE, )
-    group = models.ForeignKey(ListGroup, on_delete=models.CASCADE, )
+    group = models.ForeignKey(ListGroup,
+                              on_delete=models.CASCADE, )
+    index = models.IntegerField(verbose_name='The order of the group for this particular user',
+                                default=0,
+                                editable=True, )
 
 
 class ListItem(models.Model):

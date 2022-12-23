@@ -25,12 +25,15 @@
     </form>
     <script>
         let listContent = {
-            {% for group, items in list.items %}
-                '{{group}}': [
-                    {% for item in items %}
-                    '{{item}}',
+            {% for key, group in list.items %}
+                '{{key}}': {
+                    'hash': '{{group.hash}}',
+                    'name': '{{group.name}}',
+                    'items': [
+                    {% for item in group.items %}
+                    {'name':'{{item.name}}','hash':'{{item.hash}}'},
                     {% endfor %}
-                ],
+                ]},
             {% endfor %}
         };
 
@@ -98,8 +101,8 @@
         function handleAddList(event) {
             let xmlHttp = event.target;
             let result = JSON.parse(xmlHttp.responseText);
-            if(result.hasOwnProperty('group') && result.hasOwnProperty('name')) {
-                addItem(result.group, result.name);
+            if(result.hasOwnProperty('group') && result.hasOwnProperty('item')) {
+                addItem(result.group, result.item);
             }
         }
         function deleteFromList(event) {
@@ -120,30 +123,34 @@
             let result = JSON.parse(xmlHttp.responseText);
             console.log(JSON.stringify(result));
         }
+        function openShareWindow(event) {
+            console.log(event);
+        }
         function moveUp(event) {
             const caller = event.target;
-            let groupName = caller.parentElement.firstElementChild.textContent;
-
-            otherGroup = caller.parentElement.parentElement.previousElementSibling;
+            let groupId = caller.parentElement.parentElement.id;
+            let otherGroup = caller.parentElement.parentElement.previousElementSibling;
             if(otherGroup) {
-                swapGroups(groupName, otherGroup.firstElementChild.firstElementChild.textContent);
+                swapGroups(groupId, otherGroup.id);
+                runOrderCall();
             }
-
-            let url = '/grocery-list/' + 'move' + '?direction=' + 'up' + '&group=' + encodeURIComponent(groupName);
-            let xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", url, true); // false for synchronous request
-            xmlHttp.onload = handleMoveList;
-            xmlHttp.send(null);
         }
         function moveDown(event) {
             const caller = event.target;
-            let groupName = caller.parentElement.firstElementChild.textContent;
-            otherGroup = caller.parentElement.parentElement.nextElementSibling;
+            let groupId = caller.parentElement.parentElement.id;
+            let otherGroup = caller.parentElement.parentElement.nextElementSibling;
             if(otherGroup) {
-                swapGroups(otherGroup.firstElementChild.firstElementChild.textContent, groupName);
+                swapGroups(otherGroup.id, groupId);
+                runOrderCall();
             }
+        }
 
-            let url = '/grocery-list/' + 'move' + '?direction=' + 'down' + '&group=' + encodeURIComponent(groupName);
+        function runOrderCall() {
+            let url = '/grocery-list/move?';
+            const groups = document.querySelectorAll('ul#main-list>li')
+            for(let group of groups) {
+                url = url + 'group=' + group.id + '&';
+            }
             let xmlHttp = new XMLHttpRequest();
             xmlHttp.open("GET", url, true); // false for synchronous request
             xmlHttp.onload = handleMoveList;
@@ -156,12 +163,9 @@
             console.log(JSON.stringify(result));
         }
 
-        function swapGroups(groupOne, groupTwo) {
+        function swapGroups(groupOneId, groupTwoId) {
             let mainList = document.getElementById('main-list');
-
-            const groupOneId = groupOne.hashCode();
             let groupOneLi = document.getElementById(groupOneId);
-            const groupTwoId = groupTwo.hashCode();
             let groupTwoLi = document.getElementById(groupTwoId);
 
             mainList.insertBefore(groupOneLi, groupTwoLi);
@@ -170,7 +174,7 @@
         function addItem(group, item) {
             let mainList = document.getElementById('main-list');
 
-            const groupId = group.hashCode();
+            const groupId = group.hash;
             let groupLi = document.getElementById(groupId);
             if(!groupLi) {
                 groupLi = document.createElement('li');
@@ -186,14 +190,14 @@
             let itemUl = groupLi.getElementsByClassName('ui-list')[0];
 
 
-            const itemId = generateItemId(group, item);
+            const itemId = item.hash;
             let itemLi = document.getElementById(itemId);
             if(!itemLi) {
                 let itemLi = document.createElement('li');
                 itemLi.id = itemId;
                 let nameDiv = document.createElement('div');
                 nameDiv.classList.add('name');
-                nameDiv.innerHTML = item;
+                nameDiv.innerHTML = item.name;
                 itemLi.appendChild(nameDiv);
                 let deleteButton = document.createElement('button');
                 deleteButton.onclick = deleteFromList;
@@ -211,11 +215,15 @@
             addToGroupDiv.classList.add('add-to-group');
             let nameDiv = document.createElement('div');
             nameDiv.classList.add('name');
-            nameDiv.textContent = group;
+            nameDiv.textContent = group.name;
             addToGroupDiv.appendChild(nameDiv);
             let fillDiv = document.createElement('div');
             fillDiv.classList.add('fill');
             addToGroupDiv.appendChild(fillDiv);
+            let shareButton = document.createElement('button');
+            shareButton.innerHTML = '&#10282;';
+            shareButton.onclick = openShareWindow;
+            addToGroupDiv.appendChild(shareButton);
             let upButton = document.createElement('button');
             upButton.classList.add('up');
             upButton.onclick = moveUp;
@@ -247,8 +255,8 @@
         {
             let groups = Object.keys(listContent);
             for(let i = 0; i < groups.length; i++) {
-                let group = groups[i];
-                let items = listContent[group];
+                let group = listContent[groups[i]];
+                let items = listContent[groups[i]].items;
                 for(let j = 0; j < items.length; j++) {
                     let item = items[j];
                     addItem(group, item);
