@@ -13,8 +13,15 @@
 <body>
     <div><b><a href="..">Home</a></b> &gt; <b>grocery-list</b></div>
     <div id="input">
-        <input id="item-text-box" type="text">
+        <input onfocus="hideShareDiv(event)" id="item-text-box" type="text">
         <button id="add" onclick="addToList(event)">Add</button>
+    </div>
+
+    <div id="share">
+        <p>Share &ldquo;<span id="list-name">this</span>&rdquo; list with:</p>
+        <label for="user-to-share-with">Email: </label><input id="user-to-share-with"/>
+        <button id="share-button" onclick="sendShareRequest(event)">Share</button>
+        <button onclick="hideShareDiv(event)" class="delete">&times;</button>
     </div>
 
     <ul id="main-list" class="ui-list top-list">
@@ -37,18 +44,6 @@
             {% endfor %}
         };
 
-        String.prototype.hashCode = function() {
-            var hash = 0,
-            i, chr;
-            if (this.length === 0) return hash;
-            for (i = 0; i < this.length; i++) {
-                chr = this.charCodeAt(i);
-                hash = ((hash << 5) - hash) + chr;
-                hash |= 0; // Convert to 32bit integer
-            }
-            return hash;
-        }
-
         document.addEventListener("keydown", function (e) {
             if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
                 e.preventDefault();
@@ -59,6 +54,13 @@
                 event.preventDefault();
                 if (event.keyCode === 13) {
                     document.getElementById("add").click();
+                }
+            });
+        document.getElementById("user-to-share-with")
+            .addEventListener("keyup", function (event) {
+                event.preventDefault();
+                if (event.keyCode === 13) {
+                    document.getElementById("share-button").click();
                 }
             });
         let gtbs = document.getElementsByClassName("group-text-box")
@@ -85,6 +87,7 @@
             }
         }
         function addToList(event) {
+            hideShareDiv(event);
             const caller = event.target;
             const input = caller.parentElement.getElementsByTagName("input")[0];
             let groupName = undefined;
@@ -106,6 +109,7 @@
             }
         }
         function deleteFromList(event) {
+            hideShareDiv(event);
             const groupName = event.target.parentElement.parentElement.parentElement.children[0].children[0].textContent;
             const textItem = event.target.parentElement;
             const text = textItem.children[0].textContent;
@@ -124,9 +128,31 @@
             console.log(JSON.stringify(result));
         }
         function openShareWindow(event) {
+            let share = document.getElementById('share');
+            let listName = document.getElementById('list-name');
+            listName.innerText = event.target.parentElement.firstElementChild.innerText;
+            listName.setAttribute('hash', event.target.parentElement.parentElement.id);
+            share.style.display = 'block';
+        }
+        function hideShareDiv(event) {
+            let share = document.getElementById('share');
+            share.style.display = 'none';
+        }
+        function sendShareRequest(event) {
             console.log(event);
+            let userToShareWithBox = document.getElementById('user-to-share-with');
+            let user = userToShareWithBox.value;
+            let listName = document.getElementById('list-name');
+            let group_hash = listName.getAttribute('hash');
+
+            let url = '/grocery-list/share?user=' + encodeURIComponent(user) + '&group_hash=' + encodeURIComponent(group_hash);
+            let xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", url, true); // false for synchronous request
+            xmlHttp.onload = handleDeleteList;
+            xmlHttp.send(null);
         }
         function moveUp(event) {
+            hideShareDiv(event);
             const caller = event.target;
             let groupId = caller.parentElement.parentElement.id;
             let otherGroup = caller.parentElement.parentElement.previousElementSibling;
@@ -136,6 +162,7 @@
             }
         }
         function moveDown(event) {
+            hideShareDiv(event);
             const caller = event.target;
             let groupId = caller.parentElement.parentElement.id;
             let otherGroup = caller.parentElement.parentElement.nextElementSibling;
@@ -210,8 +237,6 @@
                 itemLi.appendChild(deleteButton);
                 itemUl.appendChild(itemLi);
             }
-
-
         }
 
         function createAddToDiv(group) {

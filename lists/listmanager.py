@@ -14,7 +14,7 @@ def get_list(user):
     for relation in relations:
         if relation.group.name not in output:
             output[relation.group.name] = {'name': relation.group.name, 'hash': relation.group.hash, 'items': [], }
-        items: ListItem = ListItem.objects.filter(group=relation.group, )
+        items: ListItem = ListItem.objects.filter(group=relation.group, ).order_by('name')
         for item in items:
             output[relation.group.name]['items'].append({'name': item.name, 'hash': item.hash, })
     return output

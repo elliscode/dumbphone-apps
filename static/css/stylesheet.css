@@ -77,21 +77,27 @@ div#input>input {
 .fill {
     flex-grow: 1;
 }
-/*
-@media screen and (min-width:300px) {
-    */
-    .add-to-group {
-        display:flex;
-    }
-    /*
+.add-to-group {
+    display:flex;
 }
-@media screen and (max-width:300px) {
-    .add-to-group {
-        display:block;
-    }
-}
-*/
 
 table, th, td {
     border: 1px solid;
+}
+
+#share {
+    display:none;
+    position:fixed;
+    bottom:0px;
+    left:0px;
+    box-sizing:border-box;
+    width: 100%;
+    background-color: #ccc;
+    z-index: 12;
+    padding:20px;
+    border-radius: 20px 20px 0px 0px;
+}
+
+#share p {
+    margin-top:0px;
 }
