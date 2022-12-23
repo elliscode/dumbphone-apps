@@ -146,15 +146,19 @@
         }
 
         function runOrderCall() {
-            let url = '/grocery-list/move?';
+            let csrftoken = '{{ csrf_token }}';
+            let url = '/grocery-list/move';
             const groups = document.querySelectorAll('ul#main-list>li')
+            let group_hashes = [];
+            let formData = new FormData();
             for(let group of groups) {
-                url = url + 'group=' + group.id + '&';
+                formData.append('group_hashes', group.id);
             }
             let xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", url, true); // false for synchronous request
+            xmlHttp.open("POST", url, true); // false for synchronous request
+            xmlHttp.setRequestHeader('X-CSRFToken', csrftoken);
             xmlHttp.onload = handleMoveList;
-            xmlHttp.send(null);
+            xmlHttp.send(formData);
         }
 
         function handleMoveList(event) {

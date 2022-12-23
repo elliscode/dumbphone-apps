@@ -34,7 +34,7 @@ def add(request):
 
 @login_required(login_url=LOGIN_URL)
 def move(request):
-    group_hashes = request.GET.getlist('group', [])
+    group_hashes = request.POST.getlist('group_hashes', [])
     i = 0
     for group_hash in group_hashes:
         groups: ListGroup = ListGroup.objects.filter(hash=group_hash, )
