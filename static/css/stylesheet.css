@@ -101,3 +101,14 @@ table, th, td {
 #share p {
     margin-top:0px;
 }
+
+.error {
+    display:inline-block;
+    padding:20px;
+    border: 3px red solid;
+    background-color:#ffcccc;
+}
+
+.error p {
+    margin:0px;
+}

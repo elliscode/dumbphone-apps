@@ -20,11 +20,8 @@ import misc
 
 urlpatterns = [
     path('', include('home.urls')),
-    path("accounts/", include("django.contrib.auth.urls")),
     path('grocery-list/', include('lists.urls')),
     path('food-diary/', include('fooddiary.urls')),
     path('weather/', include('weather.urls')),
     path('accounts/', include('misc.urls')),
-    path('hello-twilio', misc.views.hello, name='hello_twilio'),
-    path('admin/', admin.site.urls),
 ]

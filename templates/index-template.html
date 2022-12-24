@@ -17,7 +17,7 @@
         <li><a href="/weather">Weather</a></li>
         <li><a href="/food-diary">Food Diary</a></li>
     </ul>
-    <form class="logout" action="/accounts/logout/?next=/" method="post">
+    <form class="logout" action="/accounts/logout" method="post">
         {% csrf_token %}
         <button type="submit">Log out</button>
     </form>

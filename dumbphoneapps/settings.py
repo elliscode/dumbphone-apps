@@ -24,9 +24,6 @@ home = Path.home()
 if not os.path.exists(home / USER_FOLDER_NAME):
     os.makedirs(home / USER_FOLDER_NAME)
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
-
 # We will check if there exists a secret.
 #
 # If not, or if it is older than 30 days,
@@ -78,7 +75,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
-LOGIN_URL = '/accounts/login/'
+LOGIN_URL = '/accounts/login'
 
 ROOT_URLCONF = 'dumbphoneapps.urls'
 
@@ -113,6 +110,7 @@ if not os.path.isfile(email_path):
     email_file = open(email_path, 'w')
     email_file.write("EMAIL_HOST_USER=" + "\n")
     email_file.write("EMAIL_HOST_PASSWORD=" + "\n")
+    email_file.write("DEFAULT_FROM_SMS=" + "\n")
     email_file.close()
 email_file = open(email_path, 'r')
 for line in email_file.readlines():
@@ -124,6 +122,31 @@ for line in email_file.readlines():
         value = line[len("EMAIL_HOST_PASSWORD="):].strip()
         if value:
             EMAIL_HOST_PASSWORD = value
+
+# sms
+SMS_BACKEND = 'sms.backends.twilio.SmsBackend'
+twilio_path = home / USER_FOLDER_NAME / 'twilio-credentials.txt'
+if not os.path.isfile(twilio_path):
+    twilio_file = open(twilio_path, 'w')
+    twilio_file.write("TWILIO_ACCOUNT_SID=" + "\n")
+    twilio_file.write("TWILIO_AUTH_TOKEN=" + "\n")
+    twilio_file.write("DEFAULT_FROM_SMS=" + "\n")
+    twilio_file.close()
+twilio_file = open(twilio_path, 'r')
+for line in twilio_file.readlines():
+    if line.startswith("TWILIO_ACCOUNT_SID="):
+        value = line[len("TWILIO_ACCOUNT_SID="):].strip()
+        if value:
+            TWILIO_ACCOUNT_SID = value
+    elif line.startswith("TWILIO_AUTH_TOKEN="):
+        value = line[len("TWILIO_AUTH_TOKEN="):].strip()
+        if value:
+            TWILIO_AUTH_TOKEN = value
+    elif line.startswith("DEFAULT_FROM_SMS="):
+        value = line[len("DEFAULT_FROM_SMS="):].strip()
+        if value:
+            DEFAULT_FROM_SMS = value
+
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
@@ -171,7 +194,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Session expiration stuff
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_AGE = 1 * 60 * 60 * 24 * 7  # one week
+SESSION_COOKIE_AGE = 1 * 60 * 60 * 24 * 120  # four months
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
