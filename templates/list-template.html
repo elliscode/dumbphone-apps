@@ -2,35 +2,46 @@
 <html>
 
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Shopping List</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}"/>
     {% load static %}
-    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}" />
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}"/>
 </head>
 
 <body>
-    <div><b><a href="..">Home</a></b> &gt; <b>grocery-list</b></div>
-    <div id="input">
-        <input onfocus="hideShareDiv(event)" id="item-text-box" type="text">
-        <button id="add" onclick="addToList(event)">Add</button>
-    </div>
+<div><b><a href="..">Home</a></b> &gt; <b>grocery-list</b></div>
+<div id="input">
+    <input onfocus="hidePopups(event)" id="item-text-box" type="text">
+    <button id="add" onclick="addToList(event)">Add</button>
+</div>
 
-    <div id="share">
-        <p>Share &ldquo;<span id="list-name">this</span>&rdquo; list with:</p>
-        <label for="user-to-share-with">Email: </label><input id="user-to-share-with"/>
-        <button id="share-button" onclick="sendShareRequest(event)">Share</button>
-        <button onclick="hideShareDiv(event)" class="delete">&times;</button>
-    </div>
+<div style="display:none;" id="share">
+    <p>Share &ldquo;<span id="list-name">this</span>&rdquo; list with:</p>
+    <label for="user-to-share-with">Phone Number: </label><input id="user-to-share-with"/>
+    <button id="share-button" onclick="sendShareRequest(event)">Share</button>
+    <button onclick="hidePopups(event)" class="delete">&times;</button>
+</div>
 
-    <ul id="main-list" class="ui-list top-list">
-    </ul>
-    <form class="logout" action="/accounts/logout" method="post">
-        {% csrf_token %}
-        <button type="submit">Log out</button>
-    </form>
-    <script>
+<div id="info" {% if not added and not removed %} style="display:none;" {% endif %}>
+    <p id="info-p">
+        {% if added %}
+        {{added}}
+        {% elif removed %}
+        {{removed}}
+        {% endif %}
+    </p>
+    <button onclick="hidePopups(event)" class="delete">&times;</button>
+</div>
+
+<ul id="main-list" class="ui-list top-list">
+</ul>
+<form class="logout" action="/accounts/logout" method="post">
+    {% csrf_token %}
+    <button type="submit">Log out</button>
+</form>
+<script>
         let listContent = {
             {% for key, group in list.items %}
                 '{{key}}': {
@@ -87,7 +98,7 @@
             }
         }
         function addToList(event) {
-            hideShareDiv(event);
+            hidePopups(event);
             const caller = event.target;
             const input = caller.parentElement.getElementsByTagName("input")[0];
             let groupName = undefined;
@@ -109,7 +120,7 @@
             }
         }
         function deleteFromList(event) {
-            hideShareDiv(event);
+            hidePopups(event);
             const groupName = event.target.parentElement.parentElement.parentElement.children[0].children[0].textContent;
             const textItem = event.target.parentElement;
             const text = textItem.children[0].textContent;
@@ -134,9 +145,11 @@
             listName.setAttribute('hash', event.target.parentElement.parentElement.id);
             share.style.display = 'block';
         }
-        function hideShareDiv(event) {
+        function hidePopups(event) {
             let share = document.getElementById('share');
             share.style.display = 'none';
+            let info = document.getElementById('info');
+            info.style.display = 'none';
         }
         function sendShareRequest(event) {
             console.log(event);
@@ -145,14 +158,14 @@
             let listName = document.getElementById('list-name');
             let group_hash = listName.getAttribute('hash');
 
-            let url = '/grocery-list/share?user=' + encodeURIComponent(user) + '&group_hash=' + encodeURIComponent(group_hash);
+            let url = '/grocery-list/share?tel=' + encodeURIComponent(user) + '&group_hash=' + encodeURIComponent(group_hash);
             let xmlHttp = new XMLHttpRequest();
             xmlHttp.open("GET", url, true); // false for synchronous request
             xmlHttp.onload = handleDeleteList;
             xmlHttp.send(null);
         }
         function moveUp(event) {
-            hideShareDiv(event);
+            hidePopups(event);
             const caller = event.target;
             let groupId = caller.parentElement.parentElement.id;
             let otherGroup = caller.parentElement.parentElement.previousElementSibling;
@@ -162,7 +175,7 @@
             }
         }
         function moveDown(event) {
-            hideShareDiv(event);
+            hidePopups(event);
             const caller = event.target;
             let groupId = caller.parentElement.parentElement.id;
             let otherGroup = caller.parentElement.parentElement.nextElementSibling;
@@ -184,14 +197,7 @@
             let xmlHttp = new XMLHttpRequest();
             xmlHttp.open("POST", url, true); // false for synchronous request
             xmlHttp.setRequestHeader('X-CSRFToken', csrftoken);
-            xmlHttp.onload = handleMoveList;
             xmlHttp.send(formData);
-        }
-
-        function handleMoveList(event) {
-            let xmlHttp = event.target;
-            let result = JSON.parse(xmlHttp.responseText);
-            console.log(JSON.stringify(result));
         }
 
         function swapGroups(groupOneId, groupTwoId) {
@@ -292,7 +298,10 @@
                 }
             }
         }
-    </script>
+
+
+
+</script>
 </body>
 
 </html>

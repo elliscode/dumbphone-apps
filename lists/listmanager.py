@@ -24,30 +24,25 @@ def delete_item(user, group, item):
     groups: ListGroup = ListGroup.objects.filter(name=group, )
     if not groups:
         return
-    found_group = None
+
     for group in groups:
         relation: UserGroupRelation = UserGroupRelation.objects.filter(user=user, group=group)
         if relation:
-            found_group = group
-            break
-    if not found_group:
-        return
-    item: ListItem = ListItem.objects.filter(group=group, name=item, )
-    if not item:
-        return
-    item.delete()
+            item_record: ListItem = ListItem.objects.filter(group=group, name=item, )
+            if not item_record:
+                continue
+            item_record.delete()
 
 
 def add_item(user, group, item):
     groups: ListGroup = ListGroup.objects.filter(name__iexact=group, )
-    found_group = None
     for group in groups:
         relation: UserGroupRelation = UserGroupRelation.objects.filter(user=user, group=group).first()
         if relation:
             found_group = group
             break
     if not found_group:
-        found_group = ListGroup(name=group, )
+        found_group = ListGroup(name=group.name, )
         found_group.save()
         relation = UserGroupRelation(user=user, group=found_group, )
         relation.save()

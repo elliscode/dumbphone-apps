@@ -86,7 +86,6 @@ table, th, td {
 }
 
 #share {
-    display:none;
     position:fixed;
     bottom:0px;
     left:0px;
@@ -100,6 +99,22 @@ table, th, td {
 
 #share p {
     margin-top:0px;
+}
+
+#info {
+    position:fixed;
+    bottom:0px;
+    left:0px;
+    box-sizing:border-box;
+    width: 100%;
+    background-color: #ccc;
+    z-index: 12;
+    padding:20px;
+    border-radius: 20px 20px 0px 0px;
+}
+
+#info p {
+    margin:0px;
 }
 
 .error {

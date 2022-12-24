@@ -1,4 +1,5 @@
 import datetime
+import logging
 import secrets
 import string
 from zoneinfo import ZoneInfo
@@ -19,6 +20,14 @@ from .models import OneTimePassCode
 from sms import send_sms
 
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)8.8s] %(message)s",
+    handlers=[logging.StreamHandler(), ],
+)
+logger = logging.getLogger(__name__)
+
+
 def index(request: HttpRequest):
     error = request.session.get('error', '')
     request.session['error'] = None
@@ -32,13 +41,6 @@ def index(request: HttpRequest):
 
 
 def signup_with_email(request: HttpRequest):
-    # email_address = request.POST.get('email', '')
-    # try:
-    #     validate_email(email_address)
-    # except ValidationError as e:
-    #     request.session['error'] = 'Invalid email {email}'.format(email=email_address)
-    #     return redirect('/accounts/login')
-
     phone_string = request.POST.get('tel', '')
     try:
         phone = phonenumbers.parse(phone_string, 'US')
@@ -67,27 +69,15 @@ def signup_with_email(request: HttpRequest):
 
     message = str(verification_code) + ' is your dumbphoneapps.com verification code'
 
-    # send_mail(subject='Your dumbphoneapps.com verification code',
-    #           message=message,
-    #           from_email='dumbphoneapps@gmail.com',
-    #           recipient_list=[email_address], fail_silently=False, )
-
+    logger.info(message)
     # send_sms(body=message, recipients=['+1' + str(phone.national_number)], fail_silently=False)
 
     request.session['otp'] = True
-    # request.session['email'] = email_address
     request.session['tel'] = phone.national_number
     return redirect('/accounts/login')
 
 
 def login_with_otp(request: HttpRequest):
-    # email_address = request.POST.get('email', '')
-    # try:
-    #     validate_email(email_address)
-    # except ValidationError as e:
-    #     request.session['error'] = 'Invalid email {email}'.format(email=email_address)
-    #     return redirect('/accounts/login')
-
     phone_string = request.POST.get('tel', '')
     try:
         phone = phonenumbers.parse(phone_string, 'US')
@@ -105,7 +95,6 @@ def login_with_otp(request: HttpRequest):
         return redirect(home.views.index)
 
     request.session['otp'] = True
-    # request.session['email'] = email_address
     request.session['tel'] = phone.national_number
     return redirect('/accounts/login')
 

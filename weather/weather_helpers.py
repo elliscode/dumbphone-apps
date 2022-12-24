@@ -5,7 +5,14 @@ from pathlib import Path
 import logging
 from dumbphoneapps.settings import USER_FOLDER_NAME
 
-logger = logging.getLogger("mylogger")
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)8.8s] %(message)s",
+    handlers=[logging.StreamHandler(), ],
+)
+logger = logging.getLogger(__name__)
+
 SECONDS_LIMIT = 60
 
 

@@ -1,21 +1,38 @@
+import logging
+
+import phonenumbers
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
+from phonenumbers import NumberParseException
+from sms import send_sms
 
 from dumbphoneapps.settings import LOGIN_URL
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
+
+from dumbphoneapps.utils import parse_phone_number
 from .listmanager import get_list, delete_item, add_item
-from .models import ListGroup, UserGroupRelation
+from .models import ListGroup, UserGroupRelation, ListItem
 from urllib.parse import quote
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)8.8s] %(message)s",
+    handlers=[logging.StreamHandler(), ],
+)
+logger = logging.getLogger(__name__)
 
 
 # Create your views here.
 @login_required(login_url=LOGIN_URL)
 def index(request):
-    # read list from file
+    added = request.session.get('added', '')
+    request.session['added'] = None
+    removed = request.session.get('removed', '')
+    request.session['removed'] = None
     list_content = get_list(request.user)
-    return render(request, 'list-template.html', context={'list': list_content})
+    return render(request, 'list-template.html', context={'list': list_content, 'added': added, 'removed': removed, })
 
 
 @login_required(login_url=LOGIN_URL)
@@ -56,8 +73,21 @@ def add_group(request):
     group_hash = request.GET.get('hash')
     groups: ListGroup = ListGroup.objects.filter(hash=group_hash, )
     for group in groups:
+        # now check and see if you have a group assigned to you with
+        # that name already, and if you do, just add everything from
+        # that group to your new group
+        same_name_groups = ListGroup.objects.filter(name__iexact=group.name,)
+        for same_name_group in same_name_groups:
+            other_group_relation = UserGroupRelation.objects.filter(user=request.user, group=same_name_group, )
+            if other_group_relation:
+                items_to_switch = ListItem.objects.filter(group=same_name_group,)
+                for item in items_to_switch:
+                    item.group = group
+                    item.save()
+                same_name_group.delete()
         ugr = UserGroupRelation(user=request.user, group=group, )
         ugr.save()
+        request.session['added'] = 'Successfully added "{group_name}" to your lists'.format(group_name=group.name, )
     return redirect('/grocery-list')
 
 
@@ -69,28 +99,43 @@ def unadd_group(request):
         relations: UserGroupRelation = UserGroupRelation.objects.filter(user=request.user, group=group)
         for relation in relations:
             relation.delete()
+            request.session['removed'] = 'Successfully removed "{group_name}" from your lists'.format(
+                group_name=group.name, )
     return redirect('/grocery-list')
 
 
 @login_required(login_url=LOGIN_URL)
 def share(request):
-    current_user_name = request.user.email
-    other_user_name = request.GET.get('user', None)
     group_hash = request.GET.get('group_hash', None)
     group = None
     groups = ListGroup.objects.filter(hash=group_hash)
     for found_group in groups:
         group = found_group
     if group is None:
-        return JsonResponse({})
-    other_users = User.objects.filter(email=other_user_name)
+        return JsonResponse({'error': 'invalid group {hash}'.format(hash=group_hash), })
+
+    current_phone_number = parse_phone_number(request.user.username)
+    other_phone_number = parse_phone_number(request.GET.get('tel', None))
+    if current_phone_number is None:
+        error_message = 'Invalid phone {phone}'.format(phone=request.user.username)
+        return JsonResponse({'message': error_message, })
+    if other_phone_number is None:
+        error_message = 'Invalid phone {phone}'.format(phone=request.GET.get('tel', None))
+        return JsonResponse({'message': error_message, })
+
+    other_users = User.objects.filter(username=other_phone_number.national_number)
     for other_user in other_users:
-        send_mail(subject=(current_user_name + ' wants to share the ' + group.name + ' list with you!'),
-                  message=(current_user_name + ' wants to share the ' + group.name +
-                           ' list with you, if you want to accept, please click this link' + '\n' +
-                           'https://dumbphoneapps.com/grocery-list/add_group?hash=' + str(group.hash) + '\n\n' +
-                           'If you wish to remove this group in the future, please click this link:' + '\n' +
-                           'https://dumbphoneapps.com/grocery-list/unadd_group?hash=' + str(group.hash)),
-                  from_email='dumbphoneapps@gmail.com',
-                  recipient_list=[other_user.email], fail_silently=False, )
-    return JsonResponse({})
+        message = '{current_user} wants to share "{group_name}" the list with you, ' \
+                  'if you want to accept, please click this link' '\n' \
+                  'https://dumbphoneapps.com/grocery-list/add_group?hash={group_hash}' '\n\n' \
+                  'If you wish to remove this group in the future, please click this link:' '\n' \
+                  'https://dumbphoneapps.com/grocery-list/unadd_group?hash={group_hash}'
+        message = message.format(current_user=current_phone_number.national_number, group_hash=group.hash,
+                                 group_name=group.name, )
+        logger.info(message)
+        # send_sms(body=message, recipients=['+1' + str(other_phone_number.national_number)], fail_silently=False)
+
+    success_message = 'Successfully invited {user} to the {group} list'.format(
+        user=other_phone_number.national_number,
+        group=group.name)
+    return JsonResponse({'message': success_message})

@@ -43,7 +43,7 @@ secret_file = open(secret_path, 'r')
 SECRET_KEY = secret_file.readline()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', 'dumbphoneapps.com']
 
@@ -110,7 +110,6 @@ if not os.path.isfile(email_path):
     email_file = open(email_path, 'w')
     email_file.write("EMAIL_HOST_USER=" + "\n")
     email_file.write("EMAIL_HOST_PASSWORD=" + "\n")
-    email_file.write("DEFAULT_FROM_SMS=" + "\n")
     email_file.close()
 email_file = open(email_path, 'r')
 for line in email_file.readlines():
