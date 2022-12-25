@@ -161,8 +161,24 @@
             let url = '/grocery-list/share?tel=' + encodeURIComponent(user) + '&group_hash=' + encodeURIComponent(group_hash);
             let xmlHttp = new XMLHttpRequest();
             xmlHttp.open("GET", url, true); // false for synchronous request
-            xmlHttp.onload = handleDeleteList;
+            xmlHttp.onload = handleShareResponse;
             xmlHttp.send(null);
+        }
+        function openInfoWindow(text) {
+            let info = document.getElementById('info');
+            info.style.display = 'block';
+            let infoP = document.getElementById('info-p');
+            infoP.innerText = text;
+        }
+        function handleShareResponse(event) {
+            hidePopups();
+            let xmlHttp = event.target;
+            let result = JSON.parse(xmlHttp.responseText);
+            if(result.hasOwnProperty('message')) {
+                openInfoWindow(result.message);
+            } else {
+                openInfoWindow("Something went wrong...");
+            }
         }
         function moveUp(event) {
             hidePopups(event);

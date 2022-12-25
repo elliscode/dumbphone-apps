@@ -114,7 +114,7 @@ def share(request):
     for found_group in groups:
         group = found_group
     if group is None:
-        return JsonResponse({'error': 'invalid group {hash}'.format(hash=group_hash), })
+        return JsonResponse({'message': 'invalid group {hash}'.format(hash=group_hash), })
 
     current_phone_number = parse_phone_number(request.user.username)
     other_phone_number = parse_phone_number(request.GET.get('tel', None))
@@ -125,17 +125,24 @@ def share(request):
         error_message = 'Invalid phone {phone}'.format(phone=request.GET.get('tel', None))
         return JsonResponse({'message': error_message, })
 
+    found_other_user = None
     other_users = User.objects.filter(username=other_phone_number.national_number)
     for other_user in other_users:
-        message = '{current_user} wants to share "{group_name}" the list with you, ' \
-                  'if you want to accept, please click this link' '\n' \
-                  'https://dumbphoneapps.com/grocery-list/add_group?hash={group_hash}' '\n\n' \
-                  'If you wish to remove this group in the future, please click this link:' '\n' \
-                  'https://dumbphoneapps.com/grocery-list/unadd_group?hash={group_hash}'
-        message = message.format(current_user=current_phone_number.national_number, group_hash=group.hash,
-                                 group_name=group.name, )
-        logger.info(message)
-        send_sms(body=message, recipients=['+1' + str(other_phone_number.national_number)], fail_silently=False)
+        found_other_user = other_user
+
+    if not found_other_user:
+        error_message = 'User {phone} not found'.format(phone=request.GET.get('tel', None))
+        return JsonResponse({'message': error_message, })
+
+    message = '{current_user} wants to share "{group_name}" the list with you, ' \
+              'if you want to accept, please click this link' '\n' \
+              'https://dumbphoneapps.com/grocery-list/add_group?hash={group_hash}' '\n\n' \
+              'If you wish to remove this group in the future, please click this link:' '\n' \
+              'https://dumbphoneapps.com/grocery-list/unadd_group?hash={group_hash}'
+    message = message.format(current_user=current_phone_number.national_number, group_hash=group.hash,
+                             group_name=group.name, )
+    logger.info(message)
+    send_sms(body=message, recipients=['+1' + str(other_phone_number.national_number)], fail_silently=False)
 
     success_message = 'Successfully invited {user} to the {group} list'.format(
         user=other_phone_number.national_number,
