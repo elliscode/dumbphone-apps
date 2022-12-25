@@ -145,6 +145,7 @@ for line in twilio_file.readlines():
         if value:
             DEFAULT_FROM_SMS = value
 
+OTP_CODE_TIMEOUT = datetime.timedelta(minutes=5)
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases

@@ -32,6 +32,11 @@
     </p>
     <button type="submit">Log In</button>
 </form>
+{% if error %}
+<div class="error">
+    <p>{{ error }}</p>
+</div>
+{% endif %}
 {% else %}
 <form method="post" action="/accounts/login/signup">
     {% csrf_token %}

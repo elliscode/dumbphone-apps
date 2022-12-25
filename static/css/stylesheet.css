@@ -122,6 +122,7 @@ table, th, td {
     padding:20px;
     border: 3px red solid;
     background-color:#ffcccc;
+    margin-top:1em;
 }
 
 .error p {

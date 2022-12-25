@@ -15,10 +15,10 @@ from phonenumbers import PhoneNumber, NumberParseException
 from django.contrib.auth import login, logout as django_logout
 
 import home
+from dumbphoneapps.settings import OTP_CODE_TIMEOUT
 from .code_manager import generate_verification_code
-from .models import OneTimePassCode
+from .models import OneTimePassCode, PreviousLoginFailure
 from sms import send_sms
-
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -40,24 +40,8 @@ def index(request: HttpRequest):
     return render(request, 'login.html', context={'error': error, 'success': success, 'tel': tel, })
 
 
-def signup_with_email(request: HttpRequest):
-    phone_string = request.POST.get('tel', '')
-    try:
-        phone = phonenumbers.parse(phone_string, 'US')
-        if not phonenumbers.is_possible_number(phone):
-            raise Exception('invalid phone number')
-    except NumberParseException as e:
-        request.session['error'] = 'Invalid phone {phone}'.format(phone=phone_string)
-        return redirect('/accounts/login')
-
-    phone_string = str(phone.national_number)
-
+def send_otp(user):
     verification_code = generate_verification_code()
-
-    user = User.objects.filter(username=phone_string).first()
-    if not user:
-        user = User.objects.create_user(username=phone_string,
-                                        password=User.objects.make_random_password(length=26))
 
     otp = OneTimePassCode.objects.filter(user=user, ).first()
     if not otp:
@@ -71,6 +55,26 @@ def signup_with_email(request: HttpRequest):
 
     logger.info(message)
     send_sms(body=message, recipients=['+1' + str(phone.national_number)], fail_silently=False)
+
+
+def signup_with_email(request: HttpRequest):
+    phone_string = request.POST.get('tel', '')
+    try:
+        phone = phonenumbers.parse(phone_string, 'US')
+        if not phonenumbers.is_possible_number(phone):
+            raise Exception('invalid phone number')
+    except NumberParseException as e:
+        request.session['error'] = 'Invalid phone {phone}'.format(phone=phone_string)
+        return redirect('/accounts/login')
+
+    phone_string = str(phone.national_number)
+
+    user = User.objects.filter(username=phone_string).first()
+    if not user:
+        user = User.objects.create_user(username=phone_string,
+                                        password=User.objects.make_random_password(length=26))
+
+    send_otp(user)
 
     request.session['otp'] = True
     request.session['tel'] = phone.national_number
@@ -87,15 +91,41 @@ def login_with_otp(request: HttpRequest):
         request.session['error'] = 'Invalid phone {phone}'.format(phone=phone_string)
         return redirect('/accounts/login')
 
-    otp = request.POST.get('otp', '')
     user = User.objects.filter(username=phone_string).first()
-    otp_obj = OneTimePassCode.objects.filter(user=user, otp=otp).first()
+    current_time = datetime.datetime.now(tz=ZoneInfo("America/New_York"))
+    previous_failure = PreviousLoginFailure.objects.filter(user=user, )
+    if previous_failure:
+        difference = (current_time - previous_failure.first().time_stamp)
+        if difference < datetime.timedelta(seconds=15):
+            request.session['otp'] = True
+            request.session['tel'] = phone.national_number
+            request.session['error'] = 'You\'re trying that too soon, please try again in {diff} seconds'.format(
+                diff=(datetime.timedelta(seconds=15) - difference).seconds)
+            return redirect('/accounts/login')
+
+    otp = request.POST.get('otp', '')
+    otp_obj = OneTimePassCode.objects.filter(user=user, otp__iexact=otp).first()
+
+    if current_time - otp_obj.time_stamp > OTP_CODE_TIMEOUT:
+        request.session['otp'] = True
+        request.session['tel'] = phone.national_number
+        request.session['error'] = 'Your OTP has expired, we are sending you a new one, please use the new one instead'
+        send_otp(user)
+        return redirect('/accounts/login')
     if otp_obj:
         login(request, user)
+        otp_obj.delete()
         return redirect(home.views.index)
 
     request.session['otp'] = True
     request.session['tel'] = phone.national_number
+    request.session['error'] = 'Invalid passcode supplied, please try again in 15 seconds'
+    if previous_failure:
+        current_failure = previous_failure.first()
+        current_failure.time_stamp = current_time
+    else:
+        current_failure = PreviousLoginFailure(user=user, time_stamp=current_time, )
+    current_failure.save()
     return redirect('/accounts/login')
 
 
