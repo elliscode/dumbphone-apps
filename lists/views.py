@@ -48,6 +48,8 @@ def add(request):
     # get arguments
     group = request.GET.get('group', 'Groceries').strip()
     name = request.GET.get('name', '').strip()
+    if not name or not group:
+        return JsonResponse({})
     result = add_item(request.user, group, name)
     return JsonResponse({'group': {'name': result['group'].name, 'hash': result['group'].hash},
                          'item': {'name': result['item'].name, 'hash': result['item'].hash}})
