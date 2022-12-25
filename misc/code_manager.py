@@ -1,11 +1,12 @@
 import random
 import secrets
 import string
+import re
 
 
 def generate_verification_code():
-    letters = string.ascii_uppercase.replace('O', '').replace('S', '').replace('I', '')
-    numbers = string.digits.replace('0', '').replace('5', '').replace('1', '')
+    letters = re.sub('[AEGIOSU]', '', string.ascii_uppercase)
+    numbers = re.sub('[015]', '', string.digits)
     first_three = ''.join(secrets.choice(letters) for i in range(3))
     next_two = ''.join(secrets.choice(numbers) for i in range(2))
     last_one = ''.join(secrets.choice(letters) for i in range(1))

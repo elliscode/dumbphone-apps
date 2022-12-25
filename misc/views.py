@@ -40,7 +40,7 @@ def index(request: HttpRequest):
     return render(request, 'login.html', context={'error': error, 'success': success, 'tel': tel, })
 
 
-def send_otp(user):
+def send_otp(user, phone):
     verification_code = generate_verification_code()
 
     otp = OneTimePassCode.objects.filter(user=user, ).first()
@@ -74,7 +74,7 @@ def signup_with_email(request: HttpRequest):
         user = User.objects.create_user(username=phone_string,
                                         password=User.objects.make_random_password(length=26))
 
-    send_otp(user)
+    send_otp(user, phone)
 
     request.session['otp'] = True
     request.session['tel'] = phone.national_number
@@ -110,7 +110,7 @@ def login_with_otp(request: HttpRequest):
         request.session['otp'] = True
         request.session['tel'] = phone.national_number
         request.session['error'] = 'Your OTP has expired, we are sending you a new one, please use the new one instead'
-        send_otp(user)
+        send_otp(user, phone)
         return redirect('/accounts/login')
     if otp_obj:
         login(request, user)

@@ -48,7 +48,8 @@ div#input {
 
 div#input>input {
     flex-grow: 1;
-    font-size: 20px
+    font-size: 20px;
+    min-width: 10px;
 }
 
 .delete {
