@@ -133,7 +133,7 @@ def share(request):
         message = message.format(current_user=current_phone_number.national_number, group_hash=group.hash,
                                  group_name=group.name, )
         logger.info(message)
-        # send_sms(body=message, recipients=['+1' + str(other_phone_number.national_number)], fail_silently=False)
+        send_sms(body=message, recipients=['+1' + str(other_phone_number.national_number)], fail_silently=False)
 
     success_message = 'Successfully invited {user} to the {group} list'.format(
         user=other_phone_number.national_number,

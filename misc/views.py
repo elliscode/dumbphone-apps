@@ -70,7 +70,7 @@ def signup_with_email(request: HttpRequest):
     message = str(verification_code) + ' is your dumbphoneapps.com verification code'
 
     logger.info(message)
-    # send_sms(body=message, recipients=['+1' + str(phone.national_number)], fail_silently=False)
+    send_sms(body=message, recipients=['+1' + str(phone.national_number)], fail_silently=False)
 
     request.session['otp'] = True
     request.session['tel'] = phone.national_number
