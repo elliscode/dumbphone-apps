@@ -78,15 +78,23 @@ def add_group(request):
         # now check and see if you have a group assigned to you with
         # that name already, and if you do, just add everything from
         # that group to your new group
-        same_name_groups = ListGroup.objects.filter(name__iexact=group.name,)
+        same_name_groups: list[ListGroup] = ListGroup.objects.filter(name__iexact=group.name, )
         for same_name_group in same_name_groups:
             other_group_relation = UserGroupRelation.objects.filter(user=request.user, group=same_name_group, )
             if other_group_relation:
-                items_to_switch = ListItem.objects.filter(group=same_name_group,)
+                if same_name_group.hash == group.hash:
+                    request.session['added'] = '"{group_name}" already exists in your lists'.format(
+                        group_name=group.name, )
+                    return redirect('/grocery-list')
+                items_to_switch: list[ListItem] = ListItem.objects.filter(group=same_name_group, )
                 for item in items_to_switch:
-                    item.group = group
-                    item.save()
-                same_name_group.delete()
+                    new_item = ListItem(name=item.name, group=group, time_stamp=item.time_stamp,
+                                        crossed_off=item.crossed_off)
+                    new_item.save()
+                other_group_relation.delete()
+                all_other_relations = UserGroupRelation.objects.filter(group=same_name_group)
+                if not all_other_relations:
+                    same_name_group.delete()
         ugr = UserGroupRelation(user=request.user, group=group, )
         ugr.save()
         request.session['added'] = 'Successfully added "{group_name}" to your lists'.format(group_name=group.name, )
@@ -103,6 +111,24 @@ def unadd_group(request):
             relation.delete()
             request.session['removed'] = 'Successfully removed "{group_name}" from your lists'.format(
                 group_name=group.name, )
+    return redirect('/grocery-list')
+
+
+@login_required(login_url=LOGIN_URL)
+def delete_group(request):
+    group_hash = request.GET.get('hash')
+    groups: list[ListGroup] = ListGroup.objects.filter(hash=group_hash, )
+    for group in groups:
+        relations: list[UserGroupRelation] = UserGroupRelation.objects.filter(user=request.user, group=group)
+        for relation in relations:
+            relation.delete()
+            request.session['removed'] = 'Successfully removed "{group_name}" from your lists'.format(
+                group_name=group.name, )
+            all_relations = UserGroupRelation.objects.filter(user=request.user, group=group)
+            if all_relations is None:
+                group.delete()
+                request.session['removed'] = 'Successfully deleted "{group_name}" from the database'.format(
+                    group_name=group.name, )
     return redirect('/grocery-list')
 
 

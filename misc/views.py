@@ -13,9 +13,10 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from phonenumbers import PhoneNumber, NumberParseException
 from django.contrib.auth import login, logout as django_logout
+import math
 
 import home
-from dumbphoneapps.settings import OTP_CODE_TIMEOUT
+from dumbphoneapps.settings import OTP_CODE_TIMEOUT, OTP_RETRY_LIMIT
 from .code_manager import generate_verification_code
 from .models import OneTimePassCode, PreviousLoginFailure
 from sms import send_sms
@@ -96,11 +97,11 @@ def login_with_otp(request: HttpRequest):
     previous_failure = PreviousLoginFailure.objects.filter(user=user, )
     if previous_failure:
         difference = (current_time - previous_failure.first().time_stamp)
-        if difference < datetime.timedelta(seconds=15):
+        if difference < OTP_RETRY_LIMIT:
             request.session['otp'] = True
             request.session['tel'] = phone.national_number
             request.session['error'] = 'You\'re trying that too soon, please try again in {diff} seconds'.format(
-                diff=(datetime.timedelta(seconds=15) - difference).seconds)
+                diff=math.ceil((OTP_RETRY_LIMIT - difference).total_seconds()))
             return redirect('/accounts/login')
 
     otp = request.POST.get('otp', '')
@@ -119,7 +120,8 @@ def login_with_otp(request: HttpRequest):
 
     request.session['otp'] = True
     request.session['tel'] = phone.national_number
-    request.session['error'] = 'Invalid passcode supplied, please try again in 15 seconds'
+    msg = 'Invalid passcode supplied, please try again in {timeout} seconds'.format(timeout=OTP_RETRY_LIMIT)
+    request.session['error'] = msg
     if previous_failure:
         current_failure = previous_failure.first()
         current_failure.time_stamp = current_time

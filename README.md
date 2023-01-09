@@ -1,30 +1,26 @@
-# Setup
+# Database initialization
 
-Create virtual environment:
+```
+~/pgsql/bin/initdb.exe --encoding=UTF8 --pgdata=${HOME}/pgsql-data --username=user --pwfile=${HOME}/dumbphone-apps/database-password.txt
+```
+
+# Setup
 
 ```
 python -m venv env
 ```
 
-Activate virtual environment:
-
 ```
 cd env/Scripts/ && . activate && cd ../../
 ```
-
-Install requirements:
 
 ```
 pip install -r requirements.txt
 ```
 
-Collect static files:
-
 ```
 python manage.py collectstatic
 ```
-
-Run WSGI server:
 
 ```
 python server.py
@@ -39,3 +35,4 @@ python server.py
         - `api-key.txt` &mdash; should contain the API key for [Open Weather Map](https://openweathermap.org/)
     - `email-credentials.txt` &mdash; automatically generated on the startup of the server, [populate with credentials for your email address](https://docs.djangoproject.com/en/4.1/topics/email/), see `/dumbphoneapps/settings.py`
     - `secret-key.txt` &mdash; automatically generated on the startup of the server, see `/dumbphoneapps/settings.py`
+    - `database-password.txt` &mdash; should contain the password for the database you initialized in step 1 

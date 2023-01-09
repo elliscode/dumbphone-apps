@@ -146,6 +146,7 @@ for line in twilio_file.readlines():
             DEFAULT_FROM_SMS = value
 
 OTP_CODE_TIMEOUT = datetime.timedelta(minutes=5)
+OTP_RETRY_LIMIT = datetime.timedelta(seconds=15)
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases

@@ -17,6 +17,15 @@
     <button id="add" onclick="addToList(event)">Add</button>
 </div>
 
+<div style="display:none;" id="modal-bg">
+    <div id="modal-popup">
+        <div id="modal-content">
+
+        </div>
+        <button onclick="hidePopups(event)" class="delete">&times;</button>
+    </div>
+</div>
+
 <div style="display:none;" id="share">
     <p>Share &ldquo;<span id="list-name">this</span>&rdquo; list with:</p>
     <label for="user-to-share-with">Phone Number: </label><input type="tel" id="user-to-share-with"/>
@@ -150,6 +159,8 @@
             share.style.display = 'none';
             let info = document.getElementById('info');
             info.style.display = 'none';
+            let modalBg = document.getElementById('modal-bg');
+            modalBg.style.display = 'none';
         }
         function sendShareRequest(event) {
             console.log(event);
@@ -259,6 +270,25 @@
                 itemLi.appendChild(deleteButton);
                 itemUl.appendChild(itemLi);
             }
+
+            // sort the frontend items
+            let items = Array.from(itemUl.getElementsByTagName('li'));
+            let itemMap = {};
+            for(let item of items) {
+                let nameDiv = Array.from(item.getElementsByClassName('name'))[0];
+                const key = nameDiv.textContent;
+                itemMap[key] = item;
+            }
+            let sortedKeys = Object.keys(itemMap).sort(Intl.Collator().compare);
+            for (const key of sortedKeys) {
+                itemUl.appendChild(itemMap[key]);
+            }
+        }
+
+        function askToDeleteGroup(event) {
+            hidePopups(event);
+            let modalBg = document.getElementById('modal-bg');
+            modalBg.style.display = 'block';
         }
 
         function createAddToDiv(group) {
@@ -268,11 +298,15 @@
             nameDiv.classList.add('name');
             nameDiv.textContent = group.name;
             addToGroupDiv.appendChild(nameDiv);
+<!--            let deleteButton = document.createElement('button');-->
+<!--            deleteButton.innerHTML = '&times;';-->
+<!--            deleteButton.onclick = askToDeleteGroup;-->
+<!--            addToGroupDiv.appendChild(deleteButton);-->
             let fillDiv = document.createElement('div');
             fillDiv.classList.add('fill');
             addToGroupDiv.appendChild(fillDiv);
             let shareButton = document.createElement('button');
-            shareButton.innerHTML = '&#10282;';
+            shareButton.innerHTML = '&#128101;';
             shareButton.onclick = openShareWindow;
             addToGroupDiv.appendChild(shareButton);
             let upButton = document.createElement('button');
