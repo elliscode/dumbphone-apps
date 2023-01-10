@@ -51,7 +51,7 @@ def add(request):
     # search for previous diary entry for this food and user, and
     # if one exists, use that same serving for your new entry
     previous_entries = DiaryEntry.objects.filter(food=food, user=current_user, ).order_by('-time_stamp')
-    if previous_entries is not None:
+    if previous_entries is not None and previous_entries.first() is not None:
         previous_entry: DiaryEntry = previous_entries.first()
         diary_entry = DiaryEntry(food=food, user=current_user, quantity=previous_entry.quantity,
                                  serving=previous_entry.serving, )

@@ -218,7 +218,8 @@
             const groups = document.querySelectorAll('ul#main-list>li')
             let group_hashes = [];
             let formData = new FormData();
-            for(let group of groups) {
+            for(let index = 0; index < groups.length; index++) {
+                let group = groups[index];
                 formData.append('group_hashes', group.id);
             }
             let xmlHttp = new XMLHttpRequest();
@@ -274,13 +275,15 @@
             // sort the frontend items
             let items = Array.from(itemUl.getElementsByTagName('li'));
             let itemMap = {};
-            for(let item of items) {
+            for(let index = 0; index < items.length; index++) {
+                let item = items[index];
                 let nameDiv = Array.from(item.getElementsByClassName('name'))[0];
                 const key = nameDiv.textContent;
                 itemMap[key] = item;
             }
             let sortedKeys = Object.keys(itemMap).sort(Intl.Collator().compare);
-            for (const key of sortedKeys) {
+            for (let index = 0; index < sortedKeys.length; index++) {
+                let key = sortedKeys[index];
                 itemUl.appendChild(itemMap[key]);
             }
         }
