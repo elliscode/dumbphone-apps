@@ -52,7 +52,7 @@ def send_otp(user, phone):
     otp.time_stamp = datetime.datetime.now(tz=ZoneInfo("America/New_York"))
     otp.save()
 
-    message = str(verification_code) + ' is your dumbphoneapps.com verification code'
+    message = str(verification_code) + ' is your dumbphoneapps.com verification code' + '\n\n' + '@dumbphoneapps.com #' + str(verification_code)
 
     logger.info(message)
     send_sms(body=message, recipients=['+1' + str(phone.national_number)], fail_silently=False)
