@@ -63,7 +63,7 @@ def signup_with_email(request: HttpRequest):
     try:
         phone = phonenumbers.parse(phone_string, 'US')
         if not phonenumbers.is_possible_number(phone):
-            raise Exception('invalid phone number')
+            raise NumberParseException(1, 'invalid phone number')
     except NumberParseException as e:
         request.session['error'] = 'Invalid phone {phone}'.format(phone=phone_string)
         return redirect('/accounts/login')
