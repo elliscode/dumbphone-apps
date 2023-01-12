@@ -6,7 +6,7 @@ from django.core.mail import send_mail
 from phonenumbers import NumberParseException
 from sms import send_sms
 
-from dumbphoneapps.settings import LOGIN_URL
+from dumbphoneapps.settings import LOGIN_URL, DEBUG
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
@@ -167,8 +167,10 @@ def share(request):
               'https://dumbphoneapps.com/grocery-list/unadd_group?hash={group_hash}'
     message = message.format(current_user=current_phone_number.national_number, group_hash=group.hash,
                              group_name=group.name, )
-    logger.info(message)
-    send_sms(body=message, recipients=['+1' + str(other_phone_number.national_number)], fail_silently=False)
+    if DEBUG:
+        logger.info(message)
+    else:
+        send_sms(body=message, recipients=['+1' + str(other_phone_number.national_number)], fail_silently=False)
 
     success_message = 'Successfully invited {user} to the {group} list'.format(
         user=other_phone_number.national_number,

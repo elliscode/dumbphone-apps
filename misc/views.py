@@ -16,7 +16,7 @@ from django.contrib.auth import login, logout as django_logout
 import math
 
 import home
-from dumbphoneapps.settings import OTP_CODE_TIMEOUT, OTP_RETRY_LIMIT
+from dumbphoneapps.settings import OTP_CODE_TIMEOUT, OTP_RETRY_LIMIT, DEBUG
 from .code_manager import generate_verification_code
 from .models import OneTimePassCode, PreviousLoginFailure
 from sms import send_sms
@@ -54,8 +54,10 @@ def send_otp(user, phone):
 
     message = str(verification_code) + ' is your dumbphoneapps.com verification code' + '\n\n' + '@dumbphoneapps.com #' + str(verification_code)
 
-    logger.info(message)
-    send_sms(body=message, recipients=['+1' + str(phone.national_number)], fail_silently=False)
+    if DEBUG:
+        logger.info(message)
+    else:
+        send_sms(body=message, recipients=['+1' + str(phone.national_number)], fail_silently=False)
 
 
 def signup_with_email(request: HttpRequest):
@@ -63,7 +65,7 @@ def signup_with_email(request: HttpRequest):
     try:
         phone = phonenumbers.parse(phone_string, 'US')
         if not phonenumbers.is_possible_number(phone):
-            raise Exception('invalid phone number')
+            raise NumberParseException(1, 'invalid phone number')
     except NumberParseException as e:
         request.session['error'] = 'Invalid phone {phone}'.format(phone=phone_string)
         return redirect('/accounts/login')
