@@ -9,23 +9,33 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+import datetime
 from pathlib import Path
 import os
 import secrets
+from warnings import filterwarnings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-# We will check if there exists a secret, if not, write out a
-# randomly generated key, and use it
+# this is the name of the directory that will be used in the USER area
+USER_FOLDER_NAME = 'dumbphone-apps'
 home = Path.home()
-secret_path = home / 'dumbphone-apps' / 'secret-key.txt'
-if not os.path.isfile(secret_path):
+if not os.path.exists(home / USER_FOLDER_NAME):
+    os.makedirs(home / USER_FOLDER_NAME)
+
+# We will check if there exists a secret.
+#
+# If not, or if it is older than 30 days,
+# we will write out a new one.
+home = Path.home()
+secret_path = home / USER_FOLDER_NAME / 'secret-key.txt'
+should_create_file = not os.path.isfile(secret_path)
+if not should_create_file:
+    file_age = datetime.datetime.now() - datetime.datetime.fromtimestamp(os.path.getmtime(secret_path))
+    if file_age.days >= 30:
+        should_create_file = True
+if should_create_file:
     secret_file = open(secret_path, 'w')
     secret_file.write(secrets.token_urlsafe())
     secret_file.close()
@@ -33,40 +43,15 @@ secret_file = open(secret_path, 'r')
 SECRET_KEY = secret_file.readline()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', 'dumbphoneapps.com']
 
 CSRF_TRUSTED_ORIGINS = ['https://*.dumbphoneapps.com']
 
-# Logging stuff got from here: https://stackoverflow.com/a/46931625
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue',
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'filters': ['require_debug_true'],
-        },
-    },
-    'loggers': {
-        'mylogger': {
-            'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-            'propagate': True,
-        },
-    },
-}
-
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -74,7 +59,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'fooddiary',
     'home',
-    'lists'
+    'lists',
+    'misc',
 ]
 
 MIDDLEWARE = [
@@ -88,7 +74,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
-LOGIN_URL = '/accounts/login/'
+LOGIN_URL = '/accounts/login'
 
 ROOT_URLCONF = 'dumbphoneapps.urls'
 
@@ -111,12 +97,41 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'dumbphoneapps.wsgi.application'
 
+# sms
+SMS_BACKEND = 'sms.backends.twilio.SmsBackend'
+twilio_path = home / USER_FOLDER_NAME / 'twilio-credentials.txt'
+if not os.path.isfile(twilio_path):
+    twilio_file = open(twilio_path, 'w')
+    twilio_file.write("TWILIO_ACCOUNT_SID=" + "\n")
+    twilio_file.write("TWILIO_AUTH_TOKEN=" + "\n")
+    twilio_file.write("DEFAULT_FROM_SMS=" + "\n")
+    twilio_file.close()
+twilio_file = open(twilio_path, 'r')
+for line in twilio_file.readlines():
+    if line.startswith("TWILIO_ACCOUNT_SID="):
+        value = line[len("TWILIO_ACCOUNT_SID="):].strip()
+        if value:
+            TWILIO_ACCOUNT_SID = value
+    elif line.startswith("TWILIO_AUTH_TOKEN="):
+        value = line[len("TWILIO_AUTH_TOKEN="):].strip()
+        if value:
+            TWILIO_AUTH_TOKEN = value
+    elif line.startswith("DEFAULT_FROM_SMS="):
+        value = line[len("DEFAULT_FROM_SMS="):].strip()
+        if value:
+            DEFAULT_FROM_SMS = value
+
+OTP_CODE_TIMEOUT = datetime.timedelta(minutes=5)
+OTP_RETRY_LIMIT = datetime.timedelta(seconds=15)
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# Command to create a database:
+# ~/pgsql/bin/initdb.exe --encoding=UTF8 --username=user --pgdata=${HOME}/pgsql-data-3
+
 home = Path.home()
-postgres_password_path = home / 'dumbphone-apps' / 'database-password.txt'
+postgres_password_path = home / USER_FOLDER_NAME / 'database-password.txt'
 postgres_password_file = open(secret_path, 'r')
 DATABASE_PASSWORD = postgres_password_file.readline()
 
@@ -127,9 +142,12 @@ DATABASES = {
         'USER': 'user',
         'PASSWORD': DATABASE_PASSWORD,
         'HOST': '127.0.0.1',
-        'PORT': '5431',
+        'PORT': '5432',
     }
 }
+
+# this is to stop the annoying timezone warning
+filterwarnings('ignore', message=r'.*received a naive datetime')
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -152,7 +170,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Session expiration stuff
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_AGE = 1 * 60 * 60 * 24 * 365;
+SESSION_COOKIE_AGE = 1 * 60 * 60 * 24 * 120  # four months
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/

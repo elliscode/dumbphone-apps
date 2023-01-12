@@ -2,49 +2,67 @@
 <html>
 
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Shopping List</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}"/>
     {% load static %}
-    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}" />
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}"/>
 </head>
 
 <body>
-    <div><b><a href="..">Home</a></b> &gt; <b>grocery-list</b></div>
-    <div id="input">
-        <input id="item-text-box" type="text">
-        <button id="add" onclick="addToList(event)">Add</button>
-    </div>
+<div><b><a href="..">Home</a></b> &gt; <b>grocery-list</b></div>
+<div id="input">
+    <input onfocus="hidePopups(event)" id="item-text-box" type="text">
+    <button id="add" onclick="addToList(event)">Add</button>
+</div>
 
-    <ul id="main-list" class="ui-list top-list">
-    </ul>
-    <form class="logout" action="/accounts/logout/?next=/" method="post">
-        {% csrf_token %}
-        <button type="submit">Log out</button>
-    </form>
-    <script>
+<div style="display:none;" id="modal-bg">
+    <div id="modal-popup">
+        <div id="modal-content">
+
+        </div>
+        <button onclick="hidePopups(event)" class="delete">&times;</button>
+    </div>
+</div>
+
+<div style="display:none;" id="share">
+    <p>Share &ldquo;<span id="list-name">this</span>&rdquo; list with:</p>
+    <label for="user-to-share-with">Phone Number: </label><input type="tel" id="user-to-share-with"/>
+    <button id="share-button" onclick="sendShareRequest(event)">Share</button>
+    <button onclick="hidePopups(event)" class="delete">&times;</button>
+</div>
+
+<div id="info" {% if not added and not removed %} style="display:none;" {% endif %}>
+    <p id="info-p">
+        {% if added %}
+        {{added}}
+        {% elif removed %}
+        {{removed}}
+        {% endif %}
+    </p>
+    <button onclick="hidePopups(event)" class="delete">&times;</button>
+</div>
+
+<ul id="main-list" class="ui-list top-list">
+</ul>
+<form class="logout" action="/accounts/logout" method="post">
+    {% csrf_token %}
+    <button type="submit">Log out</button>
+</form>
+<script>
         let listContent = {
-            {% for group, items in list.items %}
-                '{{group}}': [
-                    {% for item in items %}
-                    '{{item}}',
+            {% for key, group in list.items %}
+                '{{key}}': {
+                    'hash': '{{group.hash}}',
+                    'name': '{{group.name}}',
+                    'items': [
+                    {% for item in group.items %}
+                    {'name':'{{item.name}}','hash':'{{item.hash}}'},
                     {% endfor %}
-                ],
+                ]},
             {% endfor %}
         };
-
-        String.prototype.hashCode = function() {
-            var hash = 0,
-            i, chr;
-            if (this.length === 0) return hash;
-            for (i = 0; i < this.length; i++) {
-                chr = this.charCodeAt(i);
-                hash = ((hash << 5) - hash) + chr;
-                hash |= 0; // Convert to 32bit integer
-            }
-            return hash;
-        }
 
         document.addEventListener("keydown", function (e) {
             if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
@@ -56,6 +74,13 @@
                 event.preventDefault();
                 if (event.keyCode === 13) {
                     document.getElementById("add").click();
+                }
+            });
+        document.getElementById("user-to-share-with")
+            .addEventListener("keyup", function (event) {
+                event.preventDefault();
+                if (event.keyCode === 13) {
+                    document.getElementById("share-button").click();
                 }
             });
         let gtbs = document.getElementsByClassName("group-text-box")
@@ -82,6 +107,7 @@
             }
         }
         function addToList(event) {
+            hidePopups(event);
             const caller = event.target;
             const input = caller.parentElement.getElementsByTagName("input")[0];
             let groupName = undefined;
@@ -98,11 +124,12 @@
         function handleAddList(event) {
             let xmlHttp = event.target;
             let result = JSON.parse(xmlHttp.responseText);
-            if(result.hasOwnProperty('group') && result.hasOwnProperty('name')) {
-                addItem(result.group, result.name);
+            if(result.hasOwnProperty('group') && result.hasOwnProperty('item')) {
+                addItem(result.group, result.item);
             }
         }
         function deleteFromList(event) {
+            hidePopups(event);
             const groupName = event.target.parentElement.parentElement.parentElement.children[0].children[0].textContent;
             const textItem = event.target.parentElement;
             const text = textItem.children[0].textContent;
@@ -120,48 +147,90 @@
             let result = JSON.parse(xmlHttp.responseText);
             console.log(JSON.stringify(result));
         }
-        function moveUp(event) {
-            const caller = event.target;
-            let groupName = caller.parentElement.firstElementChild.textContent;
+        function openShareWindow(event) {
+            let share = document.getElementById('share');
+            let listName = document.getElementById('list-name');
+            listName.innerText = event.target.parentElement.firstElementChild.innerText;
+            listName.setAttribute('hash', event.target.parentElement.parentElement.id);
+            share.style.display = 'block';
+        }
+        function hidePopups(event) {
+            let share = document.getElementById('share');
+            share.style.display = 'none';
+            let info = document.getElementById('info');
+            info.style.display = 'none';
+            let modalBg = document.getElementById('modal-bg');
+            modalBg.style.display = 'none';
+        }
+        function sendShareRequest(event) {
+            console.log(event);
+            let userToShareWithBox = document.getElementById('user-to-share-with');
+            let user = userToShareWithBox.value;
+            let listName = document.getElementById('list-name');
+            let group_hash = listName.getAttribute('hash');
 
-            otherGroup = caller.parentElement.parentElement.previousElementSibling;
-            if(otherGroup) {
-                swapGroups(groupName, otherGroup.firstElementChild.firstElementChild.textContent);
-            }
-
-            let url = '/grocery-list/' + 'move' + '?direction=' + 'up' + '&group=' + encodeURIComponent(groupName);
+            let url = '/grocery-list/share?tel=' + encodeURIComponent(user) + '&group_hash=' + encodeURIComponent(group_hash);
             let xmlHttp = new XMLHttpRequest();
             xmlHttp.open("GET", url, true); // false for synchronous request
-            xmlHttp.onload = handleMoveList;
+            xmlHttp.onload = handleShareResponse;
             xmlHttp.send(null);
         }
-        function moveDown(event) {
-            const caller = event.target;
-            let groupName = caller.parentElement.firstElementChild.textContent;
-            otherGroup = caller.parentElement.parentElement.nextElementSibling;
-            if(otherGroup) {
-                swapGroups(otherGroup.firstElementChild.firstElementChild.textContent, groupName);
-            }
-
-            let url = '/grocery-list/' + 'move' + '?direction=' + 'down' + '&group=' + encodeURIComponent(groupName);
-            let xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", url, true); // false for synchronous request
-            xmlHttp.onload = handleMoveList;
-            xmlHttp.send(null);
+        function openInfoWindow(text) {
+            let info = document.getElementById('info');
+            info.style.display = 'block';
+            let infoP = document.getElementById('info-p');
+            infoP.innerText = text;
         }
-
-        function handleMoveList(event) {
+        function handleShareResponse(event) {
+            hidePopups();
             let xmlHttp = event.target;
             let result = JSON.parse(xmlHttp.responseText);
-            console.log(JSON.stringify(result));
+            if(result.hasOwnProperty('message')) {
+                openInfoWindow(result.message);
+            } else {
+                openInfoWindow("Something went wrong...");
+            }
+        }
+        function moveUp(event) {
+            hidePopups(event);
+            const caller = event.target;
+            let groupId = caller.parentElement.parentElement.id;
+            let otherGroup = caller.parentElement.parentElement.previousElementSibling;
+            if(otherGroup) {
+                swapGroups(groupId, otherGroup.id);
+                runOrderCall();
+            }
+        }
+        function moveDown(event) {
+            hidePopups(event);
+            const caller = event.target;
+            let groupId = caller.parentElement.parentElement.id;
+            let otherGroup = caller.parentElement.parentElement.nextElementSibling;
+            if(otherGroup) {
+                swapGroups(otherGroup.id, groupId);
+                runOrderCall();
+            }
         }
 
-        function swapGroups(groupOne, groupTwo) {
-            let mainList = document.getElementById('main-list');
+        function runOrderCall() {
+            let csrftoken = '{{ csrf_token }}';
+            let url = '/grocery-list/move';
+            const groups = document.querySelectorAll('ul#main-list>li')
+            let group_hashes = [];
+            let formData = new FormData();
+            for(let index = 0; index < groups.length; index++) {
+                let group = groups[index];
+                formData.append('group_hashes', group.id);
+            }
+            let xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("POST", url, true); // false for synchronous request
+            xmlHttp.setRequestHeader('X-CSRFToken', csrftoken);
+            xmlHttp.send(formData);
+        }
 
-            const groupOneId = groupOne.hashCode();
+        function swapGroups(groupOneId, groupTwoId) {
+            let mainList = document.getElementById('main-list');
             let groupOneLi = document.getElementById(groupOneId);
-            const groupTwoId = groupTwo.hashCode();
             let groupTwoLi = document.getElementById(groupTwoId);
 
             mainList.insertBefore(groupOneLi, groupTwoLi);
@@ -170,7 +239,7 @@
         function addItem(group, item) {
             let mainList = document.getElementById('main-list');
 
-            const groupId = group.hashCode();
+            const groupId = group.hash;
             let groupLi = document.getElementById(groupId);
             if(!groupLi) {
                 groupLi = document.createElement('li');
@@ -186,14 +255,14 @@
             let itemUl = groupLi.getElementsByClassName('ui-list')[0];
 
 
-            const itemId = generateItemId(group, item);
+            const itemId = item.hash;
             let itemLi = document.getElementById(itemId);
             if(!itemLi) {
                 let itemLi = document.createElement('li');
                 itemLi.id = itemId;
                 let nameDiv = document.createElement('div');
                 nameDiv.classList.add('name');
-                nameDiv.innerHTML = item;
+                nameDiv.innerHTML = item.name;
                 itemLi.appendChild(nameDiv);
                 let deleteButton = document.createElement('button');
                 deleteButton.onclick = deleteFromList;
@@ -203,7 +272,26 @@
                 itemUl.appendChild(itemLi);
             }
 
+            // sort the frontend items
+            let items = Array.from(itemUl.getElementsByTagName('li'));
+            let itemMap = {};
+            for(let index = 0; index < items.length; index++) {
+                let item = items[index];
+                let nameDiv = Array.from(item.getElementsByClassName('name'))[0];
+                const key = nameDiv.textContent;
+                itemMap[key] = item;
+            }
+            let sortedKeys = Object.keys(itemMap).sort(Intl.Collator().compare);
+            for (let index = 0; index < sortedKeys.length; index++) {
+                let key = sortedKeys[index];
+                itemUl.appendChild(itemMap[key]);
+            }
+        }
 
+        function askToDeleteGroup(event) {
+            hidePopups(event);
+            let modalBg = document.getElementById('modal-bg');
+            modalBg.style.display = 'block';
         }
 
         function createAddToDiv(group) {
@@ -211,11 +299,19 @@
             addToGroupDiv.classList.add('add-to-group');
             let nameDiv = document.createElement('div');
             nameDiv.classList.add('name');
-            nameDiv.textContent = group;
+            nameDiv.textContent = group.name;
             addToGroupDiv.appendChild(nameDiv);
+<!--            let deleteButton = document.createElement('button');-->
+<!--            deleteButton.innerHTML = '&times;';-->
+<!--            deleteButton.onclick = askToDeleteGroup;-->
+<!--            addToGroupDiv.appendChild(deleteButton);-->
             let fillDiv = document.createElement('div');
             fillDiv.classList.add('fill');
             addToGroupDiv.appendChild(fillDiv);
+            let shareButton = document.createElement('button');
+            shareButton.innerHTML = '&#128101;';
+            shareButton.onclick = openShareWindow;
+            addToGroupDiv.appendChild(shareButton);
             let upButton = document.createElement('button');
             upButton.classList.add('up');
             upButton.onclick = moveUp;
@@ -247,15 +343,18 @@
         {
             let groups = Object.keys(listContent);
             for(let i = 0; i < groups.length; i++) {
-                let group = groups[i];
-                let items = listContent[group];
+                let group = listContent[groups[i]];
+                let items = listContent[groups[i]].items;
                 for(let j = 0; j < items.length; j++) {
                     let item = items[j];
                     addItem(group, item);
                 }
             }
         }
-    </script>
+
+
+
+</script>
 </body>
 
 </html>

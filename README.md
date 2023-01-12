@@ -1,33 +1,35 @@
+# Database initialization
+
+```
+~/pgsql/bin/initdb.exe --encoding=UTF8 --pgdata=${HOME}/pgsql-data --username=user --pwfile=${HOME}/dumbphone-apps/database-password.txt
+```
+
 # Setup
 
-Create virtual environment:
-
 ```
-python -m venv env
+~/Python311/Scripts/pipenv lock
 ```
 
-Activate virtual environment:
-
 ```
-cd env/Scripts/ && . activate && cd ../../
+~/Python311/Scripts/pipenv sync
 ```
 
-Install requirements:
-
 ```
-pip install -r requirements.txt
+~/Python311/Scripts/pipenv run manage.py collectstatic
 ```
 
-Collect static files:
-
 ```
-python manage.py collectstatic
+~/Python311/Scripts/pipenv run manage.py migrate
 ```
 
-Run WSGI server:
+# Run
 
 ```
-python server.py
+export PGDATA=~/pgsql-data && PG_INSTALL_DIR=~/pgsql && ${PG_INSTALL_DIR}/bin/postgres
+```
+
+```
+~/Python311/Scripts/pipenv run server.py
 ```
 
 # Cache and secrets folder layout
@@ -38,16 +40,5 @@ python server.py
     - `weather`
         - `api-key.txt` &mdash; should contain the API key for [Open Weather Map](https://openweathermap.org/)
     - `secret-key.txt` &mdash; automatically generated on the startup of the server, see `/dumbphoneapps/settings.py`
-
-```python
-# We will check if there exists a secret, if not, write out a
-# randomly generated key, and use it
-home = Path.home()
-secret_path = home / 'dumbphone-apps' / 'secret-key.txt'
-if not os.path.isfile(secret_path):
-    secret_file = open(secret_path, 'w')
-    secret_file.write(secrets.token_urlsafe())
-    secret_file.close()
-secret_file = open(secret_path, 'r')
-SECRET_KEY = secret_file.readline()
-```
+    - `database-password.txt` &mdash; should contain the password for the database you initialized in step 1 
+    - `twilio-credentials.txt` &mdash; should contain the credentials for your twilio account, [see django-twilio documentation](https://django-twilio.readthedocs.io/en/latest/settings.html)

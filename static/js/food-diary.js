@@ -360,4 +360,12 @@ function addToRecipe(event) {
     let newJson = {'multiplier':1,'hash':hash,'name':name,};
     currentFood.metadata.recipe.ingredients.push(newJson);
     redrawRows();
+}function showHideCallback(event) {
+    let button = event.target;
+    let total = button.getAttribute('total');
+    if("Show" == button.innerText) {
+        button.innerText = total;
+    } else {
+        button.innerText = "Show";
+    }
 }
