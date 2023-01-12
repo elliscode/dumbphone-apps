@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Shopping List</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/stylesheet1.css' %}"/>
     {% load static %}
     <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}"/>
 </head>
 
 <body>
 <div><b><a href="..">Home</a></b> &gt; <b>grocery-list</b></div>
-<div id="input">
+<div class="big" id="input">
     <input onfocus="hidePopups(event)" id="item-text-box" type="text">
     <button id="add" onclick="addToList(event)">Add</button>
 </div>

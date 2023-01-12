@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Dumbphone Apps</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/stylesheet1.css' %}"/>
     {% load static %}
     <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}"/>
 </head>
@@ -18,17 +18,13 @@
 {% if success %}
 <form method="post" action="/accounts/login/otp">
     {% csrf_token %}
-<!--    <p>-->
-<!--        <label for="email">Email Address:</label>-->
-<!--        <input readonly type="email" name="email" value="{{email}}">-->
-<!--    </p>-->
     <p>
         <label for="email">Telephone Number:</label>
-        <input readonly type="tel" name="tel" value="{{tel}}">
+        <input class="big" readonly type="tel" name="tel" value="{{tel}}">
     </p>
     <p>
         <label for="email">Passcode:</label>
-        <input autocomplete="one-time-code" type="text" id="otp" name="otp">
+        <input class="big" autocomplete="one-time-code" type="text" id="otp" name="otp">
     </p>
     <button type="submit">Log In</button>
 </form>
@@ -40,13 +36,9 @@
 {% else %}
 <form method="post" action="/accounts/login/signup">
     {% csrf_token %}
-<!--    <p>-->
-<!--        <label for="email">Email Address:</label>-->
-<!--        <input type="email" id="email" name="email">-->
-<!--    </p>-->
     <p>
         <label for="email">Telephone Number:</label>
-        <input type="tel" id="tel" name="tel">
+        <input class="big" type="tel" id="tel" name="tel">
     </p>
     <button type="submit">Log In</button>
 </form>
