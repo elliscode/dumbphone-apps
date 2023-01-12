@@ -7,23 +7,29 @@
 # Setup
 
 ```
-python -m venv env
+~/Python311/Scripts/pipenv lock
 ```
 
 ```
-cd env/Scripts/ && . activate && cd ../../
+~/Python311/Scripts/pipenv sync
 ```
 
 ```
-pip install -r requirements.txt
+~/Python311/Scripts/pipenv run manage.py collectstatic
 ```
 
 ```
-python manage.py collectstatic
+~/Python311/Scripts/pipenv run manage.py migrate
+```
+
+# Run
+
+```
+export PGDATA=~/pgsql-data && PG_INSTALL_DIR=~/pgsql && ${PG_INSTALL_DIR}/bin/postgres
 ```
 
 ```
-python server.py
+~/Python311/Scripts/pipenv run server.py
 ```
 
 # Cache and secrets folder layout
@@ -33,6 +39,6 @@ python server.py
         - `list.txt` &mdash; automatically generated on the first call to the `/lists` endpoint
     - `weather`
         - `api-key.txt` &mdash; should contain the API key for [Open Weather Map](https://openweathermap.org/)
-    - `email-credentials.txt` &mdash; automatically generated on the startup of the server, [populate with credentials for your email address](https://docs.djangoproject.com/en/4.1/topics/email/), see `/dumbphoneapps/settings.py`
     - `secret-key.txt` &mdash; automatically generated on the startup of the server, see `/dumbphoneapps/settings.py`
     - `database-password.txt` &mdash; should contain the password for the database you initialized in step 1 
+    - `twilio-credentials.txt` &mdash; should contain the credentials for your twilio account, [see django-twilio documentation](https://django-twilio.readthedocs.io/en/latest/settings.html)

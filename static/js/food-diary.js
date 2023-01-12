@@ -231,3 +231,12 @@ function editRecipe(event) {
     console.log(event);
     console.log('Not implemented :)');
 }
+function showHideCallback(event) {
+    let button = event.target;
+    let total = button.getAttribute('total');
+    if("Show" == button.innerText) {
+        button.innerText = total;
+    } else {
+        button.innerText = "Show";
+    }
+}

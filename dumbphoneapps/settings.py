@@ -19,7 +19,7 @@ from warnings import filterwarnings
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # this is the name of the directory that will be used in the USER area
-USER_FOLDER_NAME = 'd2mbphone-apps'
+USER_FOLDER_NAME = 'dumbphone-apps'
 home = Path.home()
 if not os.path.exists(home / USER_FOLDER_NAME):
     os.makedirs(home / USER_FOLDER_NAME)
@@ -96,30 +96,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'dumbphoneapps.wsgi.application'
-
-# email
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-
-home = Path.home()
-email_path = home / USER_FOLDER_NAME / 'email-credentials.txt'
-if not os.path.isfile(email_path):
-    email_file = open(email_path, 'w')
-    email_file.write("EMAIL_HOST_USER=" + "\n")
-    email_file.write("EMAIL_HOST_PASSWORD=" + "\n")
-    email_file.close()
-email_file = open(email_path, 'r')
-for line in email_file.readlines():
-    if line.startswith("EMAIL_HOST_USER="):
-        value = line[len("EMAIL_HOST_USER="):].strip()
-        if value:
-            EMAIL_HOST_USER = value
-    elif line.startswith("EMAIL_HOST_PASSWORD="):
-        value = line[len("EMAIL_HOST_PASSWORD="):].strip()
-        if value:
-            EMAIL_HOST_PASSWORD = value
 
 # sms
 SMS_BACKEND = 'sms.backends.twilio.SmsBackend'
