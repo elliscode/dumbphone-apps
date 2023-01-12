@@ -86,8 +86,14 @@ def add_group(request):
                     request.session['added'] = '"{group_name}" already exists in your lists'.format(
                         group_name=group.name, )
                     return redirect('/grocery-list')
+                items_in_group: list[ListItem] = ListItem.objects.filter(group=group, )
                 items_to_switch: list[ListItem] = ListItem.objects.filter(group=same_name_group, )
+                names_in_group: list[str] = []
+                for item in items_in_group:
+                    names_in_group.append(item.name.lower())
                 for item in items_to_switch:
+                    if item.name.lower() in names_in_group:
+                        continue
                     new_item = ListItem(name=item.name, group=group, time_stamp=item.time_stamp,
                                         crossed_off=item.crossed_off)
                     new_item.save()
