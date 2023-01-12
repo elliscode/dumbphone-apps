@@ -96,6 +96,11 @@
 {% load static %}
 <script src="{% static 'js/food-diary.js' %}"></script>
 <script>
+{% if debug %}
+    const DEBUG = true;
+{% else %}
+    const DEBUG = false;
+{% endif %}
     document.addEventListener("keydown", function (e) {
         if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
             e.preventDefault();

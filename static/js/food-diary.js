@@ -84,14 +84,17 @@ function displaySearch(event) {
         const span = document.createElement("span");
         span.innerText = item.name;
         li.appendChild(span);
-        const button = document.createElement("button");
-        button.innerText = 'x';
-        button.setAttribute('hash', item.hash);
-        button.onclick = deleteFood;
-        button.style.position = "absolute";
-        button.style.top = "0px";
-        button.style.right = "0px";
-        li.appendChild(button);
+        // you can try this, but its disabled server side anyway
+        if(DEBUG) {
+            const button = document.createElement("button");
+            button.innerText = 'x';
+            button.setAttribute('hash', item.hash);
+            button.onclick = deleteFood;
+            button.style.position = "absolute";
+            button.style.top = "0px";
+            button.style.right = "0px";
+            li.appendChild(button);
+        }
         currentSuggestionBox.appendChild(li);
     }
     currentSuggestionBox.style.display = 'block';

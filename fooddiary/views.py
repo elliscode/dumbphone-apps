@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from dumbphoneapps.settings import LOGIN_URL
+from dumbphoneapps.settings import LOGIN_URL, DEBUG
 from fooddiary.food_methods import parse_serving
 from fooddiary.models import Food, DiaryEntry
 from fooddiary.template_classes import TemplateEntry, TemplateFood, TemplateServing, TemplateMetadata
@@ -29,7 +29,8 @@ def index(request):
         template_entry = TemplateEntry(diary_entry)
         total += template_entry.derived_values.calories
         template_entries.append(template_entry)
-    return render(request, 'food-diary-template.html', context={'total': round(total), 'entries': template_entries, })
+    return render(request, 'food-diary-template.html',
+                  context={'total': round(total), 'entries': template_entries, 'debug': DEBUG, })
 
 
 @login_required(login_url=LOGIN_URL)
@@ -137,6 +138,8 @@ def delete(request):
 
 @login_required(login_url=LOGIN_URL)
 def delete_food(request):
+    if DEBUG:
+        return HttpResponse('You are not allowed to delete foods')
     hash_to_delete = request.GET.get('hash')
     Food.objects.filter(hash=hash_to_delete).delete()
     return HttpResponse('deleted ' + hash_to_delete)
