@@ -16,10 +16,10 @@
 <div><b><a href="..">Home</a></b> &gt; <b>food-diary</b></div>
 <div style="position:relative;">
     <div id="input">
-        <input id="item-text-box" type="text" onkeyup="queueSearch(event)">
-        <button id="add" onclick="addToList(event)">Add</button>
+        <input type="text" onkeyup="queueSearch(event)">
+        <button onclick="addToList(event)">Add</button>
     </div>
-    <ul id="suggestions"></ul>
+    <ul class="suggestions"></ul>
 </div>
 <div id="servings">
     <input id="servings-amount" type="text"></input>
@@ -31,19 +31,36 @@
     <button id="servings-save" onclick="saveServing(event)">Save</button>
     <button onclick="closeServings(event)">&times;</button>
 </div>
-<div id="food-edit">
-    <table>
-        <tr><td>Name:</td><td><input id="food-edit-name" type="text"></input></td></tr>
-        <tr><td>Calories:</td><td><input id="food-edit-calories" type="text"></input></td></tr>
-        <tr><td>Protein:</td><td><input id="food-edit-protein" type="text"></input></td></tr>
-        <tr><td>Fat:</td><td><input id="food-edit-fat" type="text"></input></td></tr>
-        <tr><td>Carbs:</td><td><input id="food-edit-carbs" type="text"></input></td></tr>
-        <tr><td>Alcohol:</td><td><input id="food-edit-alcohol" type="text"></input></td></tr>
-        <tr><td>Caffeine:</td><td><input id="food-edit-caffeine" type="text"></input></td></tr>
-    </table>
-    <button id="food-edit-recipe" onclick="editRecipe(event)">Edit Recipe</button>
-    <button id="food-edit-save" onclick="saveFood(event)">Save</button>
-    <button onclick="closeFood(event)">&times;</button>
+<div id="food-or-recipe-edit">
+    <div id="food-edit">
+        <table>
+            <tr><td>Name:</td><td><input id="food-edit-name" type="text"></input></td></tr>
+            <tr><td>Calories:</td><td><input id="food-edit-calories" type="text"></input></td></tr>
+            <tr><td>Protein:</td><td><input id="food-edit-protein" type="text"></input></td></tr>
+            <tr><td>Fat:</td><td><input id="food-edit-fat" type="text"></input></td></tr>
+            <tr><td>Carbs:</td><td><input id="food-edit-carbs" type="text"></input></td></tr>
+            <tr><td>Alcohol:</td><td><input id="food-edit-alcohol" type="text"></input></td></tr>
+            <tr><td>Caffeine:</td><td><input id="food-edit-caffeine" type="text"></input></td></tr>
+        </table>
+        <button id="food-edit-recipe" onclick="displayRecipe(event)">Edit Recipe</button>
+        <button id="food-edit-save" onclick="saveFood(event)">Save</button>
+        <button onclick="closeFood(event)">&times;</button>
+    </div>
+    <div id="recipe-edit">
+        <table id="ingredients">
+        </table>
+        <div style="position:relative;">
+            <div>
+                <input type="text" id="recipe-search" onkeyup="queueSearch(event)">
+            </div>
+            <ul class="suggestions"></ul>
+        </div>
+        <div>
+            <button id="recipe-edit-food" onclick="displayFood(event)">Edit Food</button>
+            <button id="recipe-edit-save" onclick="saveRecipe(event)">Save</button>
+            <button onclick="closeFood(event)">&times;</button>
+        </div>
+    </div>
 </div>
 <table style="border:none;">
     <tr style="position:relative;">
@@ -57,7 +74,7 @@
         <td style="position:relative;">
             <button onclick="changeQuantity(event)" food-hash="{{entry.food.hash}}" hash="{{entry.hash}}">&#35;</button>
         </td>
-        <td style="position:relative;"><span class="food" onclick="changeFood(event)" hash="{{entry.food.hash}}">{{entry.food.name}}</span>
+        <td style="position:relative;"><span class="food" onclick="editEitherFoodOrRecipe(event)" hash="{{entry.food.hash}}">{{entry.food.name}}</span>
         </td>
         <td style="text-align:right;">{{entry.derived_values.calories|floatformat:0}}</td>
         <td>
@@ -84,13 +101,20 @@
             e.preventDefault();
         }
     }, false);
-    document.getElementById("item-text-box")
-        .addEventListener("keyup", function (event) {
+    let searches = document.getElementsByClassName("item-text-box");
+    for(let i = 0; i < searches.length; i++) {
+        search = searches[i];
+        search.addEventListener("keyup", function (event) {
             event.preventDefault();
             if (event.keyCode === 13) {
-                document.getElementById("add").click();
+                let inputs = caller.parentElement.getElementsByTagName("input");
+                for(let j = 0; j < inputs.length; j++) {
+                    inputs[j].click();
+                    break;
+                }
             }
         });
+    }
 </script>
 </body>
 
