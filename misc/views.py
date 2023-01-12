@@ -102,14 +102,14 @@ def login_with_otp(request: HttpRequest):
         if difference < OTP_RETRY_LIMIT:
             request.session['otp'] = True
             request.session['tel'] = phone.national_number
-            request.session['error'] = 'You\'re trying that too soon, please try again in {diff} seconds'.format(
+            request.session['error'] = 'You\'re trying that too soon, please try again in {diff:.0f} seconds'.format(
                 diff=math.ceil((OTP_RETRY_LIMIT - difference).total_seconds()))
             return redirect('/accounts/login')
 
     otp = request.POST.get('otp', '')
     otp_obj = OneTimePassCode.objects.filter(user=user, otp__iexact=otp).first()
 
-    if current_time - otp_obj.time_stamp > OTP_CODE_TIMEOUT:
+    if otp_obj is not None and current_time - otp_obj.time_stamp > OTP_CODE_TIMEOUT:
         request.session['otp'] = True
         request.session['tel'] = phone.national_number
         request.session['error'] = 'Your OTP has expired, we are sending you a new one, please use the new one instead'
@@ -122,7 +122,7 @@ def login_with_otp(request: HttpRequest):
 
     request.session['otp'] = True
     request.session['tel'] = phone.national_number
-    msg = 'Invalid passcode supplied, please try again in {timeout} seconds'.format(timeout=OTP_RETRY_LIMIT)
+    msg = 'Invalid passcode supplied, please try again in {timeout:.0f} seconds'.format(timeout=OTP_RETRY_LIMIT.total_seconds())
     request.session['error'] = msg
     if previous_failure:
         current_failure = previous_failure.first()
