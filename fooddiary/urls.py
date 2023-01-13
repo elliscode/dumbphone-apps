@@ -12,4 +12,5 @@ urlpatterns = [
     path('set_serving', views.set_serving, name='set_serving'),
     path('get_food', views.get_food, name='get_food'),
     path('set_food', views.set_food, name='set_food'),
+    path('get_day', views.get_day, name='get_day'),
 ]

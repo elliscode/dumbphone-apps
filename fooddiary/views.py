@@ -14,7 +14,16 @@ import json
 # Create your views here.
 @login_required(login_url=LOGIN_URL)
 def index(request):
-    today = datetime.datetime.now(tz=ZoneInfo("America/New_York"))
+    return render(request, 'food-diary-template.html', context={'debug': DEBUG, })
+
+
+@login_required(login_url=LOGIN_URL)
+def get_day(request):
+    today = request.GET.get('date')
+    if today:
+        today = datetime.datetime.strptime(today, '%Y-%m-%d')
+    else:
+        today = datetime.datetime.now(tz=ZoneInfo("America/New_York"))
     today = today - datetime.timedelta(hours=today.hour) - datetime.timedelta(
         minutes=today.minute) - datetime.timedelta(seconds=today.second) - datetime.timedelta(
         microseconds=today.microsecond)
@@ -28,9 +37,8 @@ def index(request):
     for diary_entry in diary_entries:
         template_entry = TemplateEntry(diary_entry)
         total += template_entry.derived_values.calories
-        template_entries.append(template_entry)
-    return render(request, 'food-diary-template.html',
-                  context={'total': round(total), 'entries': template_entries, 'debug': DEBUG, })
+        template_entries.append(template_entry.to_dict())
+    return JsonResponse({'total': round(total), 'entries': template_entries, })
 
 
 @login_required(login_url=LOGIN_URL)

@@ -363,12 +363,133 @@ function addToRecipe(event) {
     let newJson = {'multiplier':1,'hash':hash,'name':name,};
     currentFood.metadata.recipe.ingredients.push(newJson);
     redrawRows();
-}function showHideCallback(event) {
+}
+function showHideCallback(event) {
     let button = event.target;
     let total = button.getAttribute('total');
     if("Show" == button.innerText) {
         button.innerText = total;
     } else {
         button.innerText = "Show";
+    }
+}
+function setDate(event) {
+    let xmlHttp = new XMLHttpRequest();
+    if(event) {
+        xmlHttp.open("GET", '/food-diary/get_day?date=' + encodeURIComponent(event.target.value), true);
+    } else {
+        xmlHttp.open("GET", '/food-diary/get_day', true);
+    }
+    xmlHttp.onload = populateTable;
+    xmlHttp.send(null);
+}
+function populateTable(event) {
+    const table = document.getElementById('diary');
+    while(table.firstElementChild) {
+        table.firstElementChild.remove();
+    }
+
+    let xmlHttp = event.target;
+    data = JSON.parse(xmlHttp.responseText);
+
+    {
+        const tr = document.createElement('tr');
+        tr.style.position = 'relative';
+        {
+            const th = document.createElement('th');
+            th.style.border = 'none';
+            tr.appendChild(th);
+        }
+        {
+            const th = document.createElement('th');
+            th.innerText = "Food";
+            tr.appendChild(th);
+        }
+        {
+            const th = document.createElement('th');
+            th.innerText = "kcal";
+            tr.appendChild(th);
+        }
+        {
+            const th = document.createElement('th');
+            th.style.border = 'none';
+            tr.appendChild(th);
+        }
+        table.appendChild(tr);
+    }
+
+    for (let index = 0; index < data.entries.length; index++) {
+        entry = data.entries[index];
+        const tr = document.createElement('tr');
+        tr.style.position = 'relative';
+        {
+            const td = document.createElement('td');
+            td.style.position = 'relative';
+            const button = document.createElement('button');
+            button.innerText = '#';
+            button.setAttribute('food-hash', entry.food.hash);
+            button.setAttribute('hash', entry.hash);
+            button.addEventListener('click', changeQuantity);
+            td.appendChild(button);
+            tr.appendChild(td);
+        }
+        {
+            const td = document.createElement('td');
+            td.style.position = 'relative';
+            const span = document.createElement('span');
+            span.classList.add('food');
+            span.innerText = entry.food.name;
+            span.setAttribute('food-hash', entry.food.hash);
+            span.addEventListener('click', editEitherFoodOrRecipe);
+            td.appendChild(span);
+            tr.appendChild(td);
+        }
+        {
+            const td = document.createElement('td');
+            td.style.textAlign = 'right';
+            td.innerText = Math.round(entry.derived_values.calories);
+            tr.appendChild(td);
+        }
+        {
+            const td = document.createElement('td');
+            const button = document.createElement('button');
+            button.innerHTML = '&times;';
+            button.setAttribute('hash', entry.hash);
+            button.addEventListener('click', deleteEntry);
+            td.appendChild(button);
+            tr.appendChild(td);
+        }
+        table.appendChild(tr);
+    }
+
+    {
+        const tr = document.createElement('tr');
+        tr.style.position = 'relative';
+        {
+            const td = document.createElement('td');
+            td.style.border = 'none';
+            tr.appendChild(td);
+        }
+        {
+            const td = document.createElement('td');
+            td.innerText = "Total";
+            tr.appendChild(td);
+        }
+        {
+            const td = document.createElement('td');
+            td.style.textAlign = 'right';
+            const button = document.createElement('button');
+            button.innerHTML = 'Show';
+            button.setAttribute('total', data.total);
+            button.addEventListener('click', showHideCallback);
+            td.appendChild(button);
+            tr.appendChild(td);
+        }
+        {
+            const td = document.createElement('td');
+            td.style.border = 'none';
+            tr.appendChild(td);
+        }
+        table.appendChild(tr);
     }
 }

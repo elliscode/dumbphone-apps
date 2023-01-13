@@ -13,7 +13,8 @@
 </head>
 
 <body>
-<div><b><a href="..">Home</a></b> &gt; <b>food-diary</b></div>
+<div style="display:inline;"><b><a href="..">Home</a></b> &gt; <b>food-diary</b></div>
+<div style="display:inline;"><input onchange="setDate(event)" id="date-picker" type="date"></div>
 <div style="position:relative;">
     <div id="input">
         <input class="big" type="text" onkeyup="queueSearch(event)">
@@ -62,45 +63,21 @@
         </div>
     </div>
 </div>
-<table style="border:none;">
-    <tr style="position:relative;">
-        <th style="border:none;"></th>
-        <th>Food</th>
-        <th>kcal</th>
-        <th style="border:none;"></th>
-    </tr>
-    {% for entry in entries %}
-    <tr style="position:relative;">
-        <td style="position:relative;">
-            <button onclick="changeQuantity(event)" food-hash="{{entry.food.hash}}" hash="{{entry.hash}}">&#35;</button>
-        </td>
-        <td style="position:relative;"><span class="food" onclick="editEitherFoodOrRecipe(event)" hash="{{entry.food.hash}}">{{entry.food.name}}</span>
-        </td>
-        <td style="text-align:right;">{{entry.derived_values.calories|floatformat:0}}</td>
-        <td>
-            <button onclick="deleteEntry(event)" hash="{{entry.hash}}">&times;</button>
-        </td>
-    </tr>
-    {% endfor %}
-    <tr style="position:relative;">
-        <td style="border:none;"></td>
-        <td>Total</td>
-        <td style="text-align:right;"><button total="{{total}}" onclick="showHideCallback(event)">Show</button></td>
-        <td style="border:none;"></td>
-    </tr>
+<table id="diary" style="border:none;">
 </table>
 <form class="logout" action="/accounts/logout" method="post">
     {% csrf_token %}
     <button type="submit">Log out</button>
 </form>
 {% load static %}
-<script src="{% static 'js/food-diary-1.js' %}"></script>
+<script src="{% static 'js/food-diary-2.js' %}"></script>
 <script>
 {% if debug %}
     const DEBUG = true;
 {% else %}
     const DEBUG = false;
 {% endif %}
+    setDate();
     document.addEventListener("keydown", function (e) {
         if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
             e.preventDefault();
