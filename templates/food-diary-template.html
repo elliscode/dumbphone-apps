@@ -23,7 +23,7 @@
     <ul class="suggestions"></ul>
 </div>
 <div id="servings">
-    <input id="servings-amount" type="number"></input>
+    <input class="number-input" id="servings-amount" type="text"></input>
     <select id="servings-name" onchange="servingChange(event)">
         <option>Test One</option>
         <option>Test Two</option>
@@ -36,12 +36,12 @@
     <div id="food-edit">
         <table>
             <tr><td>Name:</td><td><input id="food-edit-name" type="text"></input></td></tr>
-            <tr><td>Calories:</td><td><input id="food-edit-calories" type="number"></input></td></tr>
-            <tr><td>Fat:</td><td><input id="food-edit-fat" type="number"></input></td></tr>
-            <tr><td>Carbs:</td><td><input id="food-edit-carbs" type="number"></input></td></tr>
-            <tr><td>Protein:</td><td><input id="food-edit-protein" type="number"></input></td></tr>
-            <tr><td>Alcohol:</td><td><input id="food-edit-alcohol" type="number"></input></td></tr>
-            <tr><td>Caffeine:</td><td><input id="food-edit-caffeine" type="number"></input></td></tr>
+            <tr><td>Calories:</td><td><input class="number-input" id="food-edit-calories" type="text"></input></td></tr>
+            <tr><td>Fat:</td><td><input class="number-input" id="food-edit-fat" type="text"></input></td></tr>
+            <tr><td>Carbs:</td><td><input class="number-input" id="food-edit-carbs" type="text"></input></td></tr>
+            <tr><td>Protein:</td><td><input class="number-input" id="food-edit-protein" type="text"></input></td></tr>
+            <tr><td>Alcohol:</td><td><input class="number-input" id="food-edit-alcohol" type="text"></input></td></tr>
+            <tr><td>Caffeine:</td><td><input class="number-input" id="food-edit-caffeine" type="text"></input></td></tr>
         </table>
         <button id="food-edit-recipe" onclick="displayRecipe(event)">Edit Recipe</button>
         <button id="food-edit-save" onclick="saveFood(event)">Save</button>
@@ -94,6 +94,20 @@
                     inputs[j].click();
                     break;
                 }
+            }
+        });
+    }
+    let numbers = document.getElementsByClassName("number-input");
+    for(let i = 0; i < numbers.length; i++) {
+        number = numbers[i];
+        number.addEventListener("keypress", function (event) {
+            let field = event.target;
+            let val = field.value;
+            let start = field.selectionStart;
+            let end = field.selectionEnd;
+            let newVal = val.substring(0, start) + event.key + val.substring(end, val.length);
+            if (!/^\d+[\.]{0,1}\d*$/.exec(newVal)) {
+                event.preventDefault();
             }
         });
     }

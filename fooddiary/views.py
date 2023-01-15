@@ -126,12 +126,12 @@ def set_food(request):
     item: Food = Food.objects.filter(hash=hash_to_get).first()
     metadata: TemplateMetadata = TemplateFood(item).metadata;
     item.name = request.GET.get('name');
-    metadata.calories = float(request.GET.get('calories'))
-    metadata.protein = float(request.GET.get('protein'))
-    metadata.carbs = float(request.GET.get('carbs'))
-    metadata.fat = float(request.GET.get('fat'))
-    metadata.alcohol = float(request.GET.get('alcohol'))
-    metadata.caffeine = float(request.GET.get('caffeine'))
+    metadata.calories = float(request.GET.get('calories', 0))
+    metadata.protein = float(request.GET.get('protein', 0))
+    metadata.carbs = float(request.GET.get('carbs', 0))
+    metadata.fat = float(request.GET.get('fat', 0))
+    metadata.alcohol = float(request.GET.get('alcohol', 0))
+    metadata.caffeine = float(request.GET.get('caffeine', 0))
     item.metadata = json.dumps(metadata.to_dict());
     item.save()
     return HttpResponse('updated ' + hash_to_get)
