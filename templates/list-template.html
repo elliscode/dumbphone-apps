@@ -58,7 +58,13 @@
                     'name': '{{group.name}}',
                     'items': [
                     {% for item in group.items %}
-                    {'name':'{{item.name}}','hash':'{{item.hash}}'},
+                    {'name':'{{item.name}}','hash':'{{item.hash}}','crossed_off':
+                    {% if item.crossed_off %}
+                        true
+                    {% else %}
+                        false
+                    {% endif %}
+                    },
                     {% endfor %}
                 ]},
             {% endfor %}
@@ -263,12 +269,19 @@
                 let nameDiv = document.createElement('div');
                 nameDiv.classList.add('name');
                 nameDiv.innerHTML = item.name;
+                nameDiv.addEventListener('click', crossToggle);
+                if (item.crossed_off) {
+                    nameDiv.style.textDecoration = 'line-through';
+                }
                 itemLi.appendChild(nameDiv);
                 let deleteButton = document.createElement('button');
                 deleteButton.onclick = deleteFromList;
                 deleteButton.classList.add('delete');
                 deleteButton.innerHTML = '&times;'
                 itemLi.appendChild(deleteButton);
+                if (!item.crossed_off) {
+                    deleteButton.style.display = 'none';
+                }
                 itemUl.appendChild(itemLi);
             }
 
@@ -286,6 +299,27 @@
                 let key = sortedKeys[index];
                 itemUl.appendChild(itemMap[key]);
             }
+        }
+
+        function crossToggle(event) {
+            let div = event.target;
+            let deleteButton = div.parentElement.querySelector('button.delete');
+            let hash = div.parentElement.id;
+            let newValue = undefined;
+            if('line-through' == div.style.textDecoration) {
+                div.style.textDecoration = 'none';
+                deleteButton.style.display = 'none';
+                newValue = false;
+            } else {
+                div.style.textDecoration = 'line-through';
+                deleteButton.style.display = 'block';
+                newValue = true;
+            }
+            let url = '/grocery-list/' + 'set_crossed_off' + '?item_hash=' + encodeURIComponent(hash) + '&crossed_off=' + encodeURIComponent(newValue);
+            let xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", url, true);
+            xmlHttp.send(null);
+            xmlHttp.onload = handleAddList;
         }
 
         function askToDeleteGroup(event) {
@@ -334,11 +368,6 @@
                 groupLi.remove();
             }
         }
-
-        function generateItemId(group, item) {
-            return (group + String.fromCharCode(2) + item).hashCode();
-        }
-
 
         {
             let groups = Object.keys(listContent);

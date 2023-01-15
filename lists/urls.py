@@ -10,4 +10,5 @@ urlpatterns = [
     path('share', views.share, name='share'),
     path('add_group', views.add_group, name='add_group'),
     path('unadd_group', views.unadd_group, name='unadd_group'),
+    path('set_crossed_off', views.set_crossed_off, name='set_crossed_off'),
 ]

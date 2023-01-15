@@ -3,6 +3,7 @@ import logging
 import phonenumbers
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
+from django.db.models import QuerySet
 from phonenumbers import NumberParseException
 from sms import send_sms
 
@@ -182,3 +183,18 @@ def share(request):
         user=other_phone_number.national_number,
         group=group.name)
     return JsonResponse({'message': success_message})
+
+
+@login_required(login_url=LOGIN_URL)
+def set_crossed_off(request):
+    item_hash = request.GET.get('item_hash', None)
+    crossed_off: str = request.GET.get('crossed_off', False)
+    if item_hash is None:
+        return JsonResponse({'message': 'failed, iten does not exist'})
+    items: QuerySet = ListItem.objects.filter(hash=item_hash, )
+    if not items.exists():
+        return JsonResponse({'message': 'failed, item does not exist'})
+    item: ListItem = items.first()
+    item.crossed_off = crossed_off.lower() == 'true'
+    item.save()
+    return JsonResponse({'message': 'Item successfully changed'})
