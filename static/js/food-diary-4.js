@@ -223,13 +223,20 @@ function displayFood(event) {
 
     let item = currentFood;
 
-    document.getElementById('food-edit-name').value = item.name;
-    document.getElementById('food-edit-calories').value = item.metadata.calories;
-    document.getElementById('food-edit-protein').value = item.metadata.protein;
-    document.getElementById('food-edit-fat').value = item.metadata.fat;
-    document.getElementById('food-edit-carbs').value = item.metadata.carbs;
-    document.getElementById('food-edit-alcohol').value = item.metadata.alcohol;
-    document.getElementById('food-edit-caffeine').value = item.metadata.caffeine;
+    document.getElementById('food-edit-name').value = '';
+    document.getElementById('food-edit-calories').value = '';
+    document.getElementById('food-edit-protein').value = '';
+    document.getElementById('food-edit-fat').value = '';
+    document.getElementById('food-edit-carbs').value = '';
+    document.getElementById('food-edit-alcohol').value = '';
+    document.getElementById('food-edit-caffeine').value = '';
+    document.getElementById('food-edit-name').placeholder = item.name;
+    document.getElementById('food-edit-calories').placeholder = item.metadata.calories;
+    document.getElementById('food-edit-protein').placeholder = item.metadata.protein;
+    document.getElementById('food-edit-fat').placeholder = item.metadata.fat;
+    document.getElementById('food-edit-carbs').placeholder = item.metadata.carbs;
+    document.getElementById('food-edit-alcohol').placeholder = item.metadata.alcohol;
+    document.getElementById('food-edit-caffeine').placeholder = item.metadata.caffeine;
     foodEdit.style.display = 'block';
 }
 function displayRecipe(event) {

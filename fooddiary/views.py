@@ -125,13 +125,50 @@ def set_food(request):
     hash_to_get = request.GET.get('hash')
     item: Food = Food.objects.filter(hash=hash_to_get).first()
     metadata: TemplateMetadata = TemplateFood(item).metadata;
-    item.name = request.GET.get('name');
-    metadata.calories = float(request.GET.get('calories', 0))
-    metadata.protein = float(request.GET.get('protein', 0))
-    metadata.carbs = float(request.GET.get('carbs', 0))
-    metadata.fat = float(request.GET.get('fat', 0))
-    metadata.alcohol = float(request.GET.get('alcohol', 0))
-    metadata.caffeine = float(request.GET.get('caffeine', 0))
+    if request.GET['name'] and request.GET.get('name'):
+        item.name = request.GET.get('name')
+    if request.GET['calories'] and request.GET.get('calories'):
+        str_val = request.GET.get('calories')
+        try:
+            flt_val = float(str_val)
+            metadata.calories = flt_val
+        except ValueError:
+            pass
+    if request.GET['protein'] and request.GET.get('protein'):
+        str_val = request.GET.get('protein')
+        try:
+            flt_val = float(str_val)
+            metadata.protein = flt_val
+        except ValueError:
+            pass
+    if request.GET['carbs'] and request.GET.get('carbs'):
+        str_val = request.GET.get('carbs')
+        try:
+            flt_val = float(str_val)
+            metadata.carbs = flt_val
+        except ValueError:
+            pass
+    if request.GET['fat'] and request.GET.get('fat'):
+        str_val = request.GET.get('fat')
+        try:
+            flt_val = float(str_val)
+            metadata.fat = flt_val
+        except ValueError:
+            pass
+    if request.GET['alcohol'] and request.GET.get('alcohol'):
+        str_val = request.GET.get('alcohol')
+        try:
+            flt_val = float(str_val)
+            metadata.alcohol = flt_val
+        except ValueError:
+            pass
+    if request.GET['caffeine'] and request.GET.get('caffeine'):
+        str_val = request.GET.get('caffeine')
+        try:
+            flt_val = float(str_val)
+            metadata.caffeine = flt_val
+        except ValueError:
+            pass
     item.metadata = json.dumps(metadata.to_dict());
     item.save()
     return HttpResponse('updated ' + hash_to_get)
