@@ -45,7 +45,7 @@ SECRET_KEY = secret_file.readline()
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', 'dumbphoneapps.com']
+ALLOWED_HOSTS = ['localhost', 'dumbphoneapps.com', 'www.dumbphoneapps.com']
 
 CSRF_TRUSTED_ORIGINS = ['https://*.dumbphoneapps.com']
 

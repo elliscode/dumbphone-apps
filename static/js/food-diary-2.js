@@ -188,7 +188,7 @@ function editEitherFoodOrRecipe(event) {
     closeFood();
     closeServings();
     const caller = event.target;
-    const hash = caller.getAttribute('hash');
+    const hash = caller.getAttribute('food-hash');
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", '/food-diary/get_food?hash=' + encodeURIComponent(hash), true);
     xmlHttp.onload = handleFood;
