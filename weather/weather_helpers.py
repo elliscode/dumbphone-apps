@@ -18,10 +18,10 @@ SECONDS_LIMIT = 60
 
 def get_api_key():
     home = Path.home()
-    weather_folder = home / USER_FOLDER_NAME / 'weather'
-    if not os.path.exists(weather_folder):
-        os.makedirs(weather_folder)
-    api_path = weather_folder / 'api-key.txt'
+    user_folder = home / USER_FOLDER_NAME
+    if not os.path.exists(user_folder):
+        os.makedirs(user_folder)
+    api_path = user_folder / 'weather-key.txt'
     if not os.path.isfile(api_path):
         api_file = open(api_path, 'w')
         api_file.write('Please place your API key for https://openweathermap.org/ in this file')
