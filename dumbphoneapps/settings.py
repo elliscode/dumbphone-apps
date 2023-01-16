@@ -26,14 +26,14 @@ if not os.path.exists(home / USER_FOLDER_NAME):
 
 # We will check if there exists a secret.
 #
-# If not, or if it is older than 30 days,
+# If not, or if it is older than four months,
 # we will write out a new one.
 home = Path.home()
 secret_path = home / USER_FOLDER_NAME / 'secret-key.txt'
 should_create_file = not os.path.isfile(secret_path)
 if not should_create_file:
     file_age = datetime.datetime.now() - datetime.datetime.fromtimestamp(os.path.getmtime(secret_path))
-    if file_age.days >= 30:
+    if file_age.days >= 120:
         should_create_file = True
 if should_create_file:
     secret_file = open(secret_path, 'w')
