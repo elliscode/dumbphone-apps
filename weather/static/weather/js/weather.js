@@ -40,7 +40,7 @@ function writeResult(event) {
     let result = JSON.parse(xmlHttp.responseText);
     json.innerText = JSON.stringify(result, null, 2);
     temp.innerHTML = Math.round(convertToFahrenheit(result.main.temp)) + '&#8457;';
-    icon.src = '/static/img/' + result.weather[0].icon + '.png';
+    icon.src = '/static/weather/img/' + result.weather[0].icon + '.png';
     feelsLike.innerHTML = 'Feels like ' + Math.round(convertToFahrenheit(result.main.feels_like)) + '&#8457;';
     description.innerHTML = result.weather[0].description.substring(0,1).toUpperCase() + result.weather[0].description.substring(1);
 

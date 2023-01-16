@@ -1,17 +1,12 @@
 import datetime
 import logging
-import secrets
-import string
 from zoneinfo import ZoneInfo
 
 import phonenumbers
 from django.contrib.auth.models import User
-from django.core.mail import send_mail
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpRequest
 from django.shortcuts import render, redirect
-from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
-from phonenumbers import PhoneNumber, NumberParseException
+from phonenumbers import NumberParseException, PhoneNumber
 from django.contrib.auth import login, logout as django_logout
 import math
 
@@ -38,7 +33,7 @@ def index(request: HttpRequest):
     # request.session['email'] = None
     tel = request.session.get('tel', '')
     request.session['tel'] = None
-    return render(request, 'login.html', context={'error': error, 'success': success, 'tel': tel, })
+    return render(request, 'misc/login.html', context={'error': error, 'success': success, 'tel': tel, })
 
 
 def send_otp(user, phone):
@@ -63,7 +58,7 @@ def send_otp(user, phone):
 def signup_with_email(request: HttpRequest):
     phone_string = request.POST.get('tel', '')
     try:
-        phone = phonenumbers.parse(phone_string, 'US')
+        phone: PhoneNumber = phonenumbers.parse(phone_string, 'US')
         if not phonenumbers.is_possible_number(phone):
             raise NumberParseException(1, 'invalid phone number')
     except NumberParseException as e:
@@ -87,7 +82,7 @@ def signup_with_email(request: HttpRequest):
 def login_with_otp(request: HttpRequest):
     phone_string = request.POST.get('tel', '')
     try:
-        phone = phonenumbers.parse(phone_string, 'US')
+        phone: PhoneNumber = phonenumbers.parse(phone_string, 'US')
         if not phonenumbers.is_possible_number(phone):
             raise Exception('invalid phone number')
     except NumberParseException as e:

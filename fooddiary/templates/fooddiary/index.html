@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Food Diary</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/stylesheet1.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}"/>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/food-diary.css' %}"/>
+    <link rel="stylesheet" href="{% static 'fooddiary/css/fooddiary.css' %}"/>
     {% load static %}
     <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}"/>
 </head>
@@ -70,7 +70,7 @@
     <button type="submit">Log out</button>
 </form>
 {% load static %}
-<script src="{% static 'js/food-diary-4.js' %}"></script>
+<script src="{% static 'fooddiary/js/fooddiary.js' %}"></script>
 <script>
 {% if debug %}
     const DEBUG = true;

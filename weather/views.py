@@ -12,7 +12,7 @@ from weather.weather_helpers import get_api_key
 # Create your views here.
 @login_required(login_url=LOGIN_URL)
 def index(request):
-    return render(request, 'weather-template.html', context={})
+    return render(request, 'weather/index.html', context={})
 
 
 @login_required(login_url=LOGIN_URL)

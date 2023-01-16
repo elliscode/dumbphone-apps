@@ -14,7 +14,7 @@ import json
 # Create your views here.
 @login_required(login_url=LOGIN_URL)
 def index(request):
-    return render(request, 'food-diary-template.html', context={'debug': DEBUG, })
+    return render(request, 'fooddiary/index.html', context={'debug': DEBUG, })
 
 
 @login_required(login_url=LOGIN_URL)

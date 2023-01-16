@@ -7,4 +7,4 @@ from dumbphoneapps.settings import LOGIN_URL
 # Create your views here.
 @login_required(login_url=LOGIN_URL)
 def index(request):
-    return render(request, 'index-template.html', context={})
+    return render(request, 'home/index.html', context={})

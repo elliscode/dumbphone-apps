@@ -33,7 +33,7 @@ def index(request):
     removed = request.session.get('removed', '')
     request.session['removed'] = None
     list_content = get_list(request.user)
-    return render(request, 'list-template.html', context={'list': list_content, 'added': added, 'removed': removed, })
+    return render(request, 'lists/index.html', context={'list': list_content, 'added': added, 'removed': removed, })
 
 
 @login_required(login_url=LOGIN_URL)

@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'home',
     'lists',
     'misc',
+    'weather',
 ]
 
 MIDDLEWARE = [
@@ -81,7 +82,7 @@ ROOT_URLCONF = 'dumbphoneapps.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, "templates")],
+        'DIRS': ['templates',],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
