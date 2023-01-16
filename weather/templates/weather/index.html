@@ -10,28 +10,38 @@
     <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}"/>
 
     <style>
-        #icon-and-temp {
+        .icon-and-temp {
             position:relative;
             display: flex;
             align-items: center;
         }
-        #icon {
+        .icon {
             width: 50px;
             height: 50px;
             display:inline;
         }
-        #temp {
+        .temp {
             display:inline;
             font-size:2em;
             vertical-align:middle;
             margin:0px;
             padding:0px;
         }
+        .high {
+            font-size:1em!important;
+            display:block;
+        }
+        .low {
+            font-size:1em!important;
+            display:block;
+        }
         #json {
             font-family:monospace;
             white-space:pre;
+            display:none;
         }
-        #feels-like, #description {
+        .title {
+            border-top:2px solid black;
             margin: 5px 0px 0px 0px;
         }
     </style>
@@ -43,13 +53,7 @@
 <button onclick="getCurrentLocation(event)">Get Weather for Current Location</button>
 <button onclick="getCherryHill(event)">Get Weather for Cherry Hill</button>
 
-<div id="icon-and-temp">
-    {% load static %}
-    <img src="{% static 'weather/img/empty.png' %}" id="icon"/>
-    <p id="temp"></p>
-</div>
-<p id="feels-like"></p>
-<p id="description"></p>
+<div id="forecast"></div>
 
 <p id="json"></p>
 

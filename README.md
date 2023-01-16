@@ -38,4 +38,4 @@ export PGDATA=~/pgsql-data && PG_INSTALL_DIR=~/pgsql && ${PG_INSTALL_DIR}/bin/po
     - `database-password.txt` &mdash; should contain the password to your database initialized in step 1
     - `secret-key.txt` &mdash; automatically generated on the startup of the server, see `/dumbphoneapps/settings.py`
     - `twilio-credentials.txt` &mdash; should contain the credentials for your twilio account, [see django-twilio documentation](https://django-twilio.readthedocs.io/en/latest/settings.html)
-    - `weather-key.txt` &mdash; should contain the API key for [Open Weather Map](https://openweathermap.org/) 
+    - `weather-key.txt` &mdash; should contain the API key for [Weather API](https://weatherapi.com/) 

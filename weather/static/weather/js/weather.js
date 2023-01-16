@@ -31,21 +31,80 @@ function showPosition(position) {
     xmlHttp.send(null);
 }
 
-let temp = document.getElementById('temp');
-let icon = document.getElementById('icon');
-let feelsLike = document.getElementById('feels-like');
-let description = document.getElementById('description');
 function writeResult(event) {
     let xmlHttp = event.target;
     let result = JSON.parse(xmlHttp.responseText);
+    let json = document.getElementById('json');
     json.innerText = JSON.stringify(result, null, 2);
-    temp.innerHTML = Math.round(convertToFahrenheit(result.main.temp)) + '&#8457;';
-    icon.src = '/static/weather/img/' + result.weather[0].icon + '.png';
-    feelsLike.innerHTML = 'Feels like ' + Math.round(convertToFahrenheit(result.main.feels_like)) + '&#8457;';
-    description.innerHTML = result.weather[0].description.substring(0,1).toUpperCase() + result.weather[0].description.substring(1);
 
+    let forecastDiv = document.getElementById('forecast');
+    while(forecastDiv.firstElementChild) {
+        forecastDiv.firstElementChild.remove();
+    }
+
+    {
+        let dayText = document.createElement('p');
+        forecastDiv.appendChild(dayText);
+        dayText.classList.add('title');
+        dayText.innerText = "Current weather:";
+
+        let div = document.createElement('div');
+        forecastDiv.appendChild(div);
+        div.classList.add('icon-and-temp');
+
+        let img = document.createElement('img');
+        div.appendChild(img);
+        img.classList.add('icon');
+        let url = extractUrl(result.current.condition.icon);
+        img.src = '/static/weather/img/' + url;
+
+        let temp = document.createElement('p');
+        div.appendChild(temp);
+        temp.classList.add('temp');
+        temp.innerHTML = result.current.temp_f + '&#8457;';
+    }
+
+    // loop over forecast data
+    for(let idx = 0; idx < result.forecast.forecastday.length; idx++) {
+        let forecastDay = result.forecast.forecastday[idx];
+
+        let dayText = document.createElement('p');
+        forecastDiv.appendChild(dayText);
+        dayText.classList.add('title');
+        dayText.innerText = forecastDay.date;
+
+
+        let div = document.createElement('div');
+        forecastDiv.appendChild(div);
+        div.classList.add('icon-and-temp');
+
+        let img = document.createElement('img');
+        div.appendChild(img);
+        img.classList.add('icon');
+        let url = extractUrl(forecastDay.day.condition.icon);
+        img.src = '/static/weather/img/' + url;
+
+        let tempDiv = document.createElement('div');
+        div.appendChild(tempDiv);
+
+        let tempHigh = document.createElement('p');
+        tempDiv.appendChild(tempHigh);
+        tempHigh.classList.add('temp');
+        tempHigh.classList.add('high');
+        tempHigh.innerHTML = forecastDay.day.maxtemp_f + '&#8457;';
+
+        let tempLow = document.createElement('p');
+        tempDiv.appendChild(tempLow);
+        tempLow.classList.add('temp');
+        tempLow.classList.add('low');
+        tempLow.innerHTML = forecastDay.day.mintemp_f + '&#8457;';
+
+        let feelsLike = document.createElement('p');
+        feelsLike.innerHTML = 'Feels like ' + forecastDay.day.avgtemp_f + '&#8457;';
+    }
 }
 
-function convertToFahrenheit(kelvin) {
-    return ((9.0*(kelvin-273.15))/5)+32
+function extractUrl(input) {
+    let idx = input.indexOf('64x64');
+    return input.substring(idx + 6);
 }

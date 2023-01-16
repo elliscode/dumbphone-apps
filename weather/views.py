@@ -20,7 +20,7 @@ def get_weather(request):
     lat = request.GET.get('lat')
     lon = request.GET.get('lon')
     api_key = get_api_key()
-    r = requests.get('https://api.openweathermap.org/data/2.5/weather',
-                     params={'lat': lat, 'lon': lon, 'appid': api_key})
+    r = requests.get('http://api.weatherapi.com/v1/forecast.json',
+                     params={'q': lat + ',' + lon, 'key': api_key, 'days': 3, 'aqi': 'no', 'alerts': 'no', })
     result = r.json()
     return JsonResponse(result, safe=False)
