@@ -2,13 +2,13 @@ function determineAddUrl(json) {
     let task = json.task;
     let input = json.input;
     let groupName = json.groupName;
-    let parts = input.split(",", 2);
-    if (2 == parts.length) {
-        return '/grocery-list/' + 'add' + '?group=' + encodeURIComponent(parts[0]) + '&name=' + encodeURIComponent(parts[1]);
+    let commaIndex = input.indexOf(',');
+    if (commaIndex > -1) {
+        return '/grocery-list/' + 'add' + '?group=' + encodeURIComponent(input.substring(0, commaIndex)) + '&name=' + encodeURIComponent(input.substring(commaIndex+1));
     } else if (!!groupName) {
-        return '/grocery-list/' + 'add' + '?group=' + encodeURIComponent(groupName) + '&name=' + encodeURIComponent(parts[0]);
+        return '/grocery-list/' + 'add' + '?group=' + encodeURIComponent(groupName) + '&name=' + encodeURIComponent(input);
     } else {
-        return '/grocery-list/' + 'add' + '?name=' + encodeURIComponent(parts[0]);
+        return '/grocery-list/' + 'add' + '?name=' + encodeURIComponent(input);
     }
 }
 function addToList(event) {
