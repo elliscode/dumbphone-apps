@@ -1,6 +1,7 @@
 
 let json = document.getElementById("json");
 function getCurrentLocation() {
+  json.style.display = 'block';
   if (navigator.geolocation) {
     json.innerHTML = "Retrieving current location from device...";
     navigator.geolocation.getCurrentPosition(showPosition);
@@ -10,6 +11,7 @@ function getCurrentLocation() {
 }
 
 function getCherryHill() {
+    json.style.display = 'block';
     let lat = '39.8688';
     let long = '-75.006';
     let url = '/weather/get_weather?lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(long);
@@ -32,9 +34,9 @@ function showPosition(position) {
 }
 
 function writeResult(event) {
+    json.style.display = 'none';
     let xmlHttp = event.target;
     let result = JSON.parse(xmlHttp.responseText);
-    let json = document.getElementById('json');
     json.innerText = JSON.stringify(result, null, 2);
 
     let forecastDiv = document.getElementById('forecast');

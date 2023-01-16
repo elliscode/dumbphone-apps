@@ -40,8 +40,7 @@
         }
         #json {
             font-family:monospace;
-            white-space:pre;
-            display:none;
+            white-space:pre-wrap;
         }
         .title {
             border-top:2px solid black;
@@ -58,7 +57,7 @@
 
 <div id="forecast"></div>
 
-<p id="json"></p>
+<p style="display:none;" id="json"></p>
 
 <form class="logout" action="/accounts/logout" method="post">
     {% csrf_token %}
