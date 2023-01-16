@@ -42,29 +42,8 @@ function writeResult(event) {
         forecastDiv.firstElementChild.remove();
     }
 
-    {
-        let dayText = document.createElement('p');
-        forecastDiv.appendChild(dayText);
-        dayText.classList.add('title');
-        dayText.innerText = "Current weather:";
-
-        let div = document.createElement('div');
-        forecastDiv.appendChild(div);
-        div.classList.add('icon-and-temp');
-
-        let img = document.createElement('img');
-        div.appendChild(img);
-        img.classList.add('icon');
-        let url = extractUrl(result.current.condition.icon);
-        img.src = '/static/weather/img/' + url;
-
-        let temp = document.createElement('p');
-        div.appendChild(temp);
-        temp.classList.add('temp');
-        temp.innerHTML = result.current.temp_f + '&#8457;';
-    }
-
     // loop over forecast data
+    let firstDay = true;
     for(let idx = 0; idx < result.forecast.forecastday.length; idx++) {
         let forecastDay = result.forecast.forecastday[idx];
 
@@ -98,6 +77,15 @@ function writeResult(event) {
         tempLow.classList.add('temp');
         tempLow.classList.add('low');
         tempLow.innerHTML = forecastDay.day.mintemp_f + '&#8457;';
+
+        if(firstDay) {
+            let temp = document.createElement('p');
+            div.appendChild(temp);
+            temp.classList.add('temp');
+            temp.classList.add('current');
+            temp.innerHTML = result.current.temp_f + '&#8457;';
+            firstDay = false;
+        }
 
         let feelsLike = document.createElement('p');
         feelsLike.innerHTML = 'Feels like ' + forecastDay.day.avgtemp_f + '&#8457;';
