@@ -72,20 +72,20 @@ function writeResult(event) {
         tempDiv.appendChild(tempHigh);
         tempHigh.classList.add('temp');
         tempHigh.classList.add('high');
-        tempHigh.innerHTML = forecastDay.day.maxtemp_f + '&#8457;';
+        tempHigh.innerHTML = Math.round(forecastDay.day.maxtemp_f) + '&#8457;';
 
         let tempLow = document.createElement('p');
         tempDiv.appendChild(tempLow);
         tempLow.classList.add('temp');
         tempLow.classList.add('low');
-        tempLow.innerHTML = forecastDay.day.mintemp_f + '&#8457;';
+        tempLow.innerHTML = Math.round(forecastDay.day.mintemp_f) + '&#8457;';
 
         if(firstDay) {
             let temp = document.createElement('p');
             div.appendChild(temp);
             temp.classList.add('temp');
             temp.classList.add('current');
-            temp.innerHTML = result.current.temp_f + '&#8457;';
+            temp.innerHTML = Math.round(result.current.temp_f) + '&#8457;';
             firstDay = false;
         }
 
