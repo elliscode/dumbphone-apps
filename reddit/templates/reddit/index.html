@@ -4,6 +4,17 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>reddit</title>
+    <style>
+        .post {
+        border-radius:10px;
+        background-color:#ddd;
+        padding:5px;
+        margin:5px;
+        }
+        p{
+        margin:2px 0px 2px 0px;
+        }
+    </style>
 </head>
 <body>
 <p>
@@ -16,11 +27,13 @@
 {% endif %}
 </p>
 {% for post in posts %}
+<div class="post">
 <p>{{post.title}}</p>
-<p style="font-size:small;">{{post.subreddit}} &mdash; {{post.score}} votes &mdash; {{post.num_comments}} comments</p>
 {% if post.thumb %}
 <a href="{{post.media_url}}"><img src="{{post.thumb}}" /></a>
 {% endif %}
+<p style="font-size:small;">{{post.subreddit}} &mdash; {{post.score}} votes &mdash; {{post.num_comments}} comments</p>
+</div>
 {% endfor %}
 </body>
 </html>
