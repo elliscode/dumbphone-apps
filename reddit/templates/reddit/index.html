@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>reddit</title>
+</head>
+<body>
+<p>
+{% if before %}
+    <a href="/reddit?url={{url}}&before={{before}}&count={{count_before}}">&lt; prev</a>
+{% endif %}
+    <a href="/reddit?url={{url}}">{{url}}</a>
+{% if after %}
+    <a href="/reddit?url={{url}}&after={{after}}&count={{count_after}}">next &gt;</a>
+{% endif %}
+</p>
+{% for post in posts %}
+<p>{{post.title}}</p>
+<p style="font-size:small;">{{post.subreddit}} &mdash; {{post.score}} votes &mdash; {{post.num_comments}} comments</p>
+{% if post.thumb %}
+<a href="{{post.media_url}}"><img src="{{post.thumb}}" /></a>
+{% endif %}
+{% endfor %}
+</body>
+</html>

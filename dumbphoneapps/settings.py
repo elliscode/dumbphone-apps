@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'lists',
     'misc',
     'weather',
+    'reddit',
 ]
 
 MIDDLEWARE = [
@@ -124,6 +125,35 @@ for line in twilio_file.readlines():
 
 OTP_CODE_TIMEOUT = datetime.timedelta(minutes=5)
 OTP_RETRY_LIMIT = datetime.timedelta(seconds=15)
+
+# Reddit
+
+reddit_path = home / USER_FOLDER_NAME / 'reddit-credentials.txt'
+if not os.path.isfile(reddit_path):
+    twilio_file = open(reddit_path, 'w')
+    twilio_file.write("REDDIT_USERNAME=" + "\n")
+    twilio_file.write("REDDIT_PASSWORD=" + "\n")
+    twilio_file.write("REDDIT_APP_ID=" + "\n")
+    twilio_file.write("REDDIT_SECRET=" + "\n")
+    twilio_file.close()
+twilio_file = open(reddit_path, 'r')
+for line in twilio_file.readlines():
+    if line.startswith("REDDIT_USERNAME="):
+        value = line[len("REDDIT_USERNAME="):].strip()
+        if value:
+            REDDIT_USERNAME = value
+    elif line.startswith("REDDIT_PASSWORD="):
+        value = line[len("REDDIT_PASSWORD="):].strip()
+        if value:
+            REDDIT_PASSWORD = value
+    elif line.startswith("REDDIT_APP_ID="):
+        value = line[len("REDDIT_APP_ID="):].strip()
+        if value:
+            REDDIT_APP_ID = value
+    elif line.startswith("REDDIT_SECRET="):
+        value = line[len("REDDIT_SECRET="):].strip()
+        if value:
+            REDDIT_SECRET = value
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases

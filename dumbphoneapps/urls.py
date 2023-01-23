@@ -24,4 +24,5 @@ urlpatterns = [
     path('food-diary/', include('fooddiary.urls')),
     path('weather/', include('weather.urls')),
     path('accounts/', include('misc.urls')),
+    path('reddit/', include('reddit.urls')),
 ]
