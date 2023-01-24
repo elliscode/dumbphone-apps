@@ -6,13 +6,13 @@
     <title>reddit</title>
     <style>
         .post {
-        border-radius:10px;
-        background-color:#ddd;
-        padding:5px;
-        margin:5px;
+            border-radius:10px;
+            background-color:#ddd;
+            padding:5px;
+            margin:5px;
         }
         p{
-        margin:2px 0px 2px 0px;
+            margin:2px 0px 2px 0px;
         }
     </style>
 </head>
@@ -32,7 +32,7 @@
 {% if post.thumb %}
 <a href="{{post.media_url}}"><img src="{{post.thumb}}" /></a>
 {% endif %}
-<p style="font-size:small;">{{post.subreddit}} &mdash; {{post.score}} votes &mdash; {{post.num_comments}} comments</p>
+<p style="font-size:small;">{{post.subreddit}} &mdash; {{post.score}} votes &mdash; <a href="/reddit/view_post/?url={{post.url}}">{{post.num_comments}} comments</a></p>
 </div>
 {% endfor %}
 </body>

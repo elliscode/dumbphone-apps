@@ -7,13 +7,13 @@ import requests
 from dumbphoneapps.settings import REDDIT_USERNAME, REDDIT_SECRET, REDDIT_APP_ID, REDDIT_PASSWORD, USER_FOLDER_NAME
 
 
-def get_token():
+def get_token(force=False):
     home = Path.home()
     reddit_path = home / USER_FOLDER_NAME / 'reddit-token.json'
     current_token = None
-    if os.path.isfile(reddit_path):
+    if os.path.isfile(reddit_path) and not force:
         try:
-            reddit_file = open(reddit_path,'r')
+            reddit_file = open(reddit_path, 'r')
             current_token = json.load(reddit_file)
             reddit_file.close()
         except:

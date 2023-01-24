@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>reddit</title>
+    <style>
+        .post {
+            border-radius:10px;
+            border:1px solid black;
+            background-color:#ddd;
+            padding:5px;
+            margin:5px;
+        }
+        p {
+            margin:2px 0px 2px 0px;
+        }
+    </style>
+</head>
+<body>
+<div class="post">
+<h1>{{post.title}}</h1>
+{% if post.thumb %}
+<a href="{{post.media_url}}"><img src="{{post.thumb}}" /></a>
+{% endif %}
+<p style="font-size:small;">{{post.subreddit}} &mdash; {{post.score}} votes &mdash; {{post.num_comments}} comments</p>
+</div>
+<div onclick="smol(event)">
+{% include "reddit/comment.html" %}
+</div>
+<script>
+    function smol(event) {
+        const target = event.target;
+        for(let i = 0; i < target.children.length; i++) {
+            const child = target.children[i];
+            const currentDisplay = child.style.display;
+            if('none' == currentDisplay) {
+                child.style.display = 'block';
+            } else {
+                child.style.display = 'none';
+            }
+        }
+    }
+</script>
+</body>
+</html>
