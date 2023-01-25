@@ -29,7 +29,7 @@
 {% for post in posts %}
 <div class="post">
 <p>{{post.title}}</p>
-{% if post.thumb %}
+{% if post.thumb and post.thumb != 'default' %}
 <a href="{{post.media_url}}"><img src="{{post.thumb}}" /></a>
 {% endif %}
 <p style="font-size:small;">{{post.subreddit}} &mdash; {{post.score}} votes &mdash; <a href="/reddit/view_post/?url={{post.url}}">{{post.num_comments}} comments</a></p>

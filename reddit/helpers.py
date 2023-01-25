@@ -65,6 +65,5 @@ def iterate_for_key_until(json_data, desired_key, stop_key):
             return [True, desired_value]
         if key == stop_key:
             stop_value = json_data[key]
-            stop_value.read_all()
             return [False, stop_value]
     return [False, None]
