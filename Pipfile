@@ -12,6 +12,7 @@ requests = "*"
 phonenumbers = "*"
 django-sms = "*"
 twilio = "*"
+json-stream = "*"
 
 [dev-packages]
 

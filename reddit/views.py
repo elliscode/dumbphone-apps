@@ -6,9 +6,10 @@ from django.contrib.auth.models import User
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render
 from requests import Response
+import json_stream.requests
 
 from dumbphoneapps.settings import LOGIN_URL, REDDIT_USERNAME
-from reddit.helpers import get_token, read_cache, cache
+from reddit.helpers import get_token, read_cache, cache, iterate_for_key_until
 
 
 # Create your views here.
@@ -40,14 +41,21 @@ def index(request):
     posts = []
     for item in value['data']['children']:
         data = item['data']
-        post = {'title': data['title'], 'url': data['permalink'], 'score': data['score'],
-                'num_comments': data['num_comments'], 'subreddit': data['subreddit_name_prefixed'], }
-        if 'preview' in data and 'images' in data['preview']:
-            post['thumb'] = data['preview']['images'][0]['resolutions'][0]['url']
-            if 'secure_media' in data and data['secure_media'] and 'reddit_video' in data['secure_media']:
-                post['media_url'] = data['secure_media']['reddit_video']['fallback_url']
-            else:
-                post['media_url'] = data['preview']['images'][0]['source']['url']
+        post = {'title': data['title'], 'subreddit': data['subreddit_name_prefixed'], 'score': data['score'],
+                'thumb': data['thumbnail'], }
+        [found, found_value] = iterate_for_key_until(data, 'preview', 'num_comments')
+        if found:
+            post['media_url'] = found_value['images'][0]['source']['url']
+            post['num_comments'] = data['num_comments']
+        else:
+            post['num_comments'] = found_value
+        post['url'] = data['permalink']
+        # if 'preview' in data and 'images' in data['preview']:
+        #     post['thumb'] = data['preview']['images'][0]['resolutions'][0]['url']
+        #     if 'secure_media' in data and data['secure_media'] and 'reddit_video' in data['secure_media']:
+        #         post['media_url'] = data['secure_media']['reddit_video']['fallback_url']
+        #     else:
+        #         post['media_url'] = data['preview']['images'][0]['source']['url']
         posts.append(post)
     return render(request, 'reddit/index.html',
                   context={'posts': posts, 'url': url, 'after': value['data']['after'],
