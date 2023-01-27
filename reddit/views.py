@@ -9,7 +9,7 @@ from requests import Response
 import json_stream.requests
 
 from dumbphoneapps.settings import LOGIN_URL, REDDIT_USERNAME
-from reddit.helpers import get_token, read_cache, cache, iterate_for_key_until
+from reddit.helpers import get_token, read_cache, cache
 
 
 # Create your views here.
@@ -25,12 +25,12 @@ def index(request):
         headers = {"Authorization": token['token_type'] + ' ' + token['access_token'],
                    "User-Agent": "dpa by " + REDDIT_USERNAME}
         req_url = "https://oauth.reddit.com/{url}?limit=10&raw_json=1".format(url=url)
-        if before:
-            req_url = req_url + "&before=" + before
-        if after:
-            req_url = req_url + "&after=" + after
         if count:
             req_url = req_url + "&count=" + str(count)
+            if before:
+                req_url = req_url + "&before=" + before
+            if after:
+                req_url = req_url + "&after=" + after
         response: Response = requests.get(req_url, headers=headers)
         if response.status_code == 401:
             token = get_token(force=True)
@@ -41,21 +41,21 @@ def index(request):
     posts = []
     for item in value['data']['children']:
         data = item['data']
-        post = {'title': data['title'], 'subreddit': data['subreddit_name_prefixed'], 'score': data['score'],
-                'thumb': data['thumbnail'], }
-        [found, found_value] = iterate_for_key_until(data, 'preview', 'num_comments')
-        if found:
-            post['media_url'] = found_value['images'][0]['source']['url']
-            post['num_comments'] = data['num_comments']
-        else:
-            post['num_comments'] = found_value
+        post = {'title': data['title'], 'subreddit': data['subreddit_name_prefixed'], 'score': data['score'], }
+        if 'preview' in data:
+            if 'media' in data and data['media']:
+                if 'reddit_video' in data['media']:
+                    post['media_url'] = data['media']['reddit_video']['fallback_url']
+                elif 'oembed' in data['media']:
+                    post['media_url'] = data['media']['oembed']['thumbnail_url']
+            else:
+                post['media_url'] = data['preview']['images'][0]['source']['url']
+            if 'thumbnail' in data and data['thumbnail'].startswith('http'):
+                post['thumb'] = data['thumbnail']
+            else:
+                post['thumb'] = data['preview']['images'][0]['resolutions'][0]['url']
+        post['num_comments'] = data['num_comments']
         post['url'] = data['permalink']
-        # if 'preview' in data and 'images' in data['preview']:
-        #     post['thumb'] = data['preview']['images'][0]['resolutions'][0]['url']
-        #     if 'secure_media' in data and data['secure_media'] and 'reddit_video' in data['secure_media']:
-        #         post['media_url'] = data['secure_media']['reddit_video']['fallback_url']
-        #     else:
-        #         post['media_url'] = data['preview']['images'][0]['source']['url']
         posts.append(post)
     return render(request, 'reddit/index.html',
                   context={'posts': posts, 'url': url, 'after': value['data']['after'],
@@ -80,5 +80,14 @@ def view_post(request):
     data = value[0]['data']['children'][0]['data']
     post = {'title': data['title'], 'url': data['permalink'], 'score': data['score'],
             'num_comments': data['num_comments'], 'subreddit': data['subreddit_name_prefixed'], }
+    if 'preview' in data:
+        if 'media' in data and data['media']:
+            post['media_url'] = data['media']['reddit_video']['fallback_url']
+        else:
+            post['media_url'] = data['preview']['images'][0]['source']['url']
+        if 'thumbnail' in data and data['thumbnail'].startswith('http'):
+            post['thumb'] = data['thumbnail']
+        else:
+            post['thumb'] = data['preview']['images'][0]['resolutions'][0]['url']
     comments = value[1]['data']['children']
     return render(request, 'reddit/post.html', context={'post': post, 'comments': comments})
