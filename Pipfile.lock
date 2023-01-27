@@ -266,11 +266,19 @@
         },
         "twilio": {
             "hashes": [
-                "sha256:3c843fb643fe902e727081128e9fb26a3de6bdfb515c818ac5b89a6fdf7f8638",
-                "sha256:8e6602adfb878e2a52ff62b5ca9befc63c5d409262c1cbb1ad84fe7f33131927"
+                "sha256:2ce67bdd415a723a887aa67fea08ccf7366e878d73577bc50b9ecfa8ab86ead1",
+                "sha256:da7b13d14c60744e054d53cf7f5ec8e434aed6dbd39d59a8e7d650f3ba0820d8"
             ],
             "index": "pypi",
-            "version": "==7.16.1"
+            "version": "==7.16.2"
+        },
+        "tzdata": {
+            "hashes": [
+                "sha256:2b88858b0e3120792a3c0635c23daf36a7d7eeeca657c323da299d2094402a0d",
+                "sha256:fe5f866eddd8b96e9fcba978f8e503c909b19ea7efda11e52e39494bad3a7bfa"
+            ],
+            "markers": "sys_platform == 'win32'",
+            "version": "==2022.7"
         },
         "urllib3": {
             "hashes": [
