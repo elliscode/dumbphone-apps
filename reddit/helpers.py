@@ -56,3 +56,21 @@ def read_cache():
             print(e)
             pass
     return result
+
+
+def extract_image_data(post, data):
+    if 'preview' in data:
+        if 'media' in data and data['media']:
+            if 'reddit_video' in data['media']:
+                post['media_url'] = data['media']['reddit_video']['fallback_url']
+            elif 'oembed' in data['media']:
+                if 'thumbnail_url' in data['media']['oembed']:
+                    post['media_url'] = data['media']['oembed']['thumbnail_url']
+                else:
+                    post['media_url'] = data['media']['oembed']['url']
+        else:
+            post['media_url'] = data['preview']['images'][0]['source']['url']
+        if 'thumbnail' in data and data['thumbnail'].startswith('http'):
+            post['thumb'] = data['thumbnail']
+        else:
+            post['thumb'] = data['preview']['images'][0]['resolutions'][0]['url']

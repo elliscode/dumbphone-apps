@@ -9,7 +9,7 @@ from requests import Response
 import json_stream.requests
 
 from dumbphoneapps.settings import LOGIN_URL, REDDIT_USERNAME
-from reddit.helpers import get_token, read_cache, cache
+from reddit.helpers import get_token, read_cache, cache, extract_image_data
 
 
 # Create your views here.
@@ -42,18 +42,7 @@ def index(request):
     for item in value['data']['children']:
         data = item['data']
         post = {'title': data['title'], 'subreddit': data['subreddit_name_prefixed'], 'score': data['score'], }
-        if 'preview' in data:
-            if 'media' in data and data['media']:
-                if 'reddit_video' in data['media']:
-                    post['media_url'] = data['media']['reddit_video']['fallback_url']
-                elif 'oembed' in data['media']:
-                    post['media_url'] = data['media']['oembed']['thumbnail_url']
-            else:
-                post['media_url'] = data['preview']['images'][0]['source']['url']
-            if 'thumbnail' in data and data['thumbnail'].startswith('http'):
-                post['thumb'] = data['thumbnail']
-            else:
-                post['thumb'] = data['preview']['images'][0]['resolutions'][0]['url']
+        extract_image_data(post, data)
         post['num_comments'] = data['num_comments']
         post['url'] = data['permalink']
         posts.append(post)
@@ -80,14 +69,6 @@ def view_post(request):
     data = value[0]['data']['children'][0]['data']
     post = {'title': data['title'], 'url': data['permalink'], 'score': data['score'],
             'num_comments': data['num_comments'], 'subreddit': data['subreddit_name_prefixed'], }
-    if 'preview' in data:
-        if 'media' in data and data['media']:
-            post['media_url'] = data['media']['reddit_video']['fallback_url']
-        else:
-            post['media_url'] = data['preview']['images'][0]['source']['url']
-        if 'thumbnail' in data and data['thumbnail'].startswith('http'):
-            post['thumb'] = data['thumbnail']
-        else:
-            post['thumb'] = data['preview']['images'][0]['resolutions'][0]['url']
+    extract_image_data(post, data)
     comments = value[1]['data']['children']
     return render(request, 'reddit/post.html', context={'post': post, 'comments': comments})
