@@ -12,7 +12,7 @@ import math
 
 import home
 from dumbphoneapps.settings import OTP_CODE_TIMEOUT, OTP_RETRY_LIMIT, DEBUG
-from .code_manager import generate_verification_code
+from .code_manager import generate_verification_code, generate_numeric_verification_code
 from .models import OneTimePassCode, PreviousLoginFailure
 from sms import send_sms
 
@@ -37,7 +37,7 @@ def index(request: HttpRequest):
 
 
 def send_otp(user, phone):
-    verification_code = generate_verification_code()
+    verification_code = generate_numeric_verification_code()
 
     otp = OneTimePassCode.objects.filter(user=user, ).first()
     if not otp:

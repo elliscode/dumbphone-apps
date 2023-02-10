@@ -11,3 +11,6 @@ def generate_verification_code():
     next_two = ''.join(secrets.choice(numbers) for i in range(2))
     last_one = ''.join(secrets.choice(letters) for i in range(1))
     return first_three + next_two + last_one
+
+def generate_numeric_verification_code():
+    return ''.join(secrets.choice(string.digits) for i in range(7))
