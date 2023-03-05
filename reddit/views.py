@@ -15,7 +15,7 @@ from reddit.helpers import get_token, read_cache, cache, extract_image_data
 # Create your views here.
 @login_required(login_url=LOGIN_URL)
 def index(request):
-    url = request.GET.get('url', 'r/all/rising')
+    url = request.GET.get('url', 'r/all')
     before = request.GET.get('before', '')
     after = request.GET.get('after', '')
     count = int(request.GET.get('count', 0))

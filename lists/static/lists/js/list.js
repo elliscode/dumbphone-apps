@@ -241,7 +241,7 @@ function createAddToDiv(group) {
     fillDiv.classList.add('fill');
     addToGroupDiv.appendChild(fillDiv);
     let shareButton = document.createElement('button');
-    shareButton.innerHTML = '&#128101;';
+    shareButton.innerHTML = '&#129309;';
     shareButton.onclick = openShareWindow;
     addToGroupDiv.appendChild(shareButton);
     let upButton = document.createElement('button');
