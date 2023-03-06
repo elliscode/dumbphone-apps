@@ -76,14 +76,6 @@ def view_post(request):
 
 
 @login_required(login_url=LOGIN_URL)
-def view_embed(request):
-    url = request.GET.get('url', '')
-    if not url:
-        return HttpResponseBadRequest('you need to provide a url for this to work')
-    return render(request, 'reddit/embed.html', context={'href': url})
-
-
-@login_required(login_url=LOGIN_URL)
 def view_img(request):
     url = request.GET.get('url', '')
     if not url:

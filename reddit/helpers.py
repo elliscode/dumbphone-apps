@@ -71,13 +71,13 @@ def extract_image_data(post, data):
                     post['media_url'] = data['media']['oembed']['url']
         elif 'reddit_video_preview' in data['preview'] and 'fallback_url' in data['preview']['reddit_video_preview']:
             post['media_url'] = data['preview']['reddit_video_preview']['fallback_url']
-        elif data['url'].endswith('.png') or data['url'].endswith('.jpg') or data['url'].endswith('.gif') or data['url'].endswith('.mp4'):
+        elif data['url'].endswith('.png') or data['url'].endswith('.jpg') or data['url'].endswith('.gif'):
             post['media_url'] = data['url']
         if 'media_url' in post:
-            if '.mp4' in post['media_url']:
-                post['media_url'] = f'/reddit/view_embed/?url={urllib.parse.quote(post["media_url"])}'
-            else:
+            if '.png' in post['media_url'] or '.jpg' in post['media_url'] or '.gif' in post['media_url']:
                 post['media_url'] = f'/reddit/view_img/?url={urllib.parse.quote(post["media_url"])}'
+            elif '.mp4' in post['media_url']:
+                post.pop('media_url')
         if 'thumbnail' in data and data['thumbnail'].startswith('http'):
             post['thumb'] = data['thumbnail']
         else:
