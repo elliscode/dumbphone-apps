@@ -6,12 +6,22 @@
         padding:0px;
         margin:0px;
         }
-        img {
-        max-width:100%;
-        }
     </style>
 </head>
 <body>
-<img src="{{href}}">
+<img id="img" src="{{href}}">
 </body>
+<script>
+    const img = document.getElementById('img');
+    const resize = () => {
+        if (!img.complete) {
+            setTimeout(resize, 100);
+            return;
+        }
+        if(window.innerWidth < img.offsetWidth) {
+            img.style.width = window.innerWidth + 'px';
+        }
+    }
+    resize();
+</script>
 </html>
