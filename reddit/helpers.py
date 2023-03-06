@@ -1,5 +1,6 @@
 import json
 import os
+import urllib
 from pathlib import Path
 
 import requests
@@ -68,8 +69,15 @@ def extract_image_data(post, data):
                     post['media_url'] = data['media']['oembed']['thumbnail_url']
                 else:
                     post['media_url'] = data['media']['oembed']['url']
-        else:
-            post['media_url'] = data['preview']['images'][0]['source']['url']
+        elif 'reddit_video_preview' in data['preview'] and 'fallback_url' in data['preview']['reddit_video_preview']:
+            post['media_url'] = data['preview']['reddit_video_preview']['fallback_url']
+        elif data['url'].endswith('.png') or data['url'].endswith('.jpg') or data['url'].endswith('.gif') or data['url'].endswith('.mp4'):
+            post['media_url'] = data['url']
+        if 'media_url' in post:
+            if '.mp4' in post['media_url']:
+                post['media_url'] = f'/reddit/view_embed/?url={urllib.parse.quote(post["media_url"])}'
+            else:
+                post['media_url'] = f'/reddit/view_img/?url={urllib.parse.quote(post["media_url"])}'
         if 'thumbnail' in data and data['thumbnail'].startswith('http'):
             post['thumb'] = data['thumbnail']
         else:

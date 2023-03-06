@@ -44,7 +44,8 @@ def index(request):
         post = {'title': data['title'], 'subreddit': data['subreddit_name_prefixed'], 'score': data['score'], }
         extract_image_data(post, data)
         post['num_comments'] = data['num_comments']
-        post['url'] = data['permalink']
+        post['url'] = data['url']
+        post['permalink'] = data['permalink']
         posts.append(post)
     return render(request, 'reddit/index.html',
                   context={'posts': posts, 'url': url, 'after': value['data']['after'],
@@ -72,3 +73,19 @@ def view_post(request):
     extract_image_data(post, data)
     comments = value[1]['data']['children']
     return render(request, 'reddit/post.html', context={'post': post, 'comments': comments})
+
+
+@login_required(login_url=LOGIN_URL)
+def view_embed(request):
+    url = request.GET.get('url', '')
+    if not url:
+        return HttpResponseBadRequest('you need to provide a url for this to work')
+    return render(request, 'reddit/embed.html', context={'href': url})
+
+
+@login_required(login_url=LOGIN_URL)
+def view_img(request):
+    url = request.GET.get('url', '')
+    if not url:
+        return HttpResponseBadRequest('you need to provide a url for this to work')
+    return render(request, 'reddit/img.html', context={'href': url})
