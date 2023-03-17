@@ -25,4 +25,5 @@ urlpatterns = [
     path('weather/', include('weather.urls')),
     path('accounts/', include('misc.urls')),
     path('reddit/', include('reddit.urls')),
+    path('securenotes/', include('securenotes.urls')),
 ]

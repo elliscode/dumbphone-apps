@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+</head>
+<body>
+
+<label for="password">Password: </label><input onchange="encrypt();decrypt();" id="password" type="password"/>
+<p>If you lose your password, you lose access to all your notes.</p>
+<p>We do not know your password, so we cannot decrypt your notes.</p>
+<textarea id="plaintext-data"></textarea>
+<textarea id="encrypted-data"></textarea>
+
+
+{% load static %}
+<script src="{% static 'securenotes/aes.js' %}"></script>
+<script>
+function encrypt() {
+    const passwordInput = document.getElementById('password');
+    const password = passwordInput.value;
+    const plaintextDataInput = document.getElementById('plaintext-data');
+    const plaintextData = plaintextDataInput.value;
+    const encryptedDataInput = document.getElementById('encrypted-data');
+    const encrypted = CryptoJS.AES.encrypt(plaintextData, password);
+    const encryptedData = encrypted.toString();
+    encryptedDataInput.value = encryptedData;
+
+}
+function decrypt() {
+    const passwordInput = document.getElementById('password');
+    const password = passwordInput.value;
+    const encryptedDataInput = document.getElementById('encrypted-data');
+    const encryptedData = encryptedDataInput.value;
+    const decrypted = CryptoJS.AES.decrypt(encryptedData, password);
+    console.log(decrypted);
+    try {
+        const plaintext = decrypted.toString(CryptoJS.enc.Utf8)
+        if(!plaintext) {
+            throw new Error();
+        }
+        console.log(plaintext);
+    } catch (e) {
+        console.log('wrong password');
+    }
+}
+</script>
+</body>
+</html>
