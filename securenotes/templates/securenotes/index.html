@@ -5,43 +5,114 @@
 </head>
 <body>
 
-<label for="password">Password: </label><input onchange="encrypt();decrypt();" id="password" type="password"/>
+<label for="password">Password: </label><input onkeyup="enforcePassword()" onchange="enforcePassword()" id="password" type="password"/><button onclick="checkPassword()" disabled id="load">Open</button>
+<ul style="color:red;" id="errors"></ul>
+<p>Your chosen password is used to encrypt your data using <a href="https://cryptojs.gitbook.io/docs/#the-cipher-algorithms">AES-256</a>.</p>
+<p>Your data is as secure as the password you provide, so choose wisely.</p>
 <p>If you lose your password, you lose access to all your notes.</p>
-<p>We do not know your password, so we cannot decrypt your notes.</p>
-<textarea id="plaintext-data"></textarea>
-<textarea id="encrypted-data"></textarea>
-
+<p>We do not know your password, so we cannot view your notes.</p>
 
 {% load static %}
 <script src="{% static 'securenotes/aes.js' %}"></script>
+<script src="{% static 'securenotes/moby-dick.js' %}"></script>
 <script>
-function encrypt() {
+const sampleString = "This is a sample string used to determine if your password is correct. When you saved your notes, this string was also sent, and if it comes back the same, then we know that you provided the correct password. If not, then you did not provide the correct password.";
+
+function enforcePassword() {
     const passwordInput = document.getElementById('password');
     const password = passwordInput.value;
-    const plaintextDataInput = document.getElementById('plaintext-data');
-    const plaintextData = plaintextDataInput.value;
+    const errors = [];
+    if (password.length < 8) {
+        errors.push('Your password must be longer than 8 characters');
+    }
+    const errorsUl = document.getElementById('errors');
+    while (errorsUl.firstElementChild) {
+        errorsUl.firstElementChild.remove();
+    }
+    let isPasswordAcceptable = false;
+    const loadButton = document.getElementById('load');
+    if (errors.length == 0) {
+        loadButton.removeAttribute('disabled');
+        isPasswordAcceptable = false;
+    } else {
+        loadButton.setAttribute('disabled', undefined);
+        isPasswordAcceptable = true;
+    }
+    while (errors.length > 0) {
+        const li = document.createElement('li');
+        li.innerText = errors.pop();
+        errorsUl.appendChild(li);
+    }
+    return isPasswordAcceptable;
+}
+function encrypt(plaintextData) {
+    const passwordInput = document.getElementById('password');
+    const password = passwordInput.value;
     const encryptedDataInput = document.getElementById('encrypted-data');
     const encrypted = CryptoJS.AES.encrypt(plaintextData, password);
-    const encryptedData = encrypted.toString();
-    encryptedDataInput.value = encryptedData;
-
+    return encrypted.toString();
 }
-function decrypt() {
+function decrypt(encryptedData) {
     const passwordInput = document.getElementById('password');
     const password = passwordInput.value;
-    const encryptedDataInput = document.getElementById('encrypted-data');
-    const encryptedData = encryptedDataInput.value;
     const decrypted = CryptoJS.AES.decrypt(encryptedData, password);
-    console.log(decrypted);
     try {
         const plaintext = decrypted.toString(CryptoJS.enc.Utf8)
         if(!plaintext) {
             throw new Error();
         }
-        console.log(plaintext);
+        return plaintext;
     } catch (e) {
-        console.log('wrong password');
+
     }
+    return undefined;
+}
+let encryptedSampleString = undefined;
+function checkPassword() {
+    const passwordInput = document.getElementById('password');
+    const password = passwordInput.value;
+    if(!enforcePassword()) {
+        return;
+    }
+    if (!encryptedSampleString) {
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("GET", "/securenotes/get_encrypted_sample", true);
+        xmlHttp.onload = decryptSampleData;
+        xmlHttp.send(null);
+    } else {
+        decryptSampleData({target: {responseText: encryptedSampleString}});
+    }
+}
+function decryptSampleData(event) {
+    const passwordInput = document.getElementById('password');
+    const password = passwordInput.value;
+    let xmlHttp = event.target;
+    let result = JSON.parse(xmlHttp.responseText);
+    if (!encryptedSampleString) {
+        encryptedSampleString = result;
+    }
+    if(sampleString === decrypt(encryptedSampleString, password)) {
+        console.log('good password');
+    } else {
+        console.log('bad password');
+    }
+}
+const csrfToken = '{{ csrf_token }}';
+function postData() {
+    const passwordInput = document.getElementById('password');
+    const password = passwordInput.value;
+    const encryptedSampleData = encrypt(sampleString, password);
+    const encryptedNoteData = encrypt(mobyDick);
+
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", "/securenotes/post_encrypted_data", true);
+    xmlHttp.onload = getPostStatus;
+    xmlHttp.setRequestHeader('X-CSRFToken', csrfToken);
+    xmlHttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
+    xmlHttp.send((new URLSearchParams({encrypted_sample: encryptedSampleData, encrypted_note: encryptedNoteData})).toString());
+}
+function getPostStatus(event) {
+    console.log(event);
 }
 </script>
 </body>
