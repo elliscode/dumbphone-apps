@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'misc',
     'weather',
     'reddit',
+    'securenotes',
 ]
 
 MIDDLEWARE = [
