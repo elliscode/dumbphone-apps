@@ -58,6 +58,11 @@
             top:0px;
             right:0px;
         }
+        .logout {
+            position:absolute;
+            top:0;
+            right:0;
+        }
     </style>
 </head>
 <body>
@@ -104,6 +109,10 @@
     </div>
     <textarea id="note-edit"></textarea>
 </div>
+<form class="logout" action="/accounts/logout" method="post">
+    {% csrf_token %}
+    <button type="submit">Log out</button>
+</form>
 {% load static %}
 <script src="{% static 'securenotes/aes.js' %}"></script>
 {{ notes|json_script:"notes-data" }}
