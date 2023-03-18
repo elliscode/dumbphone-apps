@@ -1,23 +1,220 @@
 <!DOCTYPE html>
 <html>
 <head>
-
+    <style>
+        #password-prompt {
+            position:fixed;
+            width:100%;
+            height:100%;
+            top:0px;
+            left:0px;
+            display:none;
+            background-color:#fff;
+            z-index:3;
+        }
+        #loading {
+            position:fixed;
+            width:100%;
+            height:100%;
+            top:0px;
+            left:0px;
+            display:none;
+            background-color:#fff;
+            z-index:4;
+        }
+        #note-selector button {
+            display:block;
+        }
+        #note-content {
+            white-space:pre-wrap;
+        }
+        #note-display {
+            display:none;
+        }
+        #create-note {
+            display:none;
+        }
+        #show-note {
+            display:none;
+        }
+        #edit-display {
+            position:fixed;
+            width:100%;
+            height:100%;
+            top:0px;
+            left:0px;
+            display:none;
+            background-color:#fff;
+            z-index:3;
+            display:none;
+        }
+        #note-edit {
+            width:100%;
+            height:100%;
+            box-sizing:border-box;
+        }
+        .nav {
+            position:fixed;
+            top:0px;
+            right:0px;
+        }
+    </style>
 </head>
 <body>
 
-<label for="password">Password: </label><input onkeyup="enforcePassword()" onchange="enforcePassword()" id="password" type="password"/><button onclick="checkPassword()" disabled id="load">Open</button>
-<ul style="color:red;" id="errors"></ul>
-<p>Your chosen password is used to encrypt your data using <a href="https://cryptojs.gitbook.io/docs/#the-cipher-algorithms">AES-256</a>.</p>
-<p>Your data is as secure as the password you provide, so choose wisely.</p>
-<p>If you lose your password, you lose access to all your notes.</p>
-<p>We do not know your password, so we cannot view your notes.</p>
+<div id="note-selector">
+<button onclick="displayPasswordPromptForCreate()">Create new note</button>
+<div id="note-buttons">
+</div>
+</div>
 
+<div id="password-prompt">
+    <label for="password">Password: </label>
+    <input onkeyup="enforcePassword()" onchange="enforcePassword()" id="password" type="password"/>
+    <div id="show-note">
+        <button onclick="showNote()" disabled id="load">Open</button>
+        <button onclick="back()">Back</button>
+    </div>
+    <div id="create-note">
+        <button onclick="postNote()" disabled id="create">Create</button>
+        <p>Your chosen password is used to encrypt your data using <a href="https://cryptojs.gitbook.io/docs/#the-cipher-algorithms">AES-256</a>.</p>
+        <p>Your data is as secure as the password you provide, so choose wisely.</p>
+        <p>If you lose your password, you lose access to all your notes.</p>
+        <p>We do not know your password, so we cannot view your notes.</p>
+    </div>
+    <ul style="color:red;" id="errors"></ul>
+</div>
+
+<div id="loading">
+    <p>Loading...</p>
+</div>
+
+<div id="note-display">
+    <div class="nav">
+        <button onclick="back()">Back</button>
+        <button onclick="edit()">Edit</button>
+    </div>
+    <pre id="note-content"></pre>
+</div>
+
+<div id="edit-display">
+    <div class="nav">
+        <button onclick="back()">Cancel</button>
+        <button onclick="postNote()">Save</button>
+    </div>
+    <textarea id="note-edit"></textarea>
+</div>
 {% load static %}
 <script src="{% static 'securenotes/aes.js' %}"></script>
-<script src="{% static 'securenotes/moby-dick.js' %}"></script>
+{{ notes|json_script:"notes-data" }}
 <script>
+const notes = JSON.parse(document.getElementById('notes-data').textContent);
+function buildNoteButtons() {
+    const noteButtons = document.getElementById('note-buttons');
+    while(noteButtons.firstElementChild) {
+        noteButtons.firstElementChild.remove();
+    }
+    for(let i = 0; i < notes.length; i++) {
+        const note = notes[i];
+        const button = document.createElement('button');
+        button.addEventListener('click', function() { openNote(note.hash); } );
+        button.innerText = (new Date(note.timestamp)).toLocaleString();
+        noteButtons.appendChild(button);
+    }
+}
+buildNoteButtons();
+function edit() {
+    hideGui();
+    const noteDisplay = document.getElementById('edit-display');
+    noteDisplay.style.display = 'block';
+}
 const sampleString = "This is a sample string used to determine if your password is correct. When you saved your notes, this string was also sent, and if it comes back the same, then we know that you provided the correct password. If not, then you did not provide the correct password.";
-
+let currentNote = undefined;
+function openNote(hash) {
+    const findResults = notes.filter(a=>a.hash==hash);
+    if (findResults.length != 1) {
+        return;
+    }
+    currentNote = findResults[0];
+    displayPasswordPromptForShow();
+}
+function displayPasswordPromptForShow() {
+    const errorsUl = document.getElementById('errors');
+    while (errorsUl.firstElementChild) {
+        errorsUl.firstElementChild.remove();
+    }
+    const passwordPrompt = document.getElementById('password-prompt');
+    passwordPrompt.style.display = 'block';
+    const showNoteBox = document.getElementById('show-note');
+    showNoteBox.style.display = 'block';
+}
+function displayPasswordPromptForCreate() {
+    const errorsUl = document.getElementById('errors');
+    while (errorsUl.firstElementChild) {
+        errorsUl.firstElementChild.remove();
+    }
+    const passwordPrompt = document.getElementById('password-prompt');
+    passwordPrompt.style.display = 'block';
+    const createNoteBox = document.getElementById('create-note');
+    createNoteBox.style.display = 'block';
+}
+function showNote() {
+    const errorsUl = document.getElementById('errors');
+    while (errorsUl.firstElementChild) {
+        errorsUl.firstElementChild.remove();
+    }
+    const passwordInput = document.getElementById('password');
+    const password = passwordInput.value;
+    if (decrypt(currentNote.encrypted_sample) === sampleString) {
+        const loadingPrompt = document.getElementById('loading');
+        loadingPrompt.style.display = 'block';
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("GET", "/securenotes/get_encrypted_data?hash=" + encodeURIComponent(currentNote.hash), true);
+        xmlHttp.onload = displayNoteText;
+        xmlHttp.send(null);
+    } else {
+        const li = document.createElement('li');
+        li.innerText = "Incorrect Password";
+        errorsUl.appendChild(li);
+    }
+}
+function displayNoteText(event) {
+    let xmlHttp = event.target;
+    let result = JSON.parse(xmlHttp.responseText);
+    const pre = document.getElementById('note-content');
+    const textArea = document.getElementById('note-edit');
+    let decryptedText = decrypt(result.note);
+    if(!decryptedText) {
+        decryptedText = '';
+    }
+    pre.innerText = decryptedText;
+    textArea.value = decryptedText;
+    hideGui();
+    const noteDisplay = document.getElementById('note-display');
+    noteDisplay.style.display = 'block';
+}
+function hideGui() {
+    const passwordPrompt = document.getElementById('password-prompt');
+    passwordPrompt.style.display = 'none';
+    const noteSelector = document.getElementById('note-selector');
+    noteSelector.style.display = 'none';
+    const showNoteBox = document.getElementById('show-note');
+    showNoteBox.style.display = 'none';
+    const createNoteBox = document.getElementById('create-note');
+    createNoteBox.style.display = 'none';
+    const noteDisplay = document.getElementById('note-display');
+    noteDisplay.style.display = 'none';
+    const editDisplay = document.getElementById('edit-display');
+    editDisplay.style.display = 'none';
+    const loadingPrompt = document.getElementById('loading');
+    loadingPrompt.style.display = 'none';
+}
+function back() {
+    hideGui();
+    const noteSelector = document.getElementById('note-selector');
+    noteSelector.style.display = 'block';
+    currentNote = undefined;
+}
 function enforcePassword() {
     const passwordInput = document.getElementById('password');
     const password = passwordInput.value;
@@ -31,11 +228,14 @@ function enforcePassword() {
     }
     let isPasswordAcceptable = false;
     const loadButton = document.getElementById('load');
+    const createButton = document.getElementById('create');
     if (errors.length == 0) {
         loadButton.removeAttribute('disabled');
+        createButton.removeAttribute('disabled');
         isPasswordAcceptable = false;
     } else {
         loadButton.setAttribute('disabled', undefined);
+        createButton.setAttribute('disabled', undefined);
         isPasswordAcceptable = true;
     }
     while (errors.length > 0) {
@@ -48,7 +248,6 @@ function enforcePassword() {
 function encrypt(plaintextData) {
     const passwordInput = document.getElementById('password');
     const password = passwordInput.value;
-    const encryptedDataInput = document.getElementById('encrypted-data');
     const encrypted = CryptoJS.AES.encrypt(plaintextData, password);
     return encrypted.toString();
 }
@@ -98,21 +297,45 @@ function decryptSampleData(event) {
     }
 }
 const csrfToken = '{{ csrf_token }}';
-function postData() {
+function postNote() {
+    let data = '';
+    let hash = '';
+    if (currentNote) {
+        const editDisplayElement = document.getElementById('edit-display');
+        if(editDisplayElement.style.display != 'none') {
+            const noteEditElement = document.getElementById('note-edit');
+            data = noteEditElement.value;
+            hash = currentNote.hash;
+        }
+    }
     const passwordInput = document.getElementById('password');
     const password = passwordInput.value;
-    const encryptedSampleData = encrypt(sampleString, password);
-    const encryptedNoteData = encrypt(mobyDick);
+    const encryptedSampleData = encrypt(sampleString);
+    const encryptedNoteData = encrypt(data);
 
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", "/securenotes/post_encrypted_data", true);
     xmlHttp.onload = getPostStatus;
     xmlHttp.setRequestHeader('X-CSRFToken', csrfToken);
     xmlHttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
-    xmlHttp.send((new URLSearchParams({encrypted_sample: encryptedSampleData, encrypted_note: encryptedNoteData})).toString());
+    const sendData = {encrypted_sample: encryptedSampleData, encrypted_note: encryptedNoteData};
+    if(hash) {
+        sendData.hash = hash;
+    }
+    xmlHttp.send((new URLSearchParams(sendData)).toString());
 }
 function getPostStatus(event) {
-    console.log(event);
+    let xmlHttp = event.target;
+    let result = JSON.parse(xmlHttp.responseText);
+    for(let i = 0; i < notes.length; i++) {
+        if (notes[i].hash == result.hash) {
+            notes.splice(i,1);
+            break;
+        }
+    }
+    notes.push(result);
+    currentNote = result;
+    showNote();
 }
 </script>
 </body>
