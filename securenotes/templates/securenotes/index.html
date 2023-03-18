@@ -3,14 +3,7 @@
 <head>
     <style>
         #password-prompt {
-            position:fixed;
-            width:100%;
-            height:100%;
-            top:0px;
-            left:0px;
             display:none;
-            background-color:#fff;
-            z-index:3;
         }
         #loading {
             position:fixed;
@@ -148,6 +141,7 @@ function openNote(hash) {
     displayPasswordPromptForShow();
 }
 function displayPasswordPromptForShow() {
+    hideGui();
     const errorsUl = document.getElementById('errors');
     while (errorsUl.firstElementChild) {
         errorsUl.firstElementChild.remove();
@@ -158,6 +152,7 @@ function displayPasswordPromptForShow() {
     showNoteBox.style.display = 'block';
 }
 function displayPasswordPromptForCreate() {
+    hideGui();
     const errorsUl = document.getElementById('errors');
     while (errorsUl.firstElementChild) {
         errorsUl.firstElementChild.remove();
@@ -331,7 +326,15 @@ function postNote() {
     if(hash) {
         sendData.hash = hash;
     }
-    xmlHttp.send((new URLSearchParams(sendData)).toString());
+    let builtString = '';
+    const keys = Object.keys(sendData);
+    for(let i = 0; i < keys.length; i++) {
+        if(builtString) {
+            builtString += '&';
+        }
+        builtString += keys[i] + '=' + encodeURIComponent(sendData[keys[i]]);
+    }
+    xmlHttp.send(builtString);
 }
 function getPostStatus(event) {
     let xmlHttp = event.target;
