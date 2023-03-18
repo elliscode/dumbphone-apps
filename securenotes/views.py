@@ -14,7 +14,7 @@ from securenotes.models import SecureNote
 # Create your views here.
 @login_required(login_url=LOGIN_URL)
 def index(request):
-    samples_list: list[SecureNote] = SecureNote.objects.filter(user=request.user, )
+    samples_list: list[SecureNote] = SecureNote.objects.filter(user=request.user, ).order_by('time_stamp')
     output_list = []
     for sample in samples_list:
         output_list.append({
@@ -52,3 +52,13 @@ def post_encrypted_data(request):
                          'hash': note.hash,
                          'timestamp': note.time_stamp,
                          'encrypted_sample': note.encrypted_sample, })
+
+
+@login_required(login_url=LOGIN_URL)
+def delete_encrypted_data(request: HttpRequest):
+    hash_value = request.GET.get('hash', None)
+    note: SecureNote = SecureNote.objects.filter(user=request.user, hash=hash_value).first()
+    if note is not None:
+        note.delete()
+        return JsonResponse({'status': 'success', })
+    return JsonResponse({'status': 'fail', 'message': 'No note found with hash value'})
