@@ -343,6 +343,7 @@ function getPostStatus(event) {
         }
     }
     notes.push(result);
+    notes.sort((a,b)=>{return a.timestamp.localeCompare(b.timestamp);});
     currentNote = result;
     showNote();
 }
