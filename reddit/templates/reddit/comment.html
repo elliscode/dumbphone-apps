@@ -1,7 +1,9 @@
 {% for comment in comments %}
-<div class="post">{{comment.data.body}}
+<div class="post">{% if comment.data.body %}<pre>{{comment.data.body}}</pre>{% endif %}
 {% if comment.kind == 'more' %}
-<div><a>load {{comment.data.count}} more comments</a></div>
+<!--onclick="getMore('{{post.url}}', '{{comment.data.id}}')"-->
+<!-- idk its not working https://www.reddit.com/dev/api/oauth/ -->
+<div><a> load {{comment.data.count}} more comments</a></div>
 {% else %}
 {% if comment.data.replies.data.children|length %}
 {% include "reddit/comment.html" with comments=comment.data.replies.data.children %}

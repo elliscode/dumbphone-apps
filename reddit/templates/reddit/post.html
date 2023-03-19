@@ -18,13 +18,21 @@
         h1 {
             margin:2px 0px 2px 0px;
         }
+        pre {
+            white-space: pre-wrap;
+            font-family: serif;
+            margin:2px 0px 2px 0px;
+        }
     </style>
 </head>
 <body>
 <div class="post">
-<h1>{{post.title}}</h1>
+<p><strong>{{post.title}}</strong></p>
 {% if post.thumb %}
 <a href="{{post.media_url}}"><img src="{{post.thumb}}" /></a>
+{% endif %}
+{% if post.selftext %}
+<pre>{{post.selftext}}</pre>
 {% endif %}
 <p style="font-size:small;">{{post.subreddit}} &mdash; {{post.score}} votes &mdash; {{post.num_comments}} comments</p>
 </div>
@@ -33,7 +41,10 @@
 </div>
 <script>
     function smol(event) {
-        const target = event.target;
+        let target = event.target;
+        if (target.tagName == 'PRE') {
+            target = target.parentElement;
+        }
         for(let i = 0; i < target.children.length; i++) {
             const child = target.children[i];
             const currentDisplay = child.style.display;
@@ -43,6 +54,17 @@
                 child.style.display = 'none';
             }
         }
+    }
+    function getMore(url, id) {
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("GET", "/reddit/get_more?url=" + encodeURIComponent(url) + "&id=" + encodeURIComponent(id), true);
+        xmlHttp.onload = populateMore;
+        xmlHttp.send(null);
+    }
+    function populateMore(event) {
+        let xmlHttp = event.target;
+        let result = JSON.parse(xmlHttp.responseText);
+        console.log(result);
     }
 </script>
 </body>
