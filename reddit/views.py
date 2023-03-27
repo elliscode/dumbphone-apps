@@ -3,18 +3,22 @@ import json
 import requests
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseBadRequest, JsonResponse, HttpResponse
 from django.shortcuts import render
 from requests import Response
 import json_stream.requests
 
-from dumbphoneapps.settings import LOGIN_URL, REDDIT_USERNAME
+from dumbphoneapps.settings import LOGIN_URL, REDDIT_USERNAME, REDDIT_BANNED_USERS
 from reddit.helpers import get_token, read_cache, cache, extract_image_data
 
 
 # Create your views here.
 @login_required(login_url=LOGIN_URL)
 def index(request):
+    if request.user.username in REDDIT_BANNED_USERS:
+        return HttpResponse('You are not allowed to view reddit through dumbphoneapps.com due to an'
+                            ' explicit ban by the administrator', status=401)
     url = request.GET.get('url', 'r/all')
     before = request.GET.get('before', '')
     after = request.GET.get('after', '')
@@ -55,6 +59,9 @@ def index(request):
 
 @login_required(login_url=LOGIN_URL)
 def view_post(request):
+    if request.user.username in REDDIT_BANNED_USERS:
+        return HttpResponse('You are not allowed to view reddit through dumbphoneapps.com due to an'
+                            ' explicit ban by the administrator', status=401)
     url = request.GET.get('url', '')
     if not url:
         return HttpResponseBadRequest('you need to provide a url for this to work')
@@ -78,6 +85,9 @@ def view_post(request):
 
 @login_required(login_url=LOGIN_URL)
 def view_img(request):
+    if request.user.username in REDDIT_BANNED_USERS:
+        return HttpResponse('You are not allowed to view reddit through dumbphoneapps.com due to an'
+                            ' explicit ban by the administrator', status=401)
     url = request.GET.get('url', '')
     if not url:
         return HttpResponseBadRequest('you need to provide a url for this to work')
@@ -86,6 +96,9 @@ def view_img(request):
 
 @login_required(login_url=LOGIN_URL)
 def get_more(request):
+    if request.user.username in REDDIT_BANNED_USERS:
+        return HttpResponse('You are not allowed to view reddit through dumbphoneapps.com due to an'
+                            ' explicit ban by the administrator', status=401)
     input_id = request.GET.get('id', '')
     url = request.GET.get('url', '')
     if not input_id:

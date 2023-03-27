@@ -55,7 +55,7 @@ def send_otp(user, phone):
         send_sms(body=message, recipients=['+1' + str(phone.national_number)], fail_silently=False)
 
 
-def signup_with_email(request: HttpRequest):
+def signup_with_phone(request: HttpRequest):
     phone_string = request.POST.get('tel', '')
     try:
         phone: PhoneNumber = phonenumbers.parse(phone_string, 'US')

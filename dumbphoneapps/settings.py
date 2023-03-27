@@ -156,6 +156,15 @@ for line in twilio_file.readlines():
         if value:
             REDDIT_SECRET = value
 
+REDDIT_BANNED_USERS = []
+reddit_banned_path = home / USER_FOLDER_NAME / 'reddit-banned-users.txt'
+if not os.path.isfile(reddit_banned_path):
+    twilio_file = open(reddit_banned_path, 'w')
+    twilio_file.close()
+twilio_file = open(reddit_banned_path, 'r')
+for line in twilio_file.readlines():
+    REDDIT_BANNED_USERS.append(line.strip())
+
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 

@@ -19,11 +19,11 @@
 <form method="post" action="/accounts/login/otp">
     {% csrf_token %}
     <p>
-        <label for="email">Telephone Number:</label>
-        <input class="big" readonly type="tel" name="tel" value="{{tel}}">
+        <label for="tel2">Telephone Number:</label>
+        <input class="big" readonly type="tel" name="tel" id="tel2" value="{{tel}}">
     </p>
     <p>
-        <label for="email">Passcode:</label>
+        <label for="otp">Passcode:</label>
         <input class="big" autocomplete="one-time-code" type="number" id="otp" name="otp">
     </p>
     <button type="submit">Log In</button>
