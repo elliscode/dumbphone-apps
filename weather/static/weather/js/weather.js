@@ -10,18 +10,6 @@ function getCurrentLocation() {
   }
 }
 
-function getCherryHill() {
-    json.style.display = 'block';
-    let lat = '39.8688';
-    let long = '-75.006';
-    let url = '/weather/get_weather?lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(long);
-    let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", url, true); // false for synchronous request
-    xmlHttp.onload = writeResult;
-    json.innerHTML = "Retrieving weather for latitude " + lat + " / longitude " + long + " ...";
-    xmlHttp.send(null);
-}
-
 function showPosition(position) {
     let lat = position.coords.latitude;
     let long = position.coords.longitude;
@@ -98,3 +86,5 @@ function extractUrl(input) {
     let idx = input.indexOf('64x64');
     return input.substring(idx + 6);
 }
+
+getCurrentLocation();
