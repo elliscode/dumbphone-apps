@@ -43,6 +43,9 @@ def get_day(request):
 
 @login_required(login_url=LOGIN_URL)
 def add(request):
+    date = request.GET.get('date', datetime.datetime.now().strftime('%Y-%m-%d'))
+    date = date + ' ' + datetime.datetime.now().strftime('%H:%M:%S')
+    time_stamp = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
     food_name = request.GET.get('foodName')
     food = Food.objects.filter(name=food_name).first()
     if food is None:
@@ -71,9 +74,9 @@ def add(request):
     if previous_entries is not None and previous_entries.first() is not None:
         previous_entry: DiaryEntry = previous_entries.first()
         diary_entry = DiaryEntry(food=food, user=current_user, quantity=previous_entry.quantity,
-                                 serving=previous_entry.serving, )
+                                 serving=previous_entry.serving, time_stamp=time_stamp, )
     else:
-        diary_entry = DiaryEntry(food=food, user=current_user, )
+        diary_entry = DiaryEntry(food=food, user=current_user, time_stamp=time_stamp, )
     diary_entry.save()
 
     return HttpResponse('Saved a diary entry')
@@ -183,8 +186,31 @@ def delete(request):
 
 @login_required(login_url=LOGIN_URL)
 def delete_food(request):
-    if DEBUG:
+    if not DEBUG:
         return HttpResponse('You are not allowed to delete foods')
     hash_to_delete = request.GET.get('hash')
     Food.objects.filter(hash=hash_to_delete).delete()
     return HttpResponse('deleted ' + hash_to_delete)
+
+
+@login_required(login_url=LOGIN_URL)
+def create_serving(request):
+    hash_to_set_serving = request.GET['hash']
+    food_hash = request.GET['food_hash']
+    quantity = float(request.GET['quantity'])
+    name = request.GET['name']
+    calories = float(request.GET['calories'])
+    print(hash_to_set_serving, food_hash, quantity, name, calories)
+
+    food = Food.objects.filter(hash=food_hash).first()
+    if not food:
+        return HttpResponse('food not found')
+
+    metadata = json.loads(food.metadata)
+    multiplier = calories / metadata['calories']
+    servings = metadata['servings']
+    servings.append({'multiplier': multiplier, 'amount': quantity, 'name': name, })
+    food.metadata = json.dumps(metadata)
+    food.save()
+
+    return HttpResponse('created serving')

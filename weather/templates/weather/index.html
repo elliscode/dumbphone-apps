@@ -46,6 +46,10 @@
             border-top:2px solid black;
             margin: 5px 0px 0px 0px;
         }
+        #get-weather {
+            display:block;
+            height:200px;
+        }
     </style>
 </head>
 
@@ -54,7 +58,7 @@
 
 Powered by <a href="https://www.weatherapi.com/" title="Free Weather API">WeatherAPI.com</a>
 
-<button onclick="getCurrentLocation(event)">Get Weather for Current Location</button>
+<button id="get-weather" onclick="getCurrentLocation(event)">Get Weather for Current Location</button>
 
 <div id="forecast"></div>
 

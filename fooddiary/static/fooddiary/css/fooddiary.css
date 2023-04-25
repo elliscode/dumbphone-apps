@@ -34,7 +34,7 @@
 #servings-amount {
     width:50px;
 }
-#servings-name {
+#servings-name, #calories-text, #servings-text {
     width:75px;
 }
 #food-or-recipe-edit {

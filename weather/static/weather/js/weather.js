@@ -86,5 +86,3 @@ function extractUrl(input) {
     let idx = input.indexOf('64x64');
     return input.substring(idx + 6);
 }
-
-getCurrentLocation();

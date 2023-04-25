@@ -23,13 +23,16 @@
     <ul class="suggestions"></ul>
 </div>
 <div id="servings">
-    <input id="servings-amount" type="text"></input>
+    <input id="servings-amount" type="text" placeholder="amount"/>
     <select id="servings-name" onchange="servingChange(event)">
         <option>Test One</option>
         <option>Test Two</option>
     </select>
     <button style="display:none;" id="servings-edit" onclick="editServing(event)">&#x270E;</button>
+    <input type="text" id="servings-text" placeholder="serving name"/>
+    <input type="text" id="calories-text" placeholder="calories"/>
     <button id="servings-save" onclick="saveServing(event)">Save</button>
+    <button id="servings-create" onclick="createServing(event)">Create</button>
     <button onclick="closeServings(event)">&times;</button>
 </div>
 <div id="food-or-recipe-edit">
