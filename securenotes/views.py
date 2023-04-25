@@ -14,7 +14,7 @@ from securenotes.models import SecureNote
 # Create your views here.
 @login_required(login_url=LOGIN_URL)
 def index(request):
-    samples_list: list[SecureNote] = SecureNote.objects.filter(user=request.user, ).order_by('time_stamp')
+    samples_list: list[SecureNote] = SecureNote.objects.filter(user=request.user, ).order_by('-time_stamp')
     output_list = []
     for sample in samples_list:
         output_list.append({
