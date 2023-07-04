@@ -127,7 +127,7 @@ def get_food(request):
 def set_food(request):
     hash_to_get = request.GET.get('hash')
     item: Food = Food.objects.filter(hash=hash_to_get).first()
-    metadata: TemplateMetadata = TemplateFood(item).metadata;
+    metadata: TemplateMetadata = TemplateFood(item).metadata
     if request.GET['name'] and request.GET.get('name'):
         item.name = request.GET.get('name')
     if request.GET['calories'] and request.GET.get('calories'):
@@ -175,6 +175,19 @@ def set_food(request):
     item.metadata = json.dumps(metadata.to_dict());
     item.save()
     return HttpResponse('updated ' + hash_to_get)
+
+
+@login_required(login_url=LOGIN_URL)
+def set_recipe(request):
+    food_hash_to_get = request.GET.get('food_hash')
+    item: Food = Food.objects.filter(hash=food_hash_to_get).first()
+    metadata: TemplateMetadata = TemplateFood(item).metadata
+
+    request.GET('recipe')
+
+    item.metadata = json.dumps(metadata.to_dict());
+    item.save()
+    return HttpResponse('updated ' + food_hash_to_get)
 
 
 @login_required(login_url=LOGIN_URL)

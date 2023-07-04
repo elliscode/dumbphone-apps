@@ -1,7 +1,9 @@
 
 let json = document.getElementById("json");
+let button = document.getElementById('get-weather');
 function getCurrentLocation() {
   json.style.display = 'block';
+  button.style.display = 'none';
   if (navigator.geolocation) {
     json.innerHTML = "Retrieving current location from device...";
     navigator.geolocation.getCurrentPosition(showPosition);
