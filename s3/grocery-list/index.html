@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Shopping List</title>
+    <link rel="stylesheet" href="../css/stylesheet.css"/>
+    <link rel="icon" type="image/png" href="../img/favicon.png"/>
+    <style>
+        body {
+            padding-bottom: 30px;
+        }
+        .add-to-group button {
+            height:20px;
+        }
+    </style>
+</head>
+
+<body>
+<div><b><a href="..">Home</a></b> &gt; <b>grocery-list</b></div>
+<div id="input">
+    <input class="big" onfocus="hidePopups(event)" id="item-text-box" type="text">
+    <button id="add" onclick="addToList(event)">Add</button>
+</div>
+
+<div style="display:none;" id="modal-bg">
+    <div id="modal-popup">
+        <div id="modal-content">
+
+        </div>
+        <button onclick="hidePopups(event)" class="delete">&times;</button>
+    </div>
+</div>
+
+<button id="get-test">GET</button>
+
+<div style="display:none;" id="share">
+    <p>Share &ldquo;<span id="list-name">this</span>&rdquo; list with:</p>
+    <label for="user-to-share-with">Phone Number: </label><input type="tel" id="user-to-share-with"/>
+    <button id="share-button" onclick="sendShareRequest(event)">Share</button>
+    <button onclick="hidePopups(event)" class="delete">&times;</button>
+</div>
+
+<ul id="main-list" class="ui-list top-list">
+</ul>
+<form class="logout" action="/accounts/logout" method="post">
+    <button type="submit">Log out</button>
+</form>
+<script src="js/list.js"></script>
+<script>
+    document.addEventListener("keydown", function (e) {
+        if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+            e.preventDefault();
+        }
+    }, false);
+    document.getElementById("item-text-box")
+        .addEventListener("keyup", function (event) {
+            event.preventDefault();
+            if (event.keyCode === 13) {
+                document.getElementById("add").click();
+            }
+        });
+    document.getElementById("user-to-share-with")
+        .addEventListener("keyup", function (event) {
+            event.preventDefault();
+            if (event.keyCode === 13) {
+                document.getElementById("share-button").click();
+            }
+        });
+    let gtbs = document.getElementsByClassName("group-text-box")
+    for (let i = 0; i < gtbs.length; i++) {
+        item = gtbs[i];
+        item.addEventListener("keyup", function (event) {
+            event.preventDefault();
+            if (event.keyCode === 13) {
+                event.target.parentElement.getElementsByClassName("add")[0].click();
+            }
+        });
+    }
+    function handleGetList(event) {
+        let xmlHttp = event.target;
+        let result = JSON.parse(xmlHttp.responseText);
+        console.log(JSON.stringify(result));
+    }
+    const getTestButton = document.getElementById('get-test');
+    getTestButton.addEventListener("click", function (event) {
+        let url = 'https://test.dumbphoneapps.com/getlist';
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("GET", url, true); // false for synchronous request
+        xmlHttp.withCredentials = true;
+        xmlHttp.onload = handleGetList;
+        xmlHttp.send(null);
+    });
+</script>
+</body>
+
+</html>

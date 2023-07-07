@@ -18,7 +18,7 @@
     border: 1px black solid;
 }
 
-#servings {
+#servings, #recipe-servings {
     display:none;
     position: absolute;
     top: -5px;
@@ -28,13 +28,13 @@
     padding:5px;
     border:1px black solid;
 }
-#servings {
+#servings, #recipe-servings {
     width:250px;
 }
 #servings-amount {
     width:50px;
 }
-#servings-name, #calories-text, #servings-text {
+#servings-name, #recipe-servings-name, #calories-text, #servings-text {
     width:75px;
 }
 #food-or-recipe-edit {

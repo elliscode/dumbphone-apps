@@ -4,7 +4,7 @@ info:
   description: This is the swagger definition for dumbphoneapps.com api
   version: 0.0.1
 paths:
-  /otp:
+  /send-otp:
     post:
       summary: submit a phone number to receive a one time passcode
       security: []
@@ -12,7 +12,7 @@ paths:
       requestBody:
         description: send the phone number you want to receive your one time passcode on
         content:
-          application/json:
+          application/x-www-form-urlencoded:
             schema:
               type: object
               properties:
@@ -48,6 +48,12 @@ paths:
       responses:
         '200':
           description: Successful operation
+          headers:
+            X-dumbphone-auth-token:
+              schema:
+                type: string
+              description: temporary token used to access the API
+              example: 'abcdef1234567890abcdef1234567890'
           content:
             application/json:
               schema:
@@ -55,8 +61,11 @@ paths:
   /list:
     get:
       summary: retrieve the list data for a given user
-      security: 
-        - DumbphoneAuth: []
+      parameters:
+        - in: header
+          name: X-dumbphone-auth
+          schema:
+            type: string
       operationId: get_list_data
       responses:
         '200':
@@ -66,11 +75,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ListArray'
 components:
-  securitySchemes:
-    DumbphoneAuth:
-      type: apiKey
-      in: header
-      name: X-dumbphone-auth
   schemas:
     Response:
       type: object
@@ -91,9 +95,9 @@ components:
         - $ref: '#/components/schemas/Response'
       type: object
       properties:
-        token:
+        csrf-token:
           type: string
-          description: temporary token used to access the API
+          description: temporary csrf token used to access the API
           example: 'abcdef1234567890abcdef1234567890'
     List:
       type: object
@@ -117,3 +121,4 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/List'
+        

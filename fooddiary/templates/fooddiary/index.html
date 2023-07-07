@@ -35,6 +35,15 @@
     <button id="servings-create" onclick="createServing(event)">Create</button>
     <button onclick="closeServings(event)">&times;</button>
 </div>
+<div id="recipe-servings">
+    <input id="recipe-servings-amount" type="text" placeholder="amount"/>
+    <select id="recipe-servings-name" onchange="servingRecipeChange(event)">
+        <option>Test One</option>
+        <option>Test Two</option>
+    </select>
+    <button id="recipe-servings-save" onclick="alterRecipeServing(event)">Save</button>
+    <button onclick="closeRecipeServings(event)">&times;</button>
+</div>
 <div id="food-or-recipe-edit">
     <div id="food-edit">
         <table>

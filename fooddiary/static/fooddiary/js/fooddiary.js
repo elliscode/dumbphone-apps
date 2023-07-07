@@ -138,8 +138,6 @@ function deleteEntry(event) {
     xmlHttp.send(null);
 }
 function changeQuantity(event) {
-    closeFood();
-    closeServings();
     const caller = event.target;
     let servings = document.getElementById('servings');
     caller.parentElement.appendChild(servings);
@@ -157,6 +155,11 @@ function changeQuantity(event) {
 }
 function closeServings(event) {
     let servings = document.getElementById('servings');
+    document.body.appendChild(servings);
+    servings.style.display = 'none';
+}
+function closeRecipeServings(event) {
+    let servings = document.getElementById('recipe-servings');
     document.body.appendChild(servings);
     servings.style.display = 'none';
 }
@@ -197,6 +200,33 @@ function displayServing(event) {
     {
         let option = document.createElement('option');
         option.innerText = 'new';
+        select.appendChild(option);
+    }
+}
+function displayRecipeServing(event) {
+    let xmlHttp = event.target;
+    let item = JSON.parse(xmlHttp.responseText);
+    let servings = document.getElementById('recipe-servings');
+    servings.style.display = 'block';
+    let textBox = document.getElementById('recipe-servings-amount');
+    let select = document.getElementById('recipe-servings-name');
+    let servingsSave = document.getElementById('recipe-servings-save');
+    servingsSave.style.display = 'inline-block';
+    while(select.firstChild) {
+        select.firstChild.remove();
+    }
+    {
+        let option = document.createElement('option');
+        option.innerText = 'kcal';
+        option.setAttribute('amount', item.metadata.calories);
+        select.appendChild(option);
+        textBox.value = item.metadata.calories;
+    }
+    for(let i = 0; i < item.metadata.servings.length; i++) {
+        let serving = item.metadata.servings[i];
+        let option = document.createElement('option');
+        option.innerText = serving.name;
+        option.setAttribute('amount', serving.amount);
         select.appendChild(option);
     }
 }
@@ -299,10 +329,28 @@ function createTableHeader() {
     }
     {
         let th = document.createElement('th');
+        th.innerText = 'kcal';
+        tr.appendChild(th);
+    }
+    {
+        let th = document.createElement('th');
         th.innerText = '';
         tr.appendChild(th);
     }
     return tr;
+}
+function changeQuantityRow(event) {
+    const caller = event.target;
+    let servings = document.getElementById('recipe-servings');
+    caller.parentElement.appendChild(servings);
+    const hash = caller.getAttribute('hash');
+    const foodHash = caller.getAttribute('food-hash');
+    let save = document.getElementById('servings-save');
+    save.setAttribute('hash',hash);
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", '/food-diary/get_serving?hash=' + encodeURIComponent(foodHash), true);
+    xmlHttp.onload = displayRecipeServing;
+    xmlHttp.send(null);
 }
 function createTableRow(ingredient) {
     let tr = document.createElement('tr');
@@ -310,6 +358,8 @@ function createTableRow(ingredient) {
         let td = document.createElement('td');
         let button = document.createElement('button');
         button.innerText = '#';
+        button.setAttribute('food-hash', entry.food.hash);
+        button.addEventListener('click', changeQuantityRow);
         td.appendChild(button);
         tr.appendChild(td);
     }
@@ -319,13 +369,24 @@ function createTableRow(ingredient) {
         tr.appendChild(td);
     }
     {
+        const td = document.createElement('td');
+        td.style.textAlign = 'right';
+        td.innerText = Math.round(ingredient.serving);
+        tr.appendChild(td);
+    }
+    {
         let td = document.createElement('td');
         let button = document.createElement('button');
+        button.setAttribute('food-hash', entry.food.hash);
+        button.addEventListener('click', deleteRow);
         button.innerHTML = '&times;';
         td.appendChild(button);
         tr.appendChild(td);
     }
     return tr;
+}
+function deleteRow(event) {
+    event.parentElement.parentElement.remove()
 }
 function saveFood(event) {
     const hash = currentFood.hash;
@@ -345,6 +406,15 @@ function saveFood(event) {
                 , true);
     xmlHttp.onload = setDate;
     xmlHttp.send(null);
+}
+function servingRecipeChange(event) {
+    let select = event.target;
+    let option = select.options[select.selectedIndex];
+    let amount = option.getAttribute('amount');
+    let textBox = document.getElementById('recipe-servings-amount');
+    textBox.value = amount;
+    let servingsSave = document.getElementById('recipe-servings-save');
+    servingsSave.style.display = 'inline-block';
 }
 function servingChange(event) {
     let select = event.target;
@@ -418,6 +488,12 @@ function saveRecipe(event) {
     console.log('Not implemented :)');
 }
 function addToRecipe(event) {
+    const suggestions = document.getElementsByClassName("suggestions");
+    for (let i = 0; i < suggestions.length; i++) {
+        suggestions[i].style.display = "none";
+    }
+    const textBox = document.getElementById('recipe-search');
+    textBox.value = '';
     let caller = event.target;
     while('LI' != caller.tagName) {
         caller = caller.parentElement;
@@ -438,6 +514,10 @@ function showHideCallback(event) {
     }
 }
 function setDate(event) {
+    const textBoxParent = document.getElementById('input');
+    const textBox = textBoxParent.firstElementChild;
+    textBox.value = '';
+
     const date = document.getElementById('date-picker').value;
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", '/food-diary/get_day?date=' + encodeURIComponent(date), true);
