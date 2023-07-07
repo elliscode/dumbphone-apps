@@ -233,10 +233,6 @@ function createAddToDiv(group) {
     nameDiv.classList.add('name');
     nameDiv.textContent = group.name;
     addToGroupDiv.appendChild(nameDiv);
-<!--            let deleteButton = document.createElement('button');-->
-<!--            deleteButton.innerHTML = '&times;';-->
-<!--            deleteButton.onclick = askToDeleteGroup;-->
-<!--            addToGroupDiv.appendChild(deleteButton);-->
     let fillDiv = document.createElement('div');
     fillDiv.classList.add('fill');
     addToGroupDiv.appendChild(fillDiv);

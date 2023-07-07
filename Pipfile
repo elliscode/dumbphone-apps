@@ -13,6 +13,7 @@ phonenumbers = "*"
 django-sms = "*"
 twilio = "*"
 json-stream = "*"
+boto3 = "*"
 
 [dev-packages]
 
