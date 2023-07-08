@@ -17,7 +17,7 @@
 </head>
 
 <body>
-<div><b><a href="..">Home</a></b> &gt; <b>grocery-list</b></div>
+<div><b><a href="../index.html">Home</a></b> &gt; <b>grocery-list</b></div>
 <div id="input">
     <input class="big" onfocus="hidePopups(event)" id="item-text-box" type="text">
     <button id="add" onclick="addToList(event)">Add</button>
@@ -32,8 +32,6 @@
     </div>
 </div>
 
-<button id="get-test">GET</button>
-
 <div style="display:none;" id="share">
     <p>Share &ldquo;<span id="list-name">this</span>&rdquo; list with:</p>
     <label for="user-to-share-with">Phone Number: </label><input type="tel" id="user-to-share-with"/>
@@ -43,11 +41,16 @@
 
 <ul id="main-list" class="ui-list top-list">
 </ul>
-<form class="logout" action="/accounts/logout" method="post">
-    <button type="submit">Log out</button>
-</form>
+<div class="logout">
+    <button onclick="logOut(event)">Log out</button>
+</div>
+<script src="../js/utils.js"></script>
 <script src="js/list.js"></script>
 <script>
+    const csrfToken = localStorage.getItem('dumbphoneapps-csrf-token');
+    if (!csrfToken) {
+        window.location.replace("../signup.html");
+    }
     document.addEventListener("keydown", function (e) {
         if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
             e.preventDefault();
@@ -80,17 +83,26 @@
     function handleGetList(event) {
         let xmlHttp = event.target;
         let result = JSON.parse(xmlHttp.responseText);
-        console.log(JSON.stringify(result));
+        listContent = result;   
+        let groups = Object.keys(listContent);
+        for(let i = 0; i < groups.length; i++) {
+            let group = listContent[groups[i]];
+            let items = listContent[groups[i]].items;
+            for(let j = 0; j < items.length; j++) {
+                let item = items[j];
+                addItem(group, item);
+            }
+        }
     }
-    const getTestButton = document.getElementById('get-test');
-    getTestButton.addEventListener("click", function (event) {
+    function loadList (event) {
         let url = 'https://test.dumbphoneapps.com/getlist';
         let xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("GET", url, true); // false for synchronous request
+        xmlHttp.open("POST", url, true);
         xmlHttp.withCredentials = true;
         xmlHttp.onload = handleGetList;
-        xmlHttp.send(null);
-    });
+        xmlHttp.send(JSON.stringify({ 'csrf': csrfToken }));
+    };
+    loadList();
 </script>
 </body>
 

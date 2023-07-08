@@ -11,15 +11,16 @@
 <body>
     <div><b>Home</b></div>
     <ul>
-        <li><a href="/grocery-list/">Grocery List</a></li>
-        <li><a href="/weather/">Weather</a></li>
-        <li><a href="/food-diary/">Food Diary</a></li>
-        <li><a href="/reddit/?url=r/all">Reddit</a></li>
-        <li><a href="/securenotes/">Secure Notes</a></li>
+        <li><a href="grocery-list/index.html">Grocery List</a></li>
+        <li><a href="weather/index.html">Weather</a></li>
+        <li><a href="food-diary/index.html">Food Diary</a></li>
+        <li><a href="reddit/index.html">Reddit</a></li>
+        <li><a href="securenotes/index.html">Secure Notes</a></li>
     </ul>
-    <form class="logout" action="/accounts/logout" method="post">
-        <button type="submit">Log out</button>
-    </form>
+    <div class="logout">
+        <button onclick="logOut(event)">Log out</button>
+    </div>
+    <script src="/js/utils.js"></script>
 </body>
 
 </html>

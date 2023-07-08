@@ -16,32 +16,24 @@
         <label for="phone">Telephone Number:</label>
         <input class="big" type="tel" id="phone" name="phone">
     </p>
-    <p>
-        <label for="otp">OTP:</label>
-        <input class="big" type="number" id="otp" name="otp">
-    </p>
     <button type="submit">Log In</button>
 </form>
 <script>
-    let xmlHttp = undefined;
     function sendOtp(event) {
         event.preventDefault();
         const phone = document.getElementById('phone').value;
-        const otp = document.getElementById('otp').value;
         
-        let url = 'https://test.dumbphoneapps.com/login';
-        xmlHttp = new XMLHttpRequest();
+        let url = 'https://test.dumbphoneapps.com/otp';
+        let xmlHttp = new XMLHttpRequest();
         xmlHttp.open("POST", url, true); // false for synchronous request
         xmlHttp.withCredentials = true;
         xmlHttp.onload = handle;
-        xmlHttp.send(JSON.stringify({'phone': phone, 'otp': otp}));
+        xmlHttp.send(JSON.stringify({'phone': phone}));
     }
     function handle(event) {
         let xmlHttp = event.target;
         if (xmlHttp.status == 200) {
-            const csrfToken = xmlHttp.getResponseHeader('x-csrf-token');
-            localStorage.setItem('dumbphoneapps-csrf-token', csrfToken);
-            window.location.replace("index.html");
+            window.location.replace("login.html");
         }
     }
 </script>
