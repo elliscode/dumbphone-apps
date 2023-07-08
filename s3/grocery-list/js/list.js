@@ -4,11 +4,23 @@ function determineAddUrl(json) {
     let groupName = json.groupName;
     let commaIndex = input.indexOf(',');
     if (commaIndex > -1) {
-        return '/grocery-list/' + 'add' + '?group=' + encodeURIComponent(input.substring(0, commaIndex)) + '&name=' + encodeURIComponent(input.substring(commaIndex+1));
+        return {
+            'name': input.substring(0, commaIndex),
+            'item': input.substring(commaIndex+1),
+            'csrf': csrfToken,
+        };
     } else if (!!groupName) {
-        return '/grocery-list/' + 'add' + '?group=' + encodeURIComponent(groupName) + '&name=' + encodeURIComponent(input);
+        return {
+            'name': groupName,
+            'item': input,
+            'csrf': csrfToken,
+        };
     } else {
-        return '/grocery-list/' + 'add' + '?name=' + encodeURIComponent(input);
+        return {
+            'name': 'Groceries',
+            'item': input,
+            'csrf': csrfToken,
+        };
     }
 }
 function addToList(event) {
@@ -19,11 +31,13 @@ function addToList(event) {
     if ("LI" == caller.parentElement.parentElement.tagName) {
         groupName = caller.parentElement.firstElementChild.textContent;
     }
-    let url = determineAddUrl({ 'groupName': groupName, 'input': input.value });
+    let url = 'https://test.dumbphoneapps.com/additem';
+    let body = determineAddUrl({ 'groupName': groupName, 'input': input.value });
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", url, true);
-    xmlHttp.send(null);
+    xmlHttp.open("POST", url, true);
+    xmlHttp.withCredentials = true;
     xmlHttp.onload = handleAddList;
+    xmlHttp.send(JSON.stringify(body));
     input.value = '';
 }
 function handleAddList(event) {
@@ -41,11 +55,12 @@ function deleteFromList(event) {
 
     removeItem(textItem);
 
-    let url = '/grocery-list/' + 'delete' + '?group=' + encodeURIComponent(groupName) + '&name=' + encodeURIComponent(text);
+    let url = 'https://test.dumbphoneapps.com/deleteitem';
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", url, true); // false for synchronous request
+    xmlHttp.open("POST", url, true); // false for synchronous request
+    xmlHttp.withCredentials = true;
     xmlHttp.onload = handleDeleteList;
-    xmlHttp.send(null);
+    xmlHttp.send(JSON.stringify({'name': groupName, 'item': text, 'csrf': csrfToken}));
 }
 function handleDeleteList(event) {
     let xmlHttp = event.target;
@@ -118,18 +133,25 @@ function moveDown(event) {
 }
 
 function runOrderCall() {
-    let url = '/grocery-list/move';
+    let url = 'https://test.dumbphoneapps.com/setlistorder';
     const groups = document.querySelectorAll('ul#main-list>li')
     let group_hashes = [];
-    let formData = new FormData();
     for(let index = 0; index < groups.length; index++) {
         let group = groups[index];
-        formData.append('group_hashes', group.id);
+        group_hashes.push(group.id);
     }
+    let body = {'list_ids': group_hashes, 'csrf': csrfToken};
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true); // false for synchronous request
-    xmlHttp.setRequestHeader('X-CSRFToken', csrftoken);
-    xmlHttp.send(formData);
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleOrderCall;
+    xmlHttp.send(JSON.stringify(body));
+}
+
+function handleOrderCall(event) {
+    let xmlHttp = event.target;
+    let result = JSON.parse(xmlHttp.responseText);
+    console.log(JSON.stringify(result));
 }
 
 function swapGroups(groupOneId, groupTwoId) {
@@ -202,7 +224,7 @@ function addItem(group, item) {
 function crossToggle(event) {
     let div = event.target;
     let deleteButton = div.parentElement.querySelector('button.delete');
-    let hash = div.parentElement.id;
+    let list_hash = div.parentElement.parentElement.parentElement.id;
     let newValue = undefined;
     if('line-through' == div.style.textDecoration) {
         div.style.textDecoration = 'none';
@@ -213,11 +235,18 @@ function crossToggle(event) {
         deleteButton.style.display = 'block';
         newValue = true;
     }
-    let url = '/grocery-list/' + 'set_crossed_off' + '?item_hash=' + encodeURIComponent(hash) + '&crossed_off=' + encodeURIComponent(newValue);
+    let url = 'https://test.dumbphoneapps.com/' + 'set_crossed_off';
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", url, true);
-    xmlHttp.send(null);
-    xmlHttp.onload = handleAddList;
+    xmlHttp.open("POST", url, true);
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleToggle;
+    xmlHttp.send(JSON.stringify({'list_id': list_hash, 'item': div.innerText.trim(), 'crossed_off': newValue, 'csrf': csrfToken}));
+}
+
+function handleToggle(event) {
+    let xmlHttp = event.target;
+    let result = JSON.parse(xmlHttp.responseText);
+    console.log(JSON.stringify(result));
 }
 
 function askToDeleteGroup(event) {

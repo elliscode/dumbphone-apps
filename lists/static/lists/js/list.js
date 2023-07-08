@@ -121,15 +121,15 @@ function runOrderCall() {
     let url = '/grocery-list/move';
     const groups = document.querySelectorAll('ul#main-list>li')
     let group_hashes = [];
-    let formData = new FormData();
     for(let index = 0; index < groups.length; index++) {
         let group = groups[index];
-        formData.append('group_hashes', group.id);
+        group_hashes.append(group.id);
     }
+    let body = {'list_ids': group_hashes, 'csrf': csrfToken};
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true); // false for synchronous request
     xmlHttp.setRequestHeader('X-CSRFToken', csrftoken);
-    xmlHttp.send(formData);
+    xmlHttp.send(JSON.stringify(body));
 }
 
 function swapGroups(groupOneId, groupTwoId) {

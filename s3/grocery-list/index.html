@@ -39,12 +39,18 @@
     <button onclick="hidePopups(event)" class="delete">&times;</button>
 </div>
 
+<div id="info" {% if not added and not removed %} style="display:none;" {% endif %}>
+    <p id="info-p">
+    </p>
+    <button onclick="hidePopups(event)" class="delete">&times;</button>
+</div>
+
 <ul id="main-list" class="ui-list top-list">
 </ul>
 <div class="logout">
     <button onclick="logOut(event)">Log out</button>
 </div>
-<script src="../js/utils.js"></script>
+<script src="/js/utils.js"></script>
 <script src="js/list.js"></script>
 <script>
     const csrfToken = localStorage.getItem('dumbphoneapps-csrf-token');
