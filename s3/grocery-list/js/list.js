@@ -41,8 +41,7 @@ function addToList(event) {
     input.value = '';
 }
 function handleAddList(event) {
-    let xmlHttp = event.target;
-    let result = JSON.parse(xmlHttp.responseText);
+    const result = defaultHandler(event);
     if(result.hasOwnProperty('group') && result.hasOwnProperty('item')) {
         addItem(result.group, result.item);
     }
@@ -63,8 +62,7 @@ function deleteFromList(event) {
     xmlHttp.send(JSON.stringify({'name': groupName, 'item': text, 'csrf': csrfToken}));
 }
 function handleDeleteList(event) {
-    let xmlHttp = event.target;
-    let result = JSON.parse(xmlHttp.responseText);
+    const result = defaultHandler(event);
     console.log(JSON.stringify(result));
 }
 function openShareWindow(event) {
@@ -89,11 +87,20 @@ function sendShareRequest(event) {
     let listName = document.getElementById('list-name');
     let group_hash = listName.getAttribute('hash');
 
-    let url = '/grocery-list/share?tel=' + encodeURIComponent(user) + '&group_hash=' + encodeURIComponent(group_hash);
+    let url = 'https://test.dumbphoneapps.com/sendsharelist';
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", url, true); // false for synchronous request
+    xmlHttp.open("POST", url, true); // false for synchronous request
+    xmlHttp.withCredentials = true;
     xmlHttp.onload = handleShareResponse;
-    xmlHttp.send(null);
+    xmlHttp.send(JSON.stringify({'csrf': csrfToken, 'user': user, 'list_id': group_hash}));
+}
+function acceptShare(group_hash) {
+    let url = 'https://test.dumbphoneapps.com/acceptsharelist';
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true); // false for synchronous request
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleShareResponse;
+    xmlHttp.send(JSON.stringify({'csrf': csrfToken, 'list_id': group_hash}));
 }
 function openInfoWindow(text) {
     let info = document.getElementById('info');
@@ -103,8 +110,7 @@ function openInfoWindow(text) {
 }
 function handleShareResponse(event) {
     hidePopups();
-    let xmlHttp = event.target;
-    let result = JSON.parse(xmlHttp.responseText);
+    const result = defaultHandler(event);
     if(result.hasOwnProperty('message')) {
         openInfoWindow(result.message);
     } else {
@@ -149,8 +155,7 @@ function runOrderCall() {
 }
 
 function handleOrderCall(event) {
-    let xmlHttp = event.target;
-    let result = JSON.parse(xmlHttp.responseText);
+    const result = defaultHandler(event);
     console.log(JSON.stringify(result));
 }
 
@@ -235,7 +240,7 @@ function crossToggle(event) {
         deleteButton.style.display = 'block';
         newValue = true;
     }
-    let url = 'https://test.dumbphoneapps.com/' + 'set_crossed_off';
+    let url = 'https://test.dumbphoneapps.com/' + 'setcrossedoff';
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
     xmlHttp.withCredentials = true;
@@ -244,8 +249,7 @@ function crossToggle(event) {
 }
 
 function handleToggle(event) {
-    let xmlHttp = event.target;
-    let result = JSON.parse(xmlHttp.responseText);
+    const result = defaultHandler(event);
     console.log(JSON.stringify(result));
 }
 

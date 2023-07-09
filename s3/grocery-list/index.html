@@ -53,10 +53,6 @@
 <script src="/js/utils.js"></script>
 <script src="js/list.js"></script>
 <script>
-    const csrfToken = localStorage.getItem('dumbphoneapps-csrf-token');
-    if (!csrfToken) {
-        window.location.replace("../signup.html");
-    }
     document.addEventListener("keydown", function (e) {
         if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
             e.preventDefault();
@@ -87,13 +83,11 @@
         });
     }
     function handleGetList(event) {
-        let xmlHttp = event.target;
-        let result = JSON.parse(xmlHttp.responseText);
-        listContent = result;   
-        let groups = Object.keys(listContent);
+        const result = defaultHandler(event);
+        let groups = Object.keys(result);
         for(let i = 0; i < groups.length; i++) {
-            let group = listContent[groups[i]];
-            let items = listContent[groups[i]].items;
+            let group = result[groups[i]];
+            let items = result[groups[i]].items;
             for(let j = 0; j < items.length; j++) {
                 let item = items[j];
                 addItem(group, item);
@@ -109,6 +103,13 @@
         xmlHttp.send(JSON.stringify({ 'csrf': csrfToken }));
     };
     loadList();
+    function checkQueryParameters() {
+        const share_id = getParameterByName('share');
+        if (!!share_id) {
+            acceptShare(share_id);
+        }
+    }
+    checkQueryParameters();
 </script>
 </body>
 

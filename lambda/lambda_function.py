@@ -1,3 +1,4 @@
+import os
 import json
 import time
 import secrets
@@ -10,7 +11,9 @@ from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 digits = "0123456789"
 lowercase_letters = "abcdefghijklmnopqrstuvwxyz"
 uppercase_letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-TABLE_NAME = "dumbphoneapps-test002"
+TABLE_NAME = os.environ['DYNAMODB_TABLE_NAME']
+DOMAIN_NAME = os.environ['DOMAIN_NAME']
+ADMIN_PHONE = os.environ['ADMIN_PHONE']
 dynamo = boto3.client("dynamodb")
 sqs = boto3.client("sqs")
 
@@ -31,7 +34,7 @@ def format_response(http_code, body, headers=None):
         body = {"message": body}
     all_headers = {
         "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Origin": "https://aws.dumbphoneapps.com",
+        "Access-Control-Allow-Origin": DOMAIN_NAME,
         "Access-Control-Allow-Methods": "OPTIONS,POST,GET,DELETE",
         "Access-Control-Allow-Credentials": "true",
         "Access-Control-Expose-Headers": "x-csrf-token",
@@ -45,6 +48,12 @@ def format_response(http_code, body, headers=None):
     }
 
 
+# Only using POST because I want to prevent CORS preflight checks, and setting a
+# custom header counts as "not a simple request" or whatever, so I need to pass 
+# in the CSRF token (don't want to pass as a query parameter), so that really
+# only leaves POST as an option, as GET has its body removed by AWS somehow
+#
+# see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#simple_requests
 def route(event):
     if path_equals(event=event, method="POST", path="/otp"):
         return otp_route(event)
@@ -58,10 +67,14 @@ def route(event):
         return deleteitem_route(event)
     if path_equals(event=event, method="POST", path="/deletelist"):
         return deletelist_route(event)
-    if path_equals(event=event, method="POST", path="/set_crossed_off"):
+    if path_equals(event=event, method="POST", path="/setcrossedoff"):
         return setcrossedoff_route(event)
     if path_equals(event=event, method="POST", path="/setlistorder"):
         return setlistorder_route(event)
+    if path_equals(event=event, method="POST", path="/sendsharelist"):
+        return sendsharelist_route(event)
+    if path_equals(event=event, method="POST", path="/acceptsharelist"):
+        return acceptsharelist_route(event)
     return format_response(http_code=404, body="No matching route found")
 
 
@@ -88,13 +101,119 @@ def authenticate(func):
 
 
 @authenticate
+def sendsharelist_route(event, user_data, body):
+    phone = user_data["key2"]
+    target_user = body['user']
+    list_id = body['list_id']
+    
+    # first figure out if the target user exists in our database
+    target_user_data = get_user_data(target_user)
+    if target_user_data is None:
+        return format_response(
+            http_code=500,
+            body="Target user does not exist in our database",
+        )
+        
+    source_list = get_list_data([list_id])[0]
+    
+    link = f"{DOMAIN_NAME}/grocery-list/index.html?share={list_id}"
+    message = {
+        "phone": target_user,
+        "message": f"{phone} wants to share the list '{source_list['name']}' with you, follow this link to accept\n\n{link}",
+    }
+    print(message)
+    # sqs.send_message(
+    #     QueueUrl="https://sqs.us-east-1.amazonaws.com/646933935516/smsQueue",
+    #     MessageBody=json.dumps(message)
+    # )
+    return format_response(
+        http_code=200,
+        body="Not implemented",
+    )
+
+
+@authenticate
 def setlistorder_route(event, user_data, body):
-    return format_response(http_code=200, body="Not implemented")
+    phone = user_data["key2"]
+
+    new_userlist = body["list_ids"]
+    old_userlist = get_userlist_data(phone)['lists']
+    print(new_userlist)
+    print(old_userlist)
+    if not all(x in old_userlist for x in new_userlist):
+        return format_response(
+            http_code=500, 
+            body="You sent me some weird data, this is not all of your lists",
+        )
+    set_userlist_data(phone, body["list_ids"])
+
+    return format_response(
+        http_code=200, 
+        body="Successfully set the order of the lists",
+    )
+
+
+@authenticate
+def acceptsharelist_route(event, user_data, body):
+    target_user = user_data["key2"]
+    list_id = body['list_id']
+    
+    # first figure out if the target user exists in our database
+    target_user_data = get_user_data(target_user)
+    if target_user_data is None:
+        return format_response(
+            http_code=500,
+            body="Target user does not exist in our database",
+        )
+    
+    # first figure out what lists the target user has defined
+    target_userlist_data = get_userlist_data(target_user)
+    if target_userlist_data is None:
+        target_user_list_ids = []
+    else:
+        target_user_list_ids = target_userlist_data['lists']
+    if list_id in target_user_list_ids:
+        return format_response(
+            http_code=500,
+            body="List is already shared with this user",
+        )
+    
+    # next figure out if the target user has a list with the same name, if they
+    # do, delete the current users list and combine all the items together
+    found_list = None
+    source_list = get_list_data([list_id])[0]
+    all_target_user_lists = get_list_data(target_user_list_ids)
+    for target_user_list in all_target_user_lists:
+        if target_user_list['name'] == source_list['name']:
+            found_list = target_user_list
+            break
+        
+    if found_list is not None:
+        for key, value in source_list["items"].items():
+            if key in found_list["items"].keys():
+                continue
+            found_list["items"][key] = source_list["items"][key]
+        delete_list(list_id)
+        set_list_data(found_list["key2"], found_list["name"], found_list["items"])
+        target_user_list_ids.append(list_id)
+        set_userlist_data(target_user, target_user_list_ids)
+        return format_response(
+            http_code=200, 
+            body=f"Successfully merged list {source_list['name']}",
+        )
+    else:
+        target_user_list_ids.append(list_id)
+        set_userlist_data(target_user, target_user_list_ids)
+        return format_response(
+            http_code=200, 
+            body=f"Successfully shared list {source_list['name']}",
+        )
 
 
 @authenticate
 def setcrossedoff_route(event, user_data, body):
     phone = user_data["key2"]
+    item = body["item"].strip()
 
     userlist_data = get_userlist_data(phone)
     if userlist_data is None:
@@ -104,30 +223,38 @@ def setcrossedoff_route(event, user_data, body):
 
     found_list = None
 
-    for list in list_data:
-        if list["key2"] == body["list_id"]:
-            found_list = list
+    for this_list in list_data:
+        if this_list["key2"] == body["list_id"]:
+            found_list = this_list
             break
     if found_list is None:
-        return format_response(http_code=404, body="Provided list does not exist")
+        return format_response(
+            http_code=404, 
+            body="Provided list does not exist",
+        )
 
     items = found_list["items"]
 
     if items is None:
-        items = []
+        items = {}
 
-    item = body["item"]
     if item not in items:
-        return format_response(http_code=200, body="Item already exists")
+        return format_response(
+            http_code=200,
+            body="Item already exists",
+        )
 
     items[item] = body["crossed_off"]
 
     set_list_data(found_list["key2"], found_list["name"], items)
 
-    return format_response(http_code=200, body="Item successfully added")
+    return format_response(
+        http_code=200,
+        body="Item successfully added",
+    )
 
 
-def delete_list(list_id, name):
+def delete_list(list_id):
     dynamo_data = python_obj_to_dynamo_obj(
         {
             "key1": "list",
@@ -143,6 +270,7 @@ def delete_list(list_id, name):
 @authenticate
 def deletelist_route(event, user_data, body):
     phone = user_data["key2"]
+    list_name = body["name"].strip()
 
     userlist_data = get_userlist_data(phone)
     if userlist_data is None:
@@ -153,13 +281,13 @@ def deletelist_route(event, user_data, body):
     found_list = None
 
     for list in list_data:
-        if list["name"] == body["name"]:
+        if list["name"].lower() == list_name.lower():
             found_list = list
             break
     if found_list is None:
         return format_response(http_code=404, body="Provided list does not exist")
 
-    delete_list(found_list["key2"], found_list["name"])
+    delete_list(found_list["key2"])
 
     return format_response(http_code=200, body="List successfully deleted")
 
@@ -176,9 +304,9 @@ def deleteitem_route(event, user_data, body):
 
     found_list = None
 
-    for list in list_data:
-        if list["name"] == body["name"]:
-            found_list = list
+    for this_list in list_data:
+        if this_list["name"].lower() == list_name.lower():
+            found_list = this_list
             break
     if found_list is None:
         return format_response(http_code=404, body="Provided list does not exist")
@@ -197,34 +325,36 @@ def deleteitem_route(event, user_data, body):
 @authenticate
 def additem_route(event, user_data, body):
     phone = user_data["key2"]
+    list_name = body["name"].strip()
+    item = body["item"].strip()
 
     userlist_data = get_userlist_data(phone)
     if userlist_data is None:
         userlist_data = create_userlist_data(phone)
-
     list_data = get_list_data(userlist_data["lists"])
-
     found_list = None
-
-    for list in list_data:
-        if list["name"] == body["name"]:
-            found_list = list
+    
+    for this_list in list_data:
+        if this_list["name"].lower() == list_name.lower():
+            found_list = this_list
             break
     if found_list is None:
         found_list = {
             "key": "list",
             "key2": create_id(32),
-            "name": body["name"],
+            "name": list_name,
             "items": {},
         }
+        lists = userlist_data["lists"]
+        lists.append(found_list["key2"])
+        userlist_data = set_userlist_data(phone, lists)
 
     items = found_list["items"]
 
     if items is None:
-        items = []
+        items = {}
 
-    item = body["item"]
-    if item in items:
+    if item.lower() in {k.lower(): v for k, v in items.items()}:
         return format_response(http_code=200, body="Item already exists")
 
     items[item] = False
@@ -389,6 +519,7 @@ def otp_route(event):
     user_data = get_user_data(phone)
     if user_data is None:
         user_data = create_user_data(phone)
+        alert_admin_of_new_user(phone)
     print(user_data)
 
     # generate and set OTP
@@ -403,6 +534,7 @@ def otp_route(event):
             "phone": phone,
             "message": f"{otp_data['otp']} is your dumbphoneapps.com one-time passcode\n\n@dumbphoneapps.com #{otp_data['otp']}",
         }
+        print(message)
         # sqs.send_message(
         #     QueueUrl="https://sqs.us-east-1.amazonaws.com/646933935516/smsQueue",
         #     MessageBody=json.dumps(message)
@@ -411,6 +543,19 @@ def otp_route(event):
     print(otp_data)
 
     return format_response(http_code=200, body=body_text)
+    
+    
+def alert_admin_of_new_user(phone):
+    # generate and send message if you are creating a new otp
+    message = {
+        "phone": ADMIN_PHONE,
+        "message": f"A new user has joined dumbphoneapps!\n\nPhone: {phone}",
+    }
+    print(message)
+    sqs.send_message(
+        QueueUrl="https://sqs.us-east-1.amazonaws.com/646933935516/smsQueue",
+        MessageBody=json.dumps(message)
+    )
 
 
 def parse_body(body):
