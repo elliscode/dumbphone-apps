@@ -1,9 +1,7 @@
 import json
 import traceback
-from dumbphoneapps.utils import path_equals, format_response
+from dumbphoneapps.utils import otp_route, login_route, path_equals, format_response
 from dumbphoneapps.grocery_list import (
-    otp_route,
-    login_route,
     getlist_route,
     additem_route,
     deleteitem_route,
@@ -13,7 +11,7 @@ from dumbphoneapps.grocery_list import (
     sendsharelist_route,
     acceptsharelist_route,
 )
-from dumbphoneapps.food_diary import get_day_route
+# from dumbphoneapps.food_diary import get_day_route
 
 
 def lambda_handler(event, context):
@@ -54,6 +52,6 @@ def route(event):
         return sendsharelist_route(event)
     if path_equals(event=event, method="POST", path="/acceptsharelist"):
         return acceptsharelist_route(event)
-    if path_equals(event=event, method="POST", path="/food-diary/get-day"):
-        return get_day_route(event)
+    # if path_equals(event=event, method="POST", path="/food-diary/get-day"):
+    #     return get_day_route(event)
     return format_response(event=event, http_code=404, body="No matching route found")
