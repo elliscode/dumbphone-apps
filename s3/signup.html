@@ -18,12 +18,16 @@
     </p>
     <button type="submit">Log In</button>
 </form>
+<div style="display:none" id="message" class="error">
+</div>
+<script src="js/utils.js"></script>
 <script>
+    const messageDiv = document.getElementById('message');
     function sendOtp(event) {
         event.preventDefault();
         const phone = document.getElementById('phone').value;
         
-        let url = 'https://test.dumbphoneapps.com/otp';
+        let url = DOMAIN + '/otp';
         let xmlHttp = new XMLHttpRequest();
         xmlHttp.open("POST", url, true); // false for synchronous request
         xmlHttp.withCredentials = true;
@@ -34,6 +38,12 @@
         let xmlHttp = event.target;
         if (xmlHttp.status == 200) {
             window.location.replace("login.html");
+        } else {
+            let result = JSON.parse(xmlHttp.responseText);
+            if (result.hasOwnProperty('message')) {
+                messageDiv.style.display = 'block';
+                messageDiv.textContent = result.message;
+            }
         }
     }
 </script>

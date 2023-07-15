@@ -22,14 +22,18 @@
     </p>
     <button type="submit">Log In</button>
 </form>
+<div style="display:none" id="message" class="error">
+</div>
+<script src="js/utils.js"></script>
 <script>
+    const messageDiv = document.getElementById('message');
     let xmlHttp = undefined;
     function sendOtp(event) {
         event.preventDefault();
         const phone = document.getElementById('phone').value;
         const otp = document.getElementById('otp').value;
         
-        let url = 'https://test.dumbphoneapps.com/login';
+        let url = DOMAIN + '/login';
         xmlHttp = new XMLHttpRequest();
         xmlHttp.open("POST", url, true); // false for synchronous request
         xmlHttp.withCredentials = true;
@@ -42,6 +46,17 @@
             const csrfToken = xmlHttp.getResponseHeader('x-csrf-token');
             localStorage.setItem('dumbphoneapps-csrf-token', csrfToken);
             window.location.replace("index.html");
+        } else {
+            let result = JSON.parse(xmlHttp.responseText);
+            if (result.hasOwnProperty('message')) {
+                messageDiv.style.display = 'block';
+                messageDiv.textContent = result.message;
+                if (result.message.includes('expired')) {
+                    setTimeout(function () {
+                        window.location.replace("/signup.html");
+                    }, 2000);
+                }
+            }
         }
     }
 </script>

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Shopping List</title>
     <link rel="stylesheet" href="../css/stylesheet.css"/>
+    <link rel="stylesheet" href="../css/loader.css"/>
     <link rel="icon" type="image/png" href="../img/favicon.png"/>
     <style>
         body {
@@ -23,6 +24,10 @@
     <button id="add" onclick="addToList(event)">Add</button>
 </div>
 
+<div id="loading">
+    <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+</div>
+
 <div style="display:none;" id="modal-bg">
     <div id="modal-popup">
         <div id="modal-content">
@@ -39,7 +44,7 @@
     <button onclick="hidePopups(event)" class="delete">&times;</button>
 </div>
 
-<div id="info" {% if not added and not removed %} style="display:none;" {% endif %}>
+<div id="info" style="display:none;">
     <p id="info-p">
     </p>
     <button onclick="hidePopups(event)" class="delete">&times;</button>
@@ -50,9 +55,10 @@
 <div class="logout">
     <button onclick="logOut(event)">Log out</button>
 </div>
-<script src="/js/utils.js"></script>
+<script src="../js/utils.js"></script>
 <script src="js/list.js"></script>
 <script>
+    const loader = document.getElementById('loading');
     document.addEventListener("keydown", function (e) {
         if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
             e.preventDefault();
@@ -93,9 +99,11 @@
                 addItem(group, item);
             }
         }
+        loader.style.display = 'none';
     }
     function loadList (event) {
-        let url = 'https://test.dumbphoneapps.com/getlist';
+        loader.style.display = 'block';
+        let url = DOMAIN + '/getlist';
         let xmlHttp = new XMLHttpRequest();
         xmlHttp.open("POST", url, true);
         xmlHttp.withCredentials = true;
