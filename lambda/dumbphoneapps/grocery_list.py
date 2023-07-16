@@ -348,24 +348,19 @@ def format_list_data(list_data):
 def get_list_data(list_ids):
     keys = []
     for list_id in list_ids:
-        keys.append({
-                'key1': {
-                    'S': 'list',
-                },
-                'key2': {
-                    'S': list_id,
+        keys.append(
+            python_obj_to_dynamo_obj(
+                {
+                    "key1": "list",
+                    "key2": list_id,
                 }
-            })
-    response = dynamo.batch_get_item(
-        RequestItems={
-            TABLE_NAME: {
-                'Keys': keys
-            }
-        })
+            )
+        )
+    response = dynamo.batch_get_item(RequestItems={TABLE_NAME: {"Keys": keys}})
     result_map = {}
-    for item in response['Responses'][TABLE_NAME]:
+    for item in response["Responses"][TABLE_NAME]:
         python_obj = dynamo_obj_to_python_obj(item)
-        result_map[python_obj['key2']] = python_obj
+        result_map[python_obj["key2"]] = python_obj
     output = []
     for list_id in list_ids:
         output.append(result_map[list_id])
