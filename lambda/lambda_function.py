@@ -53,6 +53,6 @@ def route(event):
         return sendsharelist_route(event)
     if path_equals(event=event, method="POST", path="/acceptsharelist"):
         return acceptsharelist_route(event)
-    # if path_equals(event=event, method="POST", path="/food-diary/get-day"):
-    #     return get_day_route(event)
+    if path_equals(event=event, method="POST", path="/food-diary/get-day"):
+        return get_day_route(event)
     return format_response(event=event, http_code=404, body="No matching route found")

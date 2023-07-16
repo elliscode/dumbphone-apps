@@ -21,6 +21,11 @@
         <button onclick="logOut(event)">Log out</button>
     </div>
     <script src="js/utils.js"></script>
+    <script>
+        if (!csrfToken) {
+            window.location.replace("../signup.html");
+        }
+    </script>
 </body>
 
 </html>

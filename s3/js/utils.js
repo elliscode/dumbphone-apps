@@ -19,7 +19,4 @@ function getParameterByName(name, url = window.location.href) {
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 const csrfToken = localStorage.getItem('dumbphoneapps-csrf-token');
-if (!csrfToken) {
-    window.location.replace("../signup.html");
-}
 const DOMAIN = 'https://test.dumbphoneapps.com';

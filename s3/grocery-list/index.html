@@ -58,6 +58,9 @@
 <script src="../js/utils.js"></script>
 <script src="js/list.js"></script>
 <script>
+    if (!csrfToken) {
+        window.location.replace("../signup.html");
+    }
     const loader = document.getElementById('loading');
     document.addEventListener("keydown", function (e) {
         if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {

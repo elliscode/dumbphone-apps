@@ -16,9 +16,8 @@ from .utils import (
     dynamo_obj_to_python_obj,
     parse_body,
     ADMIN_PHONE,
+    create_id,
 )
-import re
-import secrets
 
 
 @authenticate
@@ -306,13 +305,6 @@ def additem_route(event, user_data, body):
             "group": {"hash": found_list["key2"], "name": found_list["name"]},
             "item": {"name": item, "crossed_off": False, "hash": create_id(32)},
         },
-    )
-
-
-def create_id(length):
-    return "".join(
-        secrets.choice(digits + lowercase_letters + uppercase_letters)
-        for i in range(length)
     )
 
 

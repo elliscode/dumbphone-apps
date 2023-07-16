@@ -80,6 +80,9 @@
 <script src="../js/utils.js"></script>
 <script src="js/fooddiary.js"></script>
 <script>
+    if (!csrfToken) {
+        window.location.replace("../signup.html");
+    }
     setDate();
     document.addEventListener("keydown", function (e) {
         if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {

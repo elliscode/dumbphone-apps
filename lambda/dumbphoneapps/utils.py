@@ -2,9 +2,10 @@ import os
 import json
 import time
 import boto3
+import re
+import secrets
 from urllib.parse import parse_qsl
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
-
 
 ADMIN_PHONE = os.environ["ADMIN_PHONE"]
 DOMAIN_NAME = os.environ["DOMAIN_NAME"]
@@ -334,4 +335,11 @@ def set_list_data(list_id, name, items):
     dynamo.put_item(
         TableName=TABLE_NAME,
         Item=dynamo_data,
+    )
+
+
+def create_id(length):
+    return "".join(
+        secrets.choice(digits + lowercase_letters + uppercase_letters)
+        for i in range(length)
     )
