@@ -396,3 +396,18 @@ def get_userlist_data(username):
     if "Item" in user_data_boto:
         output = dynamo_obj_to_python_obj(user_data_boto["Item"])
     return output
+
+
+def set_list_data(list_id, name, items):
+    dynamo_data = python_obj_to_dynamo_obj(
+        {
+            "key1": "list",
+            "key2": list_id,
+            "name": name,
+            "items": items,
+        }
+    )
+    dynamo.put_item(
+        TableName=TABLE_NAME,
+        Item=dynamo_data,
+    )

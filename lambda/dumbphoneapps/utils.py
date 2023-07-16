@@ -323,21 +323,6 @@ def create_user_data(phone):
     return python_data
 
 
-def set_list_data(list_id, name, items):
-    dynamo_data = python_obj_to_dynamo_obj(
-        {
-            "key1": "list",
-            "key2": list_id,
-            "name": name,
-            "items": items,
-        }
-    )
-    dynamo.put_item(
-        TableName=TABLE_NAME,
-        Item=dynamo_data,
-    )
-
-
 def create_id(length):
     return "".join(
         secrets.choice(digits + lowercase_letters + uppercase_letters)
