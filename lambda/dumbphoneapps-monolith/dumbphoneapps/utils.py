@@ -224,7 +224,7 @@ def otp_route(event):
 
         # generate and send message if you are creating a new otp
         message = {
-            "phone": phone,
+            "phone": f'+1{phone}',
             "message": f"{otp_data['otp']} is your dumbphoneapps.com one-time passcode\n\n@dumbphoneapps.com #{otp_data['otp']}",
         }
         print(message)
