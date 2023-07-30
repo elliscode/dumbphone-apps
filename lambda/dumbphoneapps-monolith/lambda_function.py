@@ -12,7 +12,7 @@ from dumbphoneapps.grocery_list import (
     acceptsharelist_route,
 )
 
-from dumbphoneapps.food_diary import get_day_route
+from dumbphoneapps.food_diary import get_day_route, search_route
 
 
 def lambda_handler(event, context):
@@ -55,4 +55,6 @@ def route(event):
         return acceptsharelist_route(event)
     if path_equals(event=event, method="POST", path="/food-diary/get-day"):
         return get_day_route(event)
+    if path_equals(event=event, method="POST", path="/food-diary/search"):
+        return search_route(event)
     return format_response(event=event, http_code=404, body="No matching route found")
