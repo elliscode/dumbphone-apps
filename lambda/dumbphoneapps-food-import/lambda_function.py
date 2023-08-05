@@ -151,16 +151,15 @@ def import_diary_v3():
                 date_string = time.strftime('%Y-%m-%d', time_value)
                 timestamp = time.mktime(time_value)
                 # find food by name
-                entry = {
-                    'key1': f'diary_{user}',
-                    'key2': f'{date_string}',
+                entry = {'PutRequest': {'Item': python_obj_to_dynamo_obj({
+                    'key1': f'diary_{user}_{date_string}',
+                    'key2': f'{timestamp}',
                     'name': f'{food_name}',
                     'calories': f'{calories}',
                     'food_id': f'{food_id}',
                     'multiplier': f'{multiplier}',
                     'unit': f'{unit}',
-                    'timestamp': f'{timestamp}',
-                }
+                })}}
 
                 print(entry)
 
@@ -172,15 +171,15 @@ def import_diary_v3():
                 pass
             if len(items) >= 25:
                 # print(items)
-                # response = dynamo.batch_write_item(RequestItems={
-                #     TABLE_NAME: items
-                # })
+                response = dynamo.batch_write_item(RequestItems={
+                    TABLE_NAME: items
+                })
                 items = []
         if len(items) > 0:
             # print(items)
-            # response = dynamo.batch_write_item(RequestItems={
-            #     TABLE_NAME: items
-            # })
+            response = dynamo.batch_write_item(RequestItems={
+                TABLE_NAME: items
+            })
             items = []
 
 
