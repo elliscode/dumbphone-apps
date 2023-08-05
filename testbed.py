@@ -1,5 +1,6 @@
-import datetime
 import time
 
-print(str(datetime.datetime.now().strftime("%a, %d %b %Y %H:%M:%S GMT")))
-print(time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(time.time() + (4 * 30 * 24 * 60 * 60))))
+item = '2023-07-16 04:27:03-04'
+print(item)
+date_string = time.strftime('%Y-%m-%d', time.strptime(item, '%Y-%m-%d %H:%M:%S-04'))
+print(date_string)
