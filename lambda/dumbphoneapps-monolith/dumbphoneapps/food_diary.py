@@ -1,3 +1,4 @@
+import time
 from .utils import (
     DOMAIN_NAME,
     get_user_data,
@@ -18,11 +19,69 @@ from .utils import (
 
 
 @authenticate
+def add_route(event, user_data, body):
+    if 'hash' in body:
+        response = dynamo.get_item(
+            TableName=TABLE_NAME,
+            Key=python_obj_to_dynamo_obj({
+                'key1': 'food',
+                'key2': body['hash']
+            }),
+        )
+        food_item = dynamo_obj_to_python_obj(response['Item'])
+        dynamo.put_item(
+            TableName=TABLE_NAME,
+            Item=python_obj_to_dynamo_obj({
+                'key1': f'diary_{user_data["key2"]}_{body["date"]}',
+                'key2': f'{time.gmtime()}',
+                'name': f'{food_item["name"]}',
+                'calories': f'{food_item["metadata"]["calories"]}',
+                'food_id': f'{body["hash"]}',
+                'multiplier': f'1',
+                'unit': f'kcal',
+            }),
+        )
+        return format_response(
+            event=event,
+            http_code=200,
+            body='Saved a diary entry',
+        )
+    else:
+        return format_response(
+            event=event,
+            http_code=500,
+            body='Unimplemented',
+        )
+
+
+@authenticate
 def get_day_route(event, user_data, body):
+    entries = []
+    date = body['date']
+    key1 = f'diary_{user_data["key2"]}_{date}'
+    response = dynamo.query(
+        TableName=TABLE_NAME,
+        KeyConditions={
+            'key1': {
+                'AttributeValueList': [
+                    {
+                        'S': key1
+                    }
+                ],
+                'ComparisonOperator': 'EQ'
+            },
+        },
+    )
+    for item in response['Items']:
+        python_item = dynamo_obj_to_python_obj(item)
+        result = {}
+        result['food'] = {'hash': python_item['food_id'], 'name': python_item['name']}
+        result['derived_values'] = {'calories': python_item['calories']}
+        entries.append(result)
     return format_response(
         event=event,
         http_code=200,
-        body={'entries': []},
+        body={'entries': entries, 'key': key1},
     )
 
 
@@ -41,7 +100,7 @@ def search_route(event, user_data, body):
             'key1': {
                 'AttributeValueList': [
                     {
-                        'S': 'food'
+                        'S': 'food_token'
                     }
                 ],
                 'ComparisonOperator': 'EQ'
@@ -55,15 +114,21 @@ def search_route(event, user_data, body):
                 'ComparisonOperator': 'BEGINS_WITH'
             },
         },
-        Limit=10,
     )
     items = []
+    ids = []
     for item in response['Items']:
         python_item = dynamo_obj_to_python_obj(item)
-        items.append({'hash': python_item['key2'], 'name': python_item['name']})
+        for result in python_item['food_ids']:
+            if result['hash'] in ids:
+                continue
+            items.append(result)
+            ids.append(result['hash'])
+
+    sorted_items = sorted(items, key=lambda d: d['name'].lower())
 
     return format_response(
         event=event,
         http_code=200,
-        body=items,
+        body=sorted_items,
     )

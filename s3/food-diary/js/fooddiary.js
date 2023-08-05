@@ -1,45 +1,61 @@
 function addToList(event) {
     const caller = event.target;
     const input = caller.parentElement.getElementsByTagName("input")[0];
-    let text = input.value;
-    const fieldValues = {'calories':0,'fat':0,'carbs':0,'protein':0,'alcohol':0,'caffeine':0,};
-    let keys = Object.keys(fieldValues);
-    for(let i = 0; i < keys.length; i++) {
-        field = keys[i];
-        let result = new RegExp(field + ':\\s*([0-9]+[\\.]*[0-9]*)').exec(text)
-        if(result) {
-            fieldValues[field] = result[1];
-            text = text.substring(0,result.index) + text.substring(result.index + result[0].length, text.length)
-        }
-    }
-    const servingPrefix = 'serving:';
-    const indexFound = text.indexOf(servingPrefix);
-    let serving = '1 serving';
-    if(-1 < indexFound) {
-        serving = text.substring(indexFound + servingPrefix.length).trim();
-        text = text.substring(0, indexFound);
-    }
+
+    const hash = caller.getAttribute('hash');
     const date = document.getElementById('date-picker').value;
-    const foodName = text.trim();
+
+    let payload = undefined;
+    if (!!hash) {
+        payload = {
+            'hash': hash,
+            'date': date,
+            'csrf': csrfToken,
+        };
+    } else {
+        let text = input.value;
+        const fieldValues = {'calories':0,'fat':0,'carbs':0,'protein':0,'alcohol':0,'caffeine':0,};
+        let keys = Object.keys(fieldValues);
+        for(let i = 0; i < keys.length; i++) {
+            field = keys[i];
+            let result = new RegExp(field + ':\\s*([0-9]+[\\.]*[0-9]*)').exec(text)
+            if(result) {
+                fieldValues[field] = result[1];
+                text = text.substring(0,result.index) + text.substring(result.index + result[0].length, text.length)
+            }
+        }
+        const servingPrefix = 'serving:';
+        const indexFound = text.indexOf(servingPrefix);
+        let serving = '1 serving';
+        if(-1 < indexFound) {
+            serving = text.substring(indexFound + servingPrefix.length).trim();
+            text = text.substring(0, indexFound);
+        }
+        const foodName = text.trim();
+
+        payload = {
+            'foodName': foodName,
+            'calories': fieldValues.calories,
+            'fat': fieldValues.fat,
+            'carbs': fieldValues.carbs,
+            'protein': fieldValues.protein,
+            'alcohol': fieldValues.alcohol,
+            'caffeine': fieldValues.caffeine,
+            'serving': serving,
+            'date': date,
+            'csrf': csrfToken,
+        };
+    }
+
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", DOMAIN + '/food-diary/add', true);
     xmlHttp.withCredentials = true;
     xmlHttp.onload = setDate;
-    xmlHttp.send(JSON.stringify({
-        'foodName': foodName,
-        'calories': fieldValues.calories,
-        'fat': fieldValues.fat,
-        'carbs': fieldValues.carbs,
-        'protein': fieldValues.protein,
-        'alcohol': fieldValues.alcohol,
-        'caffeine': fieldValues.caffeine,
-        'serving': serving,
-        'date': date,
-        'csrf': csrfToken,
-    }));
+    xmlHttp.send(JSON.stringify(payload));
 }
 let searchTimeout = undefined;
 function queueSearch(event) {
+    event.target.removeAttribute('hash');
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(search, 400, event);
 }
@@ -125,6 +141,7 @@ function setTextAndAdd(event) {
     }
     const textBox = div.getElementsByTagName("input")[0];
     textBox.value = newValue;
+    textBox.setAttribute('hash', caller.getAttribute('hash'));
     const suggestions = div.getElementsByClassName("suggestions")[0];
     while (suggestions.firstChild) {
         suggestions.removeChild(suggestions.firstChild);
