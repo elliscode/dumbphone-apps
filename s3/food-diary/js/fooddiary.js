@@ -151,13 +151,15 @@ function setTextAndAdd(event) {
 }
 function deleteEntry(event) {
     const caller = event.target;
-    const hash = caller.getAttribute('hash');
+    const timestamp = caller.getAttribute('timestamp');
+    const key = caller.getAttribute('key');
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", DOMAIN + '/food-diary/delete', true);
     xmlHttp.withCredentials = true;
     xmlHttp.onload = setDate;
     xmlHttp.send(JSON.stringify({
-        'hash': hash,
+        'timestamp': timestamp,
+        'key': key,
         'csrf': csrfToken,
     }));
 }
@@ -650,7 +652,8 @@ function populateTable(event) {
             const td = document.createElement('td');
             const button = document.createElement('button');
             button.innerHTML = '&times;';
-            button.setAttribute('hash', entry.hash);
+            button.setAttribute('timestamp', entry.timestamp);
+            button.setAttribute('key', data.key);
             button.addEventListener('click', deleteEntry);
             td.appendChild(button);
             tr.appendChild(td);
@@ -688,6 +691,7 @@ function populateTable(event) {
         }
         table.appendChild(tr);
     }
+    loader.style.display = 'none';
 }
 
 const today = new Date();

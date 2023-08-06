@@ -6,6 +6,7 @@
     <title>Food Diary</title>
     <link rel="stylesheet" href="../css/stylesheet.css"/>
     <link rel="stylesheet" href="css/fooddiary.css"/>
+    <link rel="stylesheet" href="../css/loader.css"/>
     <link rel="icon" type="image/png" href="../img/favicon.png"/>
 </head>
 
@@ -19,6 +20,11 @@
     </div>
     <ul class="suggestions"></ul>
 </div>
+
+<div id="loading">
+    <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+</div>
+
 <div id="servings">
     <input id="servings-amount" type="text" placeholder="amount"/>
     <select id="servings-name" onchange="servingChange(event)">
@@ -104,6 +110,7 @@
             }
         });
     }
+    const loader = document.getElementById('loading');
 </script>
 </body>
 

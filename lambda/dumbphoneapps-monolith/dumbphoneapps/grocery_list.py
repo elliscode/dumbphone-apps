@@ -1,6 +1,4 @@
 import json
-import time
-
 from .utils import (
     DOMAIN_NAME,
     get_user_data,
@@ -10,12 +8,7 @@ from .utils import (
     python_obj_to_dynamo_obj,
     dynamo,
     TABLE_NAME,
-    digits,
-    lowercase_letters,
-    uppercase_letters,
     dynamo_obj_to_python_obj,
-    parse_body,
-    ADMIN_PHONE,
     create_id,
 )
 
@@ -181,7 +174,7 @@ def setcrossedoff_route(event, user_data, body):
     return format_response(
         event=event,
         http_code=200,
-        body="Item successfully added",
+        body="Item successfully crossed off",
     )
 
 
@@ -260,6 +253,10 @@ def deleteitem_route(event, user_data, body):
 
 @authenticate
 def additem_route(event, user_data, body):
+    return additem(event, user_data, body)
+
+
+def additem(event, user_data, body):
     phone = user_data["key2"]
     list_name = body["name"].strip()
     item = body["item"].strip()

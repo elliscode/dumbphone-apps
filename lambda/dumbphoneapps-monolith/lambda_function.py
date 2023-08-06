@@ -12,7 +12,14 @@ from dumbphoneapps.grocery_list import (
     acceptsharelist_route,
 )
 
-from dumbphoneapps.food_diary import get_day_route, search_route, add_route
+from dumbphoneapps.food_diary import (
+    get_day_route,
+    search_route,
+    add_route,
+    delete_route,
+)
+
+from dumbphoneapps.one_offs import twilio_route
 
 
 def lambda_handler(event, context):
@@ -59,4 +66,9 @@ def route(event):
         return search_route(event)
     if path_equals(event=event, method="POST", path="/food-diary/add"):
         return add_route(event)
+    if path_equals(event=event, method="POST", path="/food-diary/delete"):
+        return delete_route(event)
+    if path_equals(event=event, method="POST", path="/one-offs/twilio"):
+        return twilio_route(event)
+
     return format_response(event=event, http_code=404, body="No matching route found")
