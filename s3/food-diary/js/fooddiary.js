@@ -167,13 +167,17 @@ function changeQuantity(event) {
     const caller = event.target;
     let servings = document.getElementById('servings');
     caller.parentElement.appendChild(servings);
-    const hash = caller.getAttribute('hash');
+    const key = caller.getAttribute('key');
+    const timestamp = caller.getAttribute('timestamp');
     const foodHash = caller.getAttribute('food-hash');
     let save = document.getElementById('servings-save');
-    save.setAttribute('hash',hash);
+    save.setAttribute("timestamp", timestamp);
+    save.setAttribute("key", key);
+    save.setAttribute("hash", foodHash);
     let servingsCreate = document.getElementById('servings-create');
     servingsCreate.setAttribute('food-hash',foodHash);
-    servingsCreate.setAttribute('hash',hash);
+    servingsCreate.setAttribute("key", key);
+    servingsCreate.setAttribute("hash", foodHash);
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", DOMAIN + '/food-diary/get_serving', true);
     xmlHttp.withCredentials = true;
@@ -491,6 +495,8 @@ function servingChange(event) {
 function saveServing(event) {
     const caller = event.target;
     const hash = caller.getAttribute('hash');
+    const key = caller.getAttribute('key');
+    const timestamp = caller.getAttribute('timestamp');
     let textBox = document.getElementById('servings-amount');
     let select = document.getElementById('servings-name');
     const name = select.value;
@@ -501,6 +507,8 @@ function saveServing(event) {
     xmlHttp.onload = setDate;
     xmlHttp.send(JSON.stringify({
         'hash': hash,
+        'key': key,
+        'timestamp': timestamp,
         'name': name,
         'amount': quantity,
         'csrf': csrfToken,
@@ -626,7 +634,8 @@ function populateTable(event) {
             const button = document.createElement('button');
             button.innerText = '#';
             button.setAttribute('food-hash', entry.food.hash);
-            button.setAttribute('hash', entry.hash);
+            button.setAttribute('timestamp', entry.timestamp);
+            button.setAttribute('key', data.key);
             button.addEventListener('click', changeQuantity);
             td.appendChild(button);
             tr.appendChild(td);

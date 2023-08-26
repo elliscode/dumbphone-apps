@@ -13,4 +13,8 @@ print(result.group(1))
 
 print(re.compile('^\\+1\\d{10}$').match('+17325676361'))
 
+test = '142.0'
+
+print(test[:-2])
+
 # result = re.search(r"Reply ([0-9]+): Ack", msg_text)
