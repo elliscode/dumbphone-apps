@@ -4,15 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "*"
-waitress = "*"
-whitenoise = "*"
-psycopg2 = "*"
-requests = "*"
-phonenumbers = "*"
-django-sms = "*"
-twilio = "*"
-json-stream = "*"
 boto3 = "*"
 
 [dev-packages]
