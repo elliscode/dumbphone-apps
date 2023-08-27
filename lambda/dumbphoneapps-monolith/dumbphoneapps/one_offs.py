@@ -4,7 +4,7 @@ import re
 from .grocery_list import (
     additem,
 )
-from .utils import sqs, get_user_data
+from .utils import sqs, get_user_data, ADMIN_PHONE
 
 
 def twilio_route(event):
@@ -17,7 +17,11 @@ def twilio_route(event):
     from_number = parsed_body["From"][0]
 
     if not re.compile("^\\+1\\d{10}$").match(from_number):
-        print(f"Received a text message from {from_number} which is not valid")
+        message = {
+            "phone": ADMIN_PHONE,
+            "message": f"Received a text message from {from_number} which is not valid",
+        }
+        print(message)
         return {
             "statusCode": 200,
             "body": "<Response/>",
@@ -35,8 +39,14 @@ def twilio_route(event):
     print(user_data)
 
     if not user_data:
-        print(
-            f"Received a text message from {from_number} which does not have an account"
+        message = {
+            "phone": from_number,
+            "message": f"You do not have an account, please sign up at dumbphoneapps.com",
+        }
+        print(message)
+        sqs.send_message(
+            QueueUrl="https://sqs.us-east-1.amazonaws.com/646933935516/smsQueue",
+            MessageBody=json.dumps(message),
         )
         return {
             "statusCode": 200,

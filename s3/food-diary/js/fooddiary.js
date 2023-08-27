@@ -533,8 +533,7 @@ function createServing(event) {
     xmlHttp.withCredentials = true;
     xmlHttp.onload = setDate;
     xmlHttp.send(JSON.stringify({
-        'hash': hash,
-        'food_hash': foodHash,
+        'hash': foodHash,
         'quantity': quantity,
         'name': servingName,
         'calories': calories,
