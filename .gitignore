@@ -166,3 +166,5 @@ logfile
 .DS_Store
 
 *.zip
+
+.vscode/
