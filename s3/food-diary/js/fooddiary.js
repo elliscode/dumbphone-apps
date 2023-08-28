@@ -271,6 +271,12 @@ function editEitherFoodOrRecipe(event) {
     closeServings();
     const caller = event.target;
     const hash = caller.getAttribute('food-hash');
+    const key = caller.getAttribute('key');
+    const timestamp = caller.getAttribute('timestamp');
+    const foodEditSave = document.getElementById('food-edit-save')
+    foodEditSave.setAttribute('food-hash', hash);
+    foodEditSave.setAttribute('key', key);
+    foodEditSave.setAttribute('timestamp', timestamp);
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", DOMAIN + '/food-diary/get_food', true);
     xmlHttp.withCredentials = true;
@@ -282,6 +288,8 @@ function editEitherFoodOrRecipe(event) {
     xmlHttp.send(JSON.stringify({
         'hash': hash,
         'csrf': csrfToken,
+        'key': key,
+        'timestamp': timestamp,
     }));
 }
 
@@ -436,12 +444,16 @@ function saveFood(event) {
     let select = document.getElementById('servings-name');
     const name = select.value;
     const quantity = textBox.value;
+    const key = event.target.getAttribute('key');
+    const timestamp = event.target.getAttribute('timestamp');
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", DOMAIN + '/food-diary/set_food', true);
     xmlHttp.withCredentials = true;
     xmlHttp.onload = setDate;
     xmlHttp.send(JSON.stringify({
         'hash': hash,
+        'key': key,
+        'timestamp': timestamp,
         'name': document.getElementById('food-edit-name').value,
         'calories': document.getElementById('food-edit-calories').value,
         'fat': document.getElementById('food-edit-fat').value,
@@ -646,6 +658,8 @@ function populateTable(event) {
             span.classList.add('food');
             span.innerText = entry.food.name;
             span.setAttribute('food-hash', entry.food.hash);
+            span.setAttribute('timestamp', entry.timestamp);
+            span.setAttribute('key', data.key);
             span.addEventListener('click', editEitherFoodOrRecipe);
             td.appendChild(span);
             tr.appendChild(td);

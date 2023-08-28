@@ -11,6 +11,156 @@ from .utils import (
 )
 
 
+def determine_tokens(food_id, food_name):
+    food_tokens = {}
+    food_key = food_name.lower()
+    split_food_key = food_key.split()
+    for i in range(0, len(split_food_key)):
+        food_token = ""
+        for j in range(i, len(split_food_key)):
+            if food_token:
+                food_token += " "
+            food_token += split_food_key[j]
+        if food_token not in food_tokens:
+            food_tokens[food_token] = []
+        food_tokens[food_token].append({"hash": food_id, "name": food_name})
+    return food_tokens
+
+
+def remove_all_tokens(food_id, food_name):
+    items = []
+    token_map = determine_tokens(food_id, food_name)
+    for token, value in token_map.items():
+        for token_value in value:
+            response = dynamo.get_item(
+                TableName=TABLE_NAME,
+                Key=python_obj_to_dynamo_obj({"key1": "food_token", "key2": token}),
+            )
+            if "Item" not in response:
+                continue
+            json_data = dynamo_obj_to_python_obj(response["Item"])
+            found_index = 0
+            while found_index < len(json_data["food_ids"]):
+                current_data = json_data["food_ids"][found_index]
+                print(current_data)
+                print(food_id)
+                print(food_name)
+                if (
+                    current_data["hash"] == food_id
+                    and current_data["name"] == food_name
+                ):
+                    print("matches!")
+                    break
+                found_index = found_index + 1
+            if found_index < len(json_data["food_ids"]):
+                json_data["food_ids"].pop(found_index)
+            if len(json_data["food_ids"]) == 0:
+                json_data.pop("food_ids")
+                items.append(
+                    {"DeleteRequest": {"Key": python_obj_to_dynamo_obj(json_data)}}
+                )
+            else:
+                items.append(
+                    {"PutRequest": {"Item": python_obj_to_dynamo_obj(json_data)}}
+                )
+            if len(items) >= 25:
+                print(items)
+                response = dynamo.batch_write_item(RequestItems={TABLE_NAME: items})
+                items = []
+                print(response)
+    if len(items) > 0:
+        print(items)
+        response = dynamo.batch_write_item(RequestItems={TABLE_NAME: items})
+        items = []
+        print(response)
+
+
+def add_all_tokens(food_id, food_name):
+    items = []
+    token_map = determine_tokens(food_id, food_name)
+    for token, value in token_map.items():
+        for token_value in value:
+            response = dynamo.get_item(
+                TableName=TABLE_NAME,
+                Key=python_obj_to_dynamo_obj({"key1": "food_token", "key2": token}),
+            )
+            if "Item" not in response:
+                json_data = {"key1": "food_token", "key2": token, "food_ids": []}
+            else:
+                json_data = dynamo_obj_to_python_obj(response["Item"])
+            json_data["food_ids"].append(token_value)
+            items.append({"PutRequest": {"Item": python_obj_to_dynamo_obj(json_data)}})
+            if len(items) >= 25:
+                response = dynamo.batch_write_item(RequestItems={TABLE_NAME: items})
+                items = []
+    if len(items) > 0:
+        response = dynamo.batch_write_item(RequestItems={TABLE_NAME: items})
+        items = []
+
+
+@authenticate
+def set_food_route(event, user_data, body):
+    diary_response = dynamo.get_item(
+        TableName=TABLE_NAME,
+        Key=python_obj_to_dynamo_obj({"key1": body["key"], "key2": body["timestamp"]}),
+    )
+    diary_entry = dynamo_obj_to_python_obj(diary_response["Item"])
+    food_response = dynamo.get_item(
+        TableName=TABLE_NAME,
+        Key=python_obj_to_dynamo_obj({"key1": "food", "key2": body["hash"]}),
+    )
+    food = dynamo_obj_to_python_obj(food_response["Item"])
+    if body["name"]:
+        print(f'modifying {food["name"]} to {body["name"]}')
+        remove_all_tokens(food["key2"], food["name"])
+        food["name"] = body["name"]
+        add_all_tokens(food["key2"], food["name"])
+        diary_entry["name"] = food["name"]
+    if body["alcohol"]:
+        food["metadata"]["alcohol"] = body["alcohol"]
+    if body["caffeine"]:
+        food["metadata"]["caffeine"] = body["caffeine"]
+    if body["calories"]:
+        food["metadata"]["calories"] = body["calories"]
+    if body["carbs"]:
+        food["metadata"]["carbs"] = body["carbs"]
+    if body["fat"]:
+        food["metadata"]["fat"] = body["fat"]
+    if body["protein"]:
+        food["metadata"]["protein"] = body["protein"]
+    dynamo.put_item(
+        TableName=TABLE_NAME,
+        Item=python_obj_to_dynamo_obj(food),
+    )
+    dynamo.put_item(
+        TableName=TABLE_NAME,
+        Item=python_obj_to_dynamo_obj(diary_entry),
+    )
+    return format_response(
+        event=event,
+        http_code=200,
+        body=f'Successfully updated {food["key2"]}',
+    )
+
+
+@authenticate
+def get_food_route(event, user_data, body):
+    food_response = dynamo.get_item(
+        TableName=TABLE_NAME,
+        Key=python_obj_to_dynamo_obj({"key1": "food", "key2": body["hash"]}),
+    )
+    food = dynamo_obj_to_python_obj(food_response["Item"])
+    food["hash"] = food["key2"]
+    food.pop("key1")
+    food.pop("key2")
+    print(food)
+    return format_response(
+        event=event,
+        http_code=200,
+        body=food,
+    )
+
+
 @authenticate
 def create_serving_route(event, user_data, body):
     food_response = dynamo.get_item(
@@ -27,7 +177,7 @@ def create_serving_route(event, user_data, body):
 
     found_serving = None
     for food_serving in food["metadata"]["servings"]:
-        if body_unit == food_serving["name"]:
+        if food_serving["name"].endswith(body_unit):
             found_food_serving = food_serving
             break
 
@@ -83,11 +233,17 @@ def set_serving_route(event, user_data, body):
             found_food_serving = food_serving
             break
     if not found_food_serving:
-        return format_response(
-            event=event,
-            http_code=404,
-            body=f"No unit found for {body_unit}",
-        )
+        if body_unit == "kcal":
+            found_food_serving = {
+                "multiplier": "1",
+                "amount": food["metadata"]["calories"],
+            }
+        else:
+            return format_response(
+                event=event,
+                http_code=404,
+                body=f"No unit found for {body_unit}",
+            )
     determined_multiplier = (
         float(found_food_serving["multiplier"])
         * float(body_amount)
@@ -208,6 +364,7 @@ def add_route(event, user_data, body):
             TableName=TABLE_NAME,
             Item=python_obj_to_dynamo_obj(new_diary_entry),
         )
+        add_all_tokens(new_food["key2"], new_food["name"])
         return format_response(
             event=event,
             http_code=200,

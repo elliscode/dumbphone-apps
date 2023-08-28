@@ -20,6 +20,8 @@ from dumbphoneapps.food_diary import (
     get_serving_route,
     set_serving_route,
     create_serving_route,
+    get_food_route,
+    set_food_route,
 )
 
 from dumbphoneapps.one_offs import twilio_route
@@ -77,6 +79,10 @@ def route(event):
         return set_serving_route(event)
     if path_equals(event=event, method="POST", path="/food-diary/create_serving"):
         return create_serving_route(event)
+    if path_equals(event=event, method="POST", path="/food-diary/get_food"):
+        return get_food_route(event)
+    if path_equals(event=event, method="POST", path="/food-diary/set_food"):
+        return set_food_route(event)
     if path_equals(event=event, method="POST", path="/one-offs/twilio"):
         return twilio_route(event)
 
