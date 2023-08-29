@@ -383,17 +383,19 @@ def get_day_route(event, user_data, body):
             "key1": {"AttributeValueList": [{"S": key1}], "ComparisonOperator": "EQ"},
         },
     )
+    total = 0
     for item in response["Items"]:
         python_item = dynamo_obj_to_python_obj(item)
         result = {}
         result["food"] = {"hash": python_item["food_id"], "name": python_item["name"]}
         result["derived_values"] = {"calories": python_item["calories"]}
         result["timestamp"] = python_item["key2"]
+        total = total + float(python_item["calories"])
         entries.append(result)
     return format_response(
         event=event,
         http_code=200,
-        body={"entries": entries, "key": key1},
+        body={"entries": entries, "key": key1, "total": int(total)},
     )
 
 
