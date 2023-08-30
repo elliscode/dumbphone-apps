@@ -140,6 +140,26 @@ def authenticate(func):
     return wrapper_func
 
 
+
+@authenticate
+def ios_cookie_refresh_route(event, user_data, body):
+    cookie_string = event["headers"]["cookie"]
+    cookie = parse_cookie(cookie_string)
+    token_data = get_token(cookie)
+    # generate the date_string
+    date_string = time.strftime(
+        "%a, %d %b %Y %H:%M:%S GMT", time.gmtime(float(token_data['expiration']))
+    )
+    return format_response(
+        event=event,
+        http_code=200,
+        body="successfully refreshed cookie",
+        headers={
+            "Set-Cookie": f'dumbphoneapps-auth-token={token_data["key2"]}; Domain=.dumbphoneapps.com; Expires={date_string}; Secure; HttpOnly',
+        },
+    )
+
+
 def login_route(event):
     body = parse_body(event["body"])
     phone = body["phone"]

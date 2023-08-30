@@ -1,6 +1,6 @@
 import json
 import traceback
-from dumbphoneapps.utils import otp_route, login_route, path_equals, format_response
+from dumbphoneapps.utils import otp_route, login_route, path_equals, format_response, ios_cookie_refresh_route
 from dumbphoneapps.grocery_list import (
     getlist_route,
     additem_route,
@@ -83,6 +83,8 @@ def route(event):
         return get_food_route(event)
     if path_equals(event=event, method="POST", path="/food-diary/set_food"):
         return set_food_route(event)
+    if path_equals(event=event, method="POST", path="/ios-cookie-refresh"):
+        return ios_cookie_refresh_route(event)
     if path_equals(event=event, method="POST", path="/one-offs/twilio"):
         return twilio_route(event)
 
