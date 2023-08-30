@@ -90,6 +90,9 @@
     if (!csrfToken) {
         window.location.replace("../signup.html");
     }
+    if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
+        iosCookieRefresh();
+    }
     setDate();
     document.addEventListener("keydown", function (e) {
         if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
