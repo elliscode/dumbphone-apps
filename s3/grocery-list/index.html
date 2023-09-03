@@ -4,126 +4,34 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Shopping List</title>
-    <link rel="stylesheet" href="../css/stylesheet.css"/>
     <link rel="stylesheet" href="../css/loader.css"/>
+    <link rel="stylesheet" href="css/grocery-list.css"/>
     <link rel="icon" type="image/png" href="../img/favicon.png"/>
-    <style>
-        body {
-            padding-bottom: 30px;
-        }
-        .add-to-group button {
-            height:20px;
-        }
-    </style>
 </head>
 
 <body>
-<div><b><a href="../index.html">Home</a></b> &gt; <b>grocery-list</b></div>
-<div id="input">
-    <input class="big" onfocus="hidePopups(event)" id="item-text-box" type="text">
-    <button id="add" onclick="addToList(event)">Add</button>
+<div id="top-bar">
+    <div id="title-bar">
+        <button>&lt;</button>
+        <h1>Grocery List</h1>
+        <button>&hellip;</button>
+    </div>
+    <div id="tool-bar">
+        <button id="add-item"><span>+</span>Add Item</button>
+    </div>
 </div>
+<div id="content">
+
 
 <div id="loading">
     <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
 </div>
 
-<div style="display:none;" id="modal-bg">
-    <div id="modal-popup">
-        <div id="modal-content">
 
-        </div>
-        <button onclick="hidePopups(event)" class="delete">&times;</button>
-    </div>
-</div>
-
-<div style="display:none;" id="share">
-    <p>Share &ldquo;<span id="list-name">this</span>&rdquo; list with:</p>
-    <label for="user-to-share-with">Phone Number: </label><input type="tel" id="user-to-share-with"/>
-    <button id="share-button" onclick="sendShareRequest(event)">Share</button>
-    <button onclick="hidePopups(event)" class="delete">&times;</button>
-</div>
-
-<div id="info" style="display:none;">
-    <p id="info-p">
-    </p>
-    <button onclick="hidePopups(event)" class="delete">&times;</button>
-</div>
-
-<ul id="main-list" class="ui-list top-list">
-</ul>
-<div class="logout">
-    <button onclick="logOut(event)">Log out</button>
 </div>
 <script src="../js/utils.js"></script>
 <script src="js/list.js"></script>
 <script>
-    if (!csrfToken) {
-        window.location.replace("../signup.html");
-    }
-    if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
-        iosCookieRefresh();
-    }
-    const loader = document.getElementById('loading');
-    document.addEventListener("keydown", function (e) {
-        if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
-            e.preventDefault();
-        }
-    }, false);
-    document.getElementById("item-text-box")
-        .addEventListener("keyup", function (event) {
-            event.preventDefault();
-            if (event.keyCode === 13) {
-                document.getElementById("add").click();
-            }
-        });
-    document.getElementById("user-to-share-with")
-        .addEventListener("keyup", function (event) {
-            event.preventDefault();
-            if (event.keyCode === 13) {
-                document.getElementById("share-button").click();
-            }
-        });
-    let gtbs = document.getElementsByClassName("group-text-box")
-    for (let i = 0; i < gtbs.length; i++) {
-        item = gtbs[i];
-        item.addEventListener("keyup", function (event) {
-            event.preventDefault();
-            if (event.keyCode === 13) {
-                event.target.parentElement.getElementsByClassName("add")[0].click();
-            }
-        });
-    }
-    function handleGetList(event) {
-        const result = defaultHandler(event);
-        let groups = Object.keys(result);
-        for(let i = 0; i < groups.length; i++) {
-            let group = result[groups[i]];
-            let items = result[groups[i]].items;
-            for(let j = 0; j < items.length; j++) {
-                let item = items[j];
-                addItem(group, item);
-            }
-        }
-        loader.style.display = 'none';
-    }
-    function loadList (event) {
-        loader.style.display = 'block';
-        let url = DOMAIN + '/getlist';
-        let xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("POST", url, true);
-        xmlHttp.withCredentials = true;
-        xmlHttp.onload = handleGetList;
-        xmlHttp.send(JSON.stringify({ 'csrf': csrfToken }));
-    };
-    loadList();
-    function checkQueryParameters() {
-        const share_id = getParameterByName('share');
-        if (!!share_id) {
-            acceptShare(share_id);
-        }
-    }
-    checkQueryParameters();
 </script>
 </body>
 

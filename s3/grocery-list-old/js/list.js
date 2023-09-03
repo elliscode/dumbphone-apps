@@ -161,7 +161,7 @@ function handleOrderCall(event) {
 }
 
 function swapGroups(groupOneId, groupTwoId) {
-    let mainList = document.getElementById('content');
+    let mainList = document.getElementById('main-list');
     let groupOneLi = document.getElementById(groupOneId);
     let groupTwoLi = document.getElementById(groupTwoId);
 
@@ -169,20 +169,18 @@ function swapGroups(groupOneId, groupTwoId) {
 }
 
 function addItem(group, item) {
-    let mainList = document.getElementById('content');
+    let mainList = document.getElementById('main-list');
 
     const groupId = group.hash;
     let groupLi = document.getElementById(groupId);
     if(!groupLi) {
-        groupLi = document.createElement('div');
+        groupLi = document.createElement('li');
         groupLi.id = groupId;
-        groupLi.classList.add('group')
-        let itemsList = document.createElement('h2');
-        itemsList.textContent = group.name;
+        groupLi.appendChild(createAddToDiv(group));
+        let itemsList = document.createElement('ul');
+        itemsList.classList.add('ui-list');
+        itemsList.classList.add('bottom-list');
         groupLi.appendChild(itemsList);
-        let ulInIt = document.createElement('ul');
-        ulInIt.classList.add('ui-list');
-        groupLi.appendChild(ulInIt)
         mainList.appendChild(groupLi);
     }
 
@@ -262,6 +260,33 @@ function askToDeleteGroup(event) {
     modalBg.style.display = 'block';
 }
 
+function createAddToDiv(group) {
+    let addToGroupDiv = document.createElement('div');
+    addToGroupDiv.classList.add('add-to-group');
+    let nameDiv = document.createElement('div');
+    nameDiv.classList.add('name');
+    nameDiv.textContent = group.name;
+    addToGroupDiv.appendChild(nameDiv);
+    let fillDiv = document.createElement('div');
+    fillDiv.classList.add('fill');
+    addToGroupDiv.appendChild(fillDiv);
+    let shareButton = document.createElement('button');
+    shareButton.innerHTML = '&#129309;';
+    shareButton.onclick = openShareWindow;
+    addToGroupDiv.appendChild(shareButton);
+    let upButton = document.createElement('button');
+    upButton.classList.add('up');
+    upButton.onclick = moveUp;
+    upButton.innerHTML = '&#9650;';
+    addToGroupDiv.appendChild(upButton);
+    let downButton = document.createElement('button');
+    downButton.classList.add('down');
+    downButton.onclick = moveDown;
+    downButton.innerHTML = '&#9660;';
+    addToGroupDiv.appendChild(downButton);
+    return addToGroupDiv;
+}
+
 function removeItem(item) {
     let groupLi = item.parentElement.parentElement;
     item.remove();
@@ -271,33 +296,3 @@ function removeItem(item) {
         groupLi.remove();
     }
 }
-if (!csrfToken) {
-    window.location.replace("../signup.html");
-}
-if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
-    iosCookieRefresh();
-}
-const loader = document.getElementById('loading');
-function handleGetList(event) {
-    const result = defaultHandler(event);
-    let groups = Object.keys(result);
-    for(let i = 0; i < groups.length; i++) {
-        let group = result[groups[i]];
-        let items = result[groups[i]].items;
-        for(let j = 0; j < items.length; j++) {
-            let item = items[j];
-            addItem(group, item);
-        }
-    }
-    loader.style.display = 'none';
-}
-function loadList (event) {
-    loader.style.display = 'block';
-    let url = DOMAIN + '/getlist';
-    let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", url, true);
-    xmlHttp.withCredentials = true;
-    xmlHttp.onload = handleGetList;
-    xmlHttp.send(JSON.stringify({ 'csrf': csrfToken }));
-};
-loadList();
