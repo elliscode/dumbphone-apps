@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Location Sharer</title>
+    <link rel="stylesheet" href="../css/stylesheet.css"/>
+    <link rel="stylesheet" href="../css/loader.css"/>
+    <link rel="icon" type="image/png" href="../img/favicon.png"/>
+    <style>
+        body {
+            padding-bottom: 30px;
+        }
+        .add-to-group button {
+            height:20px;
+        }
+    </style>
+</head>
+
+<body>
+<div><b><a href="../index.html">Home</a></b> &gt; <b>location-sharer</b></div>
+
+<button id="share-button" onclick="getCurrentLocation(event)">Share location</button>
+
+<div id="link-div" style="display:none;">
+    <p>Share your location! Send this link to your friends!</p>
+    <p id="link"></p>
+</div>
+
+<pre id="json"></pre>
+
+<div id="loading">
+    <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+</div>
+
+<div class="logout">
+    <button onclick="logOut(event)">Log out</button>
+</div>
+<script src="../js/utils.js"></script>
+<script src="js/location-sharer.js"></script>
+<script>
+    if (!csrfToken) {
+        window.location.replace("../signup.html");
+    }
+    if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
+        iosCookieRefresh();
+    }
+    const loader = document.getElementById('loading');
+    loader.style.display = 'none';
+</script>
+</body>
+
+</html>

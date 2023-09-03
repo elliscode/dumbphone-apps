@@ -606,8 +606,8 @@ function populateTable(event) {
         table.firstElementChild.remove();
     }
 
-    let xmlHttp = event.target;
-    data = JSON.parse(xmlHttp.responseText);
+
+    let data = defaultHandler(event);
 
     {
         const tr = document.createElement('tr');

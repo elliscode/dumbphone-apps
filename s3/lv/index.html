@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Location Viewer</title>
+    <link rel="stylesheet" href="../css/stylesheet.css"/>
+    <link rel="stylesheet" href="../css/loader.css"/>
+    <link rel="icon" type="image/png" href="../img/favicon.png"/>
+    <style>
+        body {
+            padding-bottom: 30px;
+        }
+        .add-to-group button {
+            height:20px;
+        }
+    </style>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+</head>
+
+<body>
+<div><b><a href="../index.html">Home</a></b> &gt; <b>location-sharer</b></div>
+<p id="json"></p>
+<p id="info"></p>
+<button id="resume">Resume</button>
+
+<div id="map" style="width:100%;height:500px;"></div>
+
+<div id="loading">
+    <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+</div>
+
+<div style="display:none" class="logout">
+    <button onclick="logOut(event)">Log out</button>
+</div>
+
+<!-- prettier-ignore -->
+<script>(g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})
+    ({key: "AIzaSyCLKMWQSpBRiezvBckvLSq3Pa214DibWYA", v: "weekly"});</script>
+<script src="../js/utils.js"></script>
+<script>
+    if (!!csrfToken) {
+        document.getElementsByClassName('logout')[0].style.display = 'block'
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const locationToken = urlParams.get('id');
+    const json = document.getElementById('json');
+    const info = document.getElementById('info');
+    const TIME_LIMIT = 60 * 60;
+    let locationTimeout = undefined;
+
+    function getCurrentLocation() {
+        locationTimeout = undefined;
+
+        let url = DOMAIN + '/one-offs/get-location';
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", url, true); // false for synchronous request
+        xmlHttp.onload = handleShare;
+        if (!locationToken) {
+            return
+        }
+        xmlHttp.send(JSON.stringify({'locationToken': locationToken}));
+    }
+
+    let previousValues = [];
+
+    function handleShare(event) {
+        if (locationTimeout) {
+            return;
+        }
+
+        let xmlHttp = event.target;
+
+        if (xmlHttp.status != 200) {
+            json.innerText = 'No location found for the token provided'
+        } else {
+            let responseJson = JSON.parse(xmlHttp.responseText)
+
+            let value = `${responseJson.lat},${responseJson.lon}`
+
+            json.innerHTML = '<a href="https://www.google.com/maps/search/?api=1&query=' + value + '">Click here for directions</a>';
+            console.log(value);
+            moveMarker(responseJson.lat, responseJson.lon);
+
+            previousValues.push(value);
+            if previousValues.length > 6) {
+                previousValues.shift();
+            }
+
+            if (previousValues.length == 6 && previousValues.every(val => val === val[0])) {
+                info.innerText = "Reported position hasn't changed for the last 60 seconds, assuming the user stopped sharing..."
+                return;
+            }
+
+            locationTimeout = setTimeout(getCurrentLocation, 10000);
+        }
+    }
+
+    const loader = document.getElementById('loading');
+    loader.style.display = 'none';
+
+    let map;
+    let marker;
+
+    async function initMap() {
+      const { Map } = await google.maps.importLibrary("maps");
+
+      map = new Map(document.getElementById("map"), {
+        center: { lat: 0, lng: 0 },
+        zoom: 1,
+        streetViewControl: false,
+        mapTypeControl: false,
+      });
+      marker = new google.maps.Marker( {map: map} );
+
+      getCurrentLocation();
+    }
+
+    let initialMove = true;
+
+    function moveMarker(lat, lon) {
+        var myLatLng = new google.maps.LatLng( lat, lon );
+        marker.setPosition( myLatLng );
+        map.panTo( myLatLng );
+        if (initialMove) {
+            map.setZoom(16);
+            initialMove = false;
+        }
+    }
+
+    initMap();
+</script>
+</body>
+
+</html>
