@@ -48,7 +48,7 @@ function handleAddList(event) {
 }
 function deleteFromList(event) {
     hidePopups(event);
-    const groupName = event.target.parentElement.parentElement.parentElement.children[0].children[0].textContent;
+    const groupName = event.target.parentElement.parentElement.parentElement.children[0].textContent;
     const textItem = event.target.parentElement;
     const text = textItem.children[0].textContent;
 
@@ -178,7 +178,15 @@ function addItem(group, item) {
         groupLi.id = groupId;
         groupLi.classList.add('group')
         let itemsList = document.createElement('h2');
-        itemsList.textContent = group.name;
+        let blankItem = document.createElement("span");
+        blankItem.style.width = '60px';
+        itemsList.appendChild(blankItem);
+        let nameSpan = document.createElement('span');
+        nameSpan.innerText = group.name
+        itemsList.appendChild(nameSpan);
+        let shareButton = document.createElement('button');
+        shareButton.innerText = "Share"
+        itemsList.appendChild(shareButton);
         groupLi.appendChild(itemsList);
         let ulInIt = document.createElement('ul');
         ulInIt.classList.add('ui-list');
@@ -271,12 +279,12 @@ function removeItem(item) {
         groupLi.remove();
     }
 }
-if (!csrfToken) {
-    window.location.replace("../signup.html");
-}
-if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
-    iosCookieRefresh();
-}
+//if (!csrfToken) {
+//    window.location.replace("../signup.html");
+//}
+//if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
+//    iosCookieRefresh();
+//}
 const loader = document.getElementById('loading');
 function handleGetList(event) {
     const result = defaultHandler(event);
@@ -291,7 +299,7 @@ function handleGetList(event) {
     }
     loader.style.display = 'none';
 }
-function loadList (event) {
+function loadList(event) {
     loader.style.display = 'block';
     let url = DOMAIN + '/getlist';
     let xmlHttp = new XMLHttpRequest();
@@ -299,5 +307,23 @@ function loadList (event) {
     xmlHttp.withCredentials = true;
     xmlHttp.onload = handleGetList;
     xmlHttp.send(JSON.stringify({ 'csrf': csrfToken }));
+};
+const textBox = document.getElementById('item-text-box');
+const toolBar = document.getElementById('tool-bar');
+const submitBar = document.getElementById('submit-bar');
+function showSubmit(event) {
+    toolBar.style.display = 'none';
+    submitBar.style.display = 'flex';
+    textBox.focus();
+};
+function enterKeyListener(event) {
+    event.preventDefault();
+    if (event.keyCode === 13) {
+        document.getElementById("add").click();
+    }
+};
+function hideSubmit(event) {
+    toolBar.style.display = 'flex';
+    submitBar.style.display = 'none';
 };
 loadList();

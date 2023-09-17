@@ -12,12 +12,16 @@
 <body>
 <div id="top-bar">
     <div id="title-bar">
-        <button>&lt;</button>
+        <a href="../index.html"><button>&lt;</button></a>
         <h1>Grocery List</h1>
         <button>&hellip;</button>
     </div>
     <div id="tool-bar">
-        <button id="add-item"><span>+</span>Add Item</button>
+        <button onclick="showSubmit(event)" id="add-item"><span>+</span>Add Item</button>
+    </div>
+    <div style="display:none;" id="submit-bar">
+        <input class="big" onkeyup="enterKeyListener(event)" onfocus="hidePopups(event)" onblur="hideSubmit(event)" id="item-text-box" type="text" />
+        <button id="add" onclick="addToList(event)">&#9166;</button>
     </div>
 </div>
 <div id="content">
@@ -28,6 +32,29 @@
 </div>
 
 
+</div>
+
+
+<div style="display:none;" id="modal-bg">
+    <div id="modal-popup">
+        <div id="modal-content">
+
+        </div>
+        <button onclick="hidePopups(event)" class="delete">&times;</button>
+    </div>
+</div>
+
+<div style="display:none;" id="share">
+    <p>Share &ldquo;<span id="list-name">this</span>&rdquo; list with:</p>
+    <label for="user-to-share-with">Phone Number: </label><input type="tel" id="user-to-share-with"/>
+    <button id="share-button" onclick="sendShareRequest(event)">Share</button>
+    <button onclick="hidePopups(event)" class="delete">&times;</button>
+</div>
+
+<div id="info" style="display:none;">
+    <p id="info-p">
+    </p>
+    <button onclick="hidePopups(event)" class="delete">&times;</button>
 </div>
 <script src="../js/utils.js"></script>
 <script src="js/list.js"></script>

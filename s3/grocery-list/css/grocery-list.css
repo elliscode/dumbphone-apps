@@ -67,6 +67,10 @@ button {
     text-align:center;
     padding:5px;
     z-index:1;
+    display: flex;
+    align-content: center;
+    justify-content: space-between;
+    align-items: center;
 }
 #content ul {
     padding:0px;
@@ -87,4 +91,10 @@ button {
     height:39px;
     border-top:0px;
     box-sizing:border-box;
+}
+#submit-bar {
+    display:flex;
+}
+#item-text-box {
+    flex-grow:1;
 }
