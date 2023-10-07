@@ -237,9 +237,9 @@ def otp_route(event):
 
     # generate and set OTP
     otp_data = get_otp(phone)
-    body_text = f"OTP already exists for {phone}, please log in"
+    body_value = {"username":phone, "status": f"OTP already exists for {phone}, please log in"}
     if otp_data is None or otp_data["expiration"] < int(time.time()):
-        otp_value = "".join(secrets.choice(digits) for i in range(7))
+        otp_value = "".join(secrets.choice(digits) for i in range(6))
         otp_data = create_otp(phone, otp_value)
 
         # generate and send message if you are creating a new otp
@@ -252,10 +252,10 @@ def otp_route(event):
             QueueUrl="https://sqs.us-east-1.amazonaws.com/646933935516/smsQueue",
             MessageBody=json.dumps(message),
         )
-        body_text = f"Successfully sent OTP to {phone}"
+        body_value = {"username": phone}
     print(otp_data)
 
-    return format_response(event=event, http_code=200, body=body_text)
+    return format_response(event=event, http_code=200, body=body_value)
 
 
 def alert_admin_of_new_user(phone):

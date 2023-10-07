@@ -53,7 +53,7 @@
     function getCurrentLocation() {
         locationTimeout = undefined;
 
-        let url = DOMAIN + '/one-offs/get-location';
+        let url = API_DOMAIN + '/one-offs/get-location';
         let xmlHttp = new XMLHttpRequest();
         xmlHttp.open("POST", url, true); // false for synchronous request
         xmlHttp.onload = handleShare;

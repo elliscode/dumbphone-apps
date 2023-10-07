@@ -24,7 +24,7 @@ from dumbphoneapps.food_diary import (
     set_food_route,
 )
 
-from dumbphoneapps.one_offs import twilio_route
+from dumbphoneapps.one_offs import twilio_route, share_location_route, get_location_route
 
 
 def lambda_handler(event, context):
@@ -87,5 +87,9 @@ def route(event):
         return ios_cookie_refresh_route(event)
     if path_equals(event=event, method="POST", path="/one-offs/twilio"):
         return twilio_route(event)
+    if path_equals(event=event, method="POST", path="/one-offs/share-location"):
+        return share_location_route(event)
+    if path_equals(event=event, method="POST", path="/one-offs/get-location"):
+        return get_location_route(event)
 
     return format_response(event=event, http_code=404, body="No matching route found")

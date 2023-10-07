@@ -31,7 +31,7 @@ function addToList(event) {
     if ("LI" == caller.parentElement.parentElement.tagName) {
         groupName = caller.parentElement.firstElementChild.textContent;
     }
-    let url = DOMAIN + '/additem';
+    let url = API_DOMAIN + '/additem';
     let body = determineAddUrl({ 'groupName': groupName, 'input': input.value });
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
@@ -54,7 +54,7 @@ function deleteFromList(event) {
 
     removeItem(textItem);
 
-    let url = DOMAIN + '/deleteitem';
+    let url = API_DOMAIN + '/deleteitem';
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true); // false for synchronous request
     xmlHttp.withCredentials = true;
@@ -87,7 +87,7 @@ function sendShareRequest(event) {
     let listName = document.getElementById('list-name');
     let group_hash = listName.getAttribute('hash');
 
-    let url = DOMAIN + '/sendsharelist';
+    let url = API_DOMAIN + '/sendsharelist';
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true); // false for synchronous request
     xmlHttp.withCredentials = true;
@@ -95,7 +95,7 @@ function sendShareRequest(event) {
     xmlHttp.send(JSON.stringify({'csrf': csrfToken, 'user': user, 'list_id': group_hash}));
 }
 function acceptShare(group_hash) {
-    let url = DOMAIN + '/acceptsharelist';
+    let url = API_DOMAIN + '/acceptsharelist';
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true); // false for synchronous request
     xmlHttp.withCredentials = true;
@@ -140,7 +140,7 @@ function moveDown(event) {
 }
 
 function runOrderCall() {
-    let url = DOMAIN + '/setlistorder';
+    let url = API_DOMAIN + '/setlistorder';
     const groups = document.querySelectorAll('ul#main-list>li')
     let group_hashes = [];
     for(let index = 0; index < groups.length; index++) {
@@ -241,7 +241,7 @@ function crossToggle(event) {
         deleteButton.style.display = 'block';
         newValue = true;
     }
-    let url = DOMAIN + '/' + 'setcrossedoff';
+    let url = API_DOMAIN + '/' + 'setcrossedoff';
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
     xmlHttp.withCredentials = true;

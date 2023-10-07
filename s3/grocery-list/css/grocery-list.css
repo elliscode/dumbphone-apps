@@ -56,7 +56,6 @@ button {
     position:relative;
 }
 .group h2 {
-    padding:0px;
     margin:0px;
     position:sticky;
     top:75px;
@@ -97,4 +96,7 @@ button {
 }
 #item-text-box {
     flex-grow:1;
+}
+.big {
+    font-size: 20px;
 }

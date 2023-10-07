@@ -109,7 +109,7 @@
     }
     function loadList (event) {
         loader.style.display = 'block';
-        let url = DOMAIN + '/getlist';
+        let url = API_DOMAIN + '/getlist';
         let xmlHttp = new XMLHttpRequest();
         xmlHttp.open("POST", url, true);
         xmlHttp.withCredentials = true;

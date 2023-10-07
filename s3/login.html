@@ -33,7 +33,7 @@
         const phone = document.getElementById('phone').value;
         const otp = document.getElementById('otp').value;
         
-        let url = DOMAIN + '/login';
+        let url = API_DOMAIN + '/login';
         xmlHttp = new XMLHttpRequest();
         xmlHttp.open("POST", url, true); // false for synchronous request
         xmlHttp.withCredentials = true;
@@ -59,6 +59,14 @@
             }
         }
     }
+    function fillOutPhoneNumberBoxWithSearchParam() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get('username')
+        if(!!username) {
+            document.getElementById('phone').value = username;
+        }
+    }
+    fillOutPhoneNumberBoxWithSearchParam()
 </script>
 </body>
 

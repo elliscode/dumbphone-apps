@@ -27,7 +27,7 @@
         event.preventDefault();
         const phone = document.getElementById('phone').value;
         
-        let url = DOMAIN + '/otp';
+        let url = API_DOMAIN + '/otp';
         let xmlHttp = new XMLHttpRequest();
         xmlHttp.open("POST", url, true); // false for synchronous request
         xmlHttp.withCredentials = true;
@@ -37,7 +37,8 @@
     function handle(event) {
         let xmlHttp = event.target;
         if (xmlHttp.status == 200) {
-            window.location.replace("login.html");
+            let result = JSON.parse(xmlHttp.responseText);
+            window.location.replace("login.html?username=" + encodeURIComponent(result.username));
         } else {
             let result = JSON.parse(xmlHttp.responseText);
             if (result.hasOwnProperty('message')) {

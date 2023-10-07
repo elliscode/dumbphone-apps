@@ -26,7 +26,7 @@ function showPosition(position) {
     let long = position.coords.longitude;
     json.innerHTML = "Sending current location latitude=" + lat + " and longitude=" + long + " ...";
 
-    let url = DOMAIN + '/one-offs/share-location';
+    let url = API_DOMAIN + '/one-offs/share-location';
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true); // false for synchronous request
     xmlHttp.withCredentials = true;
@@ -55,7 +55,7 @@ function handleShare(event) {
     localStorage.setItem('locationToken', locationToken);
 
     linkDiv.style.display = 'block';
-    link.innerText = DOMAIN.substring(8) + '/lv/?id=' + locationToken;
+    link.innerText = UI_DOMAIN.substring(8) + '/lv/?id=' + locationToken;
 
     locationTimeout = setTimeout(getCurrentLocation, 5000);
 }

@@ -22,7 +22,7 @@ function iosCookieRefresh(event) {
     let cookieRefreshTime = localStorage.getItem('dumbphoneapps-cookie-refresh-time')
     if (!cookieRefreshTime || !/\d+/.test(cookieRefreshTime) || parseInt(cookieRefreshTime) < (new Date()).getTime()) {
         let xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("POST", DOMAIN + '/ios-cookie-refresh', true);
+        xmlHttp.open("POST", API_DOMAIN + '/ios-cookie-refresh', true);
         xmlHttp.withCredentials = true;
         xmlHttp.onload = handleIosCookieRefresh;
         xmlHttp.send(JSON.stringify({
@@ -36,4 +36,5 @@ function handleIosCookieRefresh(event) {
     localStorage.setItem('dumbphoneapps-cookie-refresh-time', timeInt.toString());
 }
 const csrfToken = localStorage.getItem('dumbphoneapps-csrf-token');
-const DOMAIN = 'https://test.dumbphoneapps.com';
+const API_DOMAIN = 'https://test.dumbphoneapps.com';
+const UI_DOMAIN = 'https://aws.dumbphoneapps.com';

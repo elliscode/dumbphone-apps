@@ -48,7 +48,7 @@ function addToList(event) {
     }
 
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", DOMAIN + '/food-diary/add', true);
+    xmlHttp.open("POST", API_DOMAIN + '/food-diary/add', true);
     xmlHttp.withCredentials = true;
     xmlHttp.onload = setDate;
     xmlHttp.send(JSON.stringify(payload));
@@ -72,7 +72,7 @@ function search(event) {
         currentSuggestionMethod = setTextAndAdd;
     }
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", DOMAIN + '/food-diary/search', true);
+    xmlHttp.open("POST", API_DOMAIN + '/food-diary/search', true);
     xmlHttp.withCredentials = true;
     xmlHttp.onload = displaySearch;
     xmlHttp.send(JSON.stringify({
@@ -120,7 +120,7 @@ function deleteFood(event) {
     let caller = event.target;
     const hash = caller.getAttribute('hash');
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", DOMAIN + '/food-diary/delete_food', true);
+    xmlHttp.open("POST", API_DOMAIN + '/food-diary/delete_food', true);
     xmlHttp.withCredentials = true;
     xmlHttp.send(JSON.stringify({
         'hash': hash,
@@ -154,7 +154,7 @@ function deleteEntry(event) {
     const timestamp = caller.getAttribute('timestamp');
     const key = caller.getAttribute('key');
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", DOMAIN + '/food-diary/delete', true);
+    xmlHttp.open("POST", API_DOMAIN + '/food-diary/delete', true);
     xmlHttp.withCredentials = true;
     xmlHttp.onload = setDate;
     xmlHttp.send(JSON.stringify({
@@ -179,7 +179,7 @@ function changeQuantity(event) {
     servingsCreate.setAttribute("key", key);
     servingsCreate.setAttribute("hash", foodHash);
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", DOMAIN + '/food-diary/get_serving', true);
+    xmlHttp.open("POST", API_DOMAIN + '/food-diary/get_serving', true);
     xmlHttp.withCredentials = true;
     xmlHttp.onload = displayServing;
     xmlHttp.send(JSON.stringify({
@@ -278,7 +278,7 @@ function editEitherFoodOrRecipe(event) {
     foodEditSave.setAttribute('key', key);
     foodEditSave.setAttribute('timestamp', timestamp);
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", DOMAIN + '/food-diary/get_food', true);
+    xmlHttp.open("POST", API_DOMAIN + '/food-diary/get_food', true);
     xmlHttp.withCredentials = true;
     xmlHttp.onload = handleFood;
 
@@ -394,7 +394,7 @@ function changeQuantityRow(event) {
     let save = document.getElementById('servings-save');
     save.setAttribute('hash',hash);
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", DOMAIN + '/food-diary/get_serving', true);
+    xmlHttp.open("POST", API_DOMAIN + '/food-diary/get_serving', true);
     xmlHttp.withCredentials = true;
     xmlHttp.onload = displayRecipeServing;
     xmlHttp.send(JSON.stringify({
@@ -447,7 +447,7 @@ function saveFood(event) {
     const key = event.target.getAttribute('key');
     const timestamp = event.target.getAttribute('timestamp');
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", DOMAIN + '/food-diary/set_food', true);
+    xmlHttp.open("POST", API_DOMAIN + '/food-diary/set_food', true);
     xmlHttp.withCredentials = true;
     xmlHttp.onload = setDate;
     xmlHttp.send(JSON.stringify({
@@ -514,7 +514,7 @@ function saveServing(event) {
     const name = select.value;
     const quantity = textBox.value;
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", DOMAIN + '/food-diary/set_serving', true);
+    xmlHttp.open("POST", API_DOMAIN + '/food-diary/set_serving', true);
     xmlHttp.withCredentials = true;
     xmlHttp.onload = setDate;
     xmlHttp.send(JSON.stringify({
@@ -541,7 +541,7 @@ function createServing(event) {
     const servingName = servingsText.value;
     const calories = caloriesText.value;
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", DOMAIN + '/food-diary/create_serving', true);
+    xmlHttp.open("POST", API_DOMAIN + '/food-diary/create_serving', true);
     xmlHttp.withCredentials = true;
     xmlHttp.onload = setDate;
     xmlHttp.send(JSON.stringify({
@@ -589,7 +589,7 @@ function setDate(event) {
 
     const date = document.getElementById('date-picker').value;
     let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", DOMAIN + '/food-diary/get-day', true);
+    xmlHttp.open("POST", API_DOMAIN + '/food-diary/get-day', true);
     xmlHttp.withCredentials = true;
     xmlHttp.onload = populateTable;
     xmlHttp.send(JSON.stringify({
