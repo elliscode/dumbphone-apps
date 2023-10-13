@@ -92,7 +92,7 @@ button {
     box-sizing:border-box;
 }
 #submit-bar {
-    display:flex;
+    display:none;
 }
 #item-text-box {
     flex-grow:1;

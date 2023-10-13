@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Shopping List</title>
     <link rel="stylesheet" href="../css/loader.css"/>
-    <link rel="stylesheet" href="css/grocery-list.css"/>
     <link rel="icon" type="image/png" href="../img/favicon.png"/>
 </head>
 
@@ -19,7 +18,7 @@
     <div id="tool-bar">
         <button onclick="showSubmit(event)" id="add-item"><span>+</span>Add Item</button>
     </div>
-    <div style="display:none;" id="submit-bar">
+    <div id="submit-bar">
         <input class="big" onkeyup="enterKeyListener(event)" onfocus="hidePopups(event)" id="item-text-box" type="text" />
         <button id="add" onclick="addToList(event)">&#9166;</button>
     </div>

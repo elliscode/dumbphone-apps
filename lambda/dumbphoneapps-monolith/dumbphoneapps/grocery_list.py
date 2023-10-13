@@ -55,7 +55,7 @@ def setlistorder_route(event, user_data, body):
     old_userlist = get_userlist_data(phone)["lists"]
     print(new_userlist)
     print(old_userlist)
-    if not all(x in old_userlist for x in new_userlist):
+    if not all(x in old_userlist for x in new_userlist) or not all(x in new_userlist for x in old_userlist):
         return format_response(
             event=event,
             http_code=500,
@@ -345,12 +345,14 @@ def get_list_data(list_ids):
                 }
             )
         )
+    output = []
+    if len(keys) == 0:
+        return output
     response = dynamo.batch_get_item(RequestItems={TABLE_NAME: {"Keys": keys}})
     result_map = {}
     for item in response["Responses"][TABLE_NAME]:
         python_obj = dynamo_obj_to_python_obj(item)
         result_map[python_obj["key2"]] = python_obj
-    output = []
     for list_id in list_ids:
         output.append(result_map[list_id])
     return output

@@ -141,7 +141,7 @@ function moveDown(event) {
 
 function runOrderCall() {
     let url = API_DOMAIN + '/setlistorder';
-    const groups = document.querySelectorAll('ul#main-list>li')
+    const groups = document.querySelectorAll('div#content>div.group')
     let group_hashes = [];
     for(let index = 0; index < groups.length; index++) {
         let group = groups[index];
@@ -179,9 +179,11 @@ function addItem(group, item) {
         groupLi.classList.add('group')
         let itemsList = document.createElement('h2');
         let blankItem = document.createElement("span");
+        blankItem.classList.add('blank-item')
         blankItem.style.width = '114px';
         itemsList.appendChild(blankItem);
         let nameSpan = document.createElement('span');
+        nameSpan.classList.add('name')
         nameSpan.innerText = group.name
         itemsList.appendChild(nameSpan);
         let controlsDiv = document.createElement('div');
@@ -289,12 +291,25 @@ function removeItem(item) {
         groupLi.remove();
     }
 }
-//if (!csrfToken) {
-//    window.location.replace("../signup.html");
-//}
-//if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
-//    iosCookieRefresh();
-//}
+function setStylesheet(uri) {
+    var head = document.head;
+    var link = document.createElement("link");
+  
+    link.type = "text/css";
+    link.rel = "stylesheet";
+    link.href = uri;
+  
+    head.appendChild(link);
+}
+if (!csrfToken) {
+   window.location.replace("../signup.html");
+}
+if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
+    iosCookieRefresh();
+    setStylesheet('css/grocery-list-new.css')
+} else {
+    setStylesheet('css/grocery-list-old.css')
+}
 const loader = document.getElementById('loading');
 function handleGetList(event) {
     const result = defaultHandler(event);
