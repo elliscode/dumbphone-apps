@@ -121,8 +121,8 @@ function handleShareResponse(event) {
 function moveUp(event) {
     hidePopups(event);
     const caller = event.target;
-    let groupId = caller.parentElement.parentElement.id;
-    let otherGroup = caller.parentElement.parentElement.previousElementSibling;
+    let groupId = caller.parentElement.parentElement.parentElement.id;
+    let otherGroup = caller.parentElement.parentElement.parentElement.previousElementSibling;
     if(otherGroup) {
         swapGroups(groupId, otherGroup.id);
         runOrderCall();
@@ -131,8 +131,8 @@ function moveUp(event) {
 function moveDown(event) {
     hidePopups(event);
     const caller = event.target;
-    let groupId = caller.parentElement.parentElement.id;
-    let otherGroup = caller.parentElement.parentElement.nextElementSibling;
+    let groupId = caller.parentElement.parentElement.parentElement.id;
+    let otherGroup = caller.parentElement.parentElement.parentElement.nextElementSibling;
     if(otherGroup) {
         swapGroups(otherGroup.id, groupId);
         runOrderCall();
@@ -179,14 +179,24 @@ function addItem(group, item) {
         groupLi.classList.add('group')
         let itemsList = document.createElement('h2');
         let blankItem = document.createElement("span");
-        blankItem.style.width = '60px';
+        blankItem.style.width = '114px';
         itemsList.appendChild(blankItem);
         let nameSpan = document.createElement('span');
         nameSpan.innerText = group.name
         itemsList.appendChild(nameSpan);
+        let controlsDiv = document.createElement('div');
+        let upButton = document.createElement('button');
+        upButton.innerHTML = "&#11014;&#65039;"
+        upButton.addEventListener('click', moveUp);
+        controlsDiv.appendChild(upButton);
+        let downButton = document.createElement('button');
+        downButton.innerHTML = "&#11015;&#65039;"
+        downButton.addEventListener('click', moveDown);
+        controlsDiv.appendChild(downButton);
         let shareButton = document.createElement('button');
-        shareButton.innerText = "Share"
-        itemsList.appendChild(shareButton);
+        shareButton.innerHTML = "&#128100;"
+        controlsDiv.appendChild(shareButton);
+        itemsList.appendChild(controlsDiv);
         groupLi.appendChild(itemsList);
         let ulInIt = document.createElement('ul');
         ulInIt.classList.add('ui-list');
