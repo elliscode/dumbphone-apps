@@ -23,6 +23,8 @@
 <p id="json"></p>
 <p id="info"></p>
 
+<button onclick="resumeLocation(event)" id="resume" style="display:none;">Resume</button>
+
 <div id="map" style="width:100%;height:500px;"></div>
 
 <div id="loading">
@@ -46,6 +48,18 @@
     const info = document.getElementById('info');
     const TIME_LIMIT = 60 * 60;
     let locationTimeout = undefined;
+
+    let resumeButton = document.getElementById('resume');
+
+    function resumeLocation(event) {
+        resumeButton.style.display = 'none';
+        if (locationTimeout) {
+            return;
+        }
+        previousValues = [];
+        info.innerText = "Resuming location...";
+        getCurrentLocation();
+    }
 
 
     function getMapsApiKey() {
@@ -115,8 +129,9 @@
                 previousValues.shift();
             }
 
-            if (previousValues.length == 6 && previousValues.every(val => val === val[0])) {
-                info.innerText = "Reported position hasn't changed for the last 60 seconds, assuming the user stopped sharing..."
+            if (previousValues.length == 6 && previousValues.every(val => val === previousValues[0])) {
+                info.innerText = "Reported position hasn't changed for the last 60 seconds, assuming the user stopped sharing...";
+                resumeButton.style.display = 'block';
                 return;
             }
 

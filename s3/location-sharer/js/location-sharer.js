@@ -2,6 +2,7 @@ const json = document.getElementById('json');
 const button = document.getElementById('share-button');
 const linkDiv = document.getElementById('link-div');
 const link = document.getElementById('link');
+const smsLink = document.getElementById('sms-link');
 function getCurrentLocation() {
     locationTimeout = undefined;
     json.style.display='block';
@@ -56,6 +57,9 @@ function handleShare(event) {
 
     linkDiv.style.display = 'block';
     link.innerText = UI_DOMAIN.substring(8) + '/lv/?id=' + locationToken;
+
+    smsLink.style.display = 'block';
+    smsLink.href = "sms://?&body=" + encodeURIComponent("I'm sharing my location: " + UI_DOMAIN.substring(8) + '/lv/?id=' + locationToken);
 
     locationTimeout = setTimeout(getCurrentLocation, 5000);
 }

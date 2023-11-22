@@ -32,7 +32,12 @@
         xmlHttp.open("POST", url, true); // false for synchronous request
         xmlHttp.withCredentials = true;
         xmlHttp.onload = handle;
+        xmlHttp.onerror = handleError;
         xmlHttp.send(JSON.stringify({'phone': phone}));
+    }
+    function handleError(event) {
+        messageDiv.style.display = 'block';
+        messageDiv.innerHTML = "You may need to allow the certificate for our API, please visit <a href=\"" + API_DOMAIN + "\">" + API_DOMAIN + "</a>";
     }
     function handle(event) {
         let xmlHttp = event.target;
