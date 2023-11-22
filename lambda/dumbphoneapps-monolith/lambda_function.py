@@ -24,7 +24,7 @@ from dumbphoneapps.food_diary import (
     set_food_route,
 )
 
-from dumbphoneapps.one_offs import twilio_route, share_location_route, get_location_route
+from dumbphoneapps.one_offs import twilio_route, share_location_route, get_location_route, get_google_api_key_route
 
 
 def lambda_handler(event, context):
@@ -91,5 +91,7 @@ def route(event):
         return share_location_route(event)
     if path_equals(event=event, method="POST", path="/one-offs/get-location"):
         return get_location_route(event)
+    if path_equals(event=event, method="POST", path="/one-offs/get-google-api-key"):
+        return get_google_api_key_route(event)
 
     return format_response(event=event, http_code=404, body="No matching route found")

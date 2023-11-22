@@ -22,15 +22,19 @@ sqs = boto3.client("sqs")
 def format_response(event, http_code, body, headers=None):
     if isinstance(body, str):
         body = {"message": body}
-    domain_name = ""
-    if event["headers"]["origin"].startswith(DOMAIN_NAME_WWW):
+    if "origin" in event["headers"] and event["headers"]["origin"].startswith(DOMAIN_NAME_WWW):
         domain_name = DOMAIN_NAME_WWW
-    elif event["headers"]["origin"].startswith(DOMAIN_NAME):
+    elif "origin" in event["headers"] and event["headers"]["origin"].startswith(DOMAIN_NAME):
         domain_name = DOMAIN_NAME
+    else:
+        print(f'Invalid origin {event["headers"]}')
+        http_code = 403
+        body = {"message": "Forbidden"}
+        domain_name = "*"
     all_headers = {
         "Access-Control-Allow-Headers": "Content-Type",
         "Access-Control-Allow-Origin": domain_name,
-        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,DELETE",
+        "Access-Control-Allow-Methods": "POST",
         "Access-Control-Allow-Credentials": "true",
         "Access-Control-Expose-Headers": "x-csrf-token",
     }

@@ -172,3 +172,27 @@ table, th, td {
 .blank-item {
     display:none;
 }
+#submit-bar {
+    margin-top:5px;
+    margin-bottom:5px;
+    width: 100%;
+    display: flex;
+}
+#submit-bar>input {
+    flex-grow: 1;
+    min-width: 10px;
+}
+#tool-bar {
+    display:none;
+}
+#title-bar {
+    display:none;
+}
+.logout {
+    position:absolute;
+    top:0;
+    right:0;
+}
+#breadcrumb {
+    display: inline;
+}

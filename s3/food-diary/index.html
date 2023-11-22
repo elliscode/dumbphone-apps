@@ -26,7 +26,7 @@
 </div>
 
 <div id="servings">
-    <input id="servings-amount" type="text" placeholder="amount"/>
+    <input id="servings-amount" type="tel" placeholder="amount" onkeydown="forceToDecimal(event)"/>
     <select id="servings-name" onchange="servingChange(event)">
         <option>Test One</option>
         <option>Test Two</option>
@@ -39,7 +39,7 @@
     <button onclick="closeServings(event)">&times;</button>
 </div>
 <div id="recipe-servings">
-    <input id="recipe-servings-amount" type="text" placeholder="amount"/>
+    <input id="recipe-servings-amount" type="tel" placeholder="amount"/>
     <select id="recipe-servings-name" onchange="servingRecipeChange(event)">
         <option>Test One</option>
         <option>Test Two</option>
@@ -51,12 +51,12 @@
     <div id="food-edit">
         <table>
             <tr><td>Name:</td><td><input id="food-edit-name" type="text"></input></td></tr>
-            <tr><td>Calories:</td><td><input id="food-edit-calories" type="text"></input></td></tr>
-            <tr><td>Fat:</td><td><input id="food-edit-fat" type="text"></input></td></tr>
-            <tr><td>Carbs:</td><td><input id="food-edit-carbs" type="text"></input></td></tr>
-            <tr><td>Protein:</td><td><input id="food-edit-protein" type="text"></input></td></tr>
-            <tr><td>Alcohol:</td><td><input id="food-edit-alcohol" type="text"></input></td></tr>
-            <tr><td>Caffeine:</td><td><input id="food-edit-caffeine" type="text"></input></td></tr>
+            <tr><td>Calories:</td><td><input id="food-edit-calories" type="tel"></input></td></tr>
+            <tr><td>Fat:</td><td><input id="food-edit-fat" type="tel"></input></td></tr>
+            <tr><td>Carbs:</td><td><input id="food-edit-carbs" type="tel"></input></td></tr>
+            <tr><td>Protein:</td><td><input id="food-edit-protein" type="tel"></input></td></tr>
+            <tr><td>Alcohol:</td><td><input id="food-edit-alcohol" type="tel"></input></td></tr>
+            <tr><td>Caffeine:</td><td><input id="food-edit-caffeine" type="tel"></input></td></tr>
         </table>
         <button id="food-edit-recipe" onclick="displayRecipe(event)">Edit Recipe</button>
         <button id="food-edit-save" onclick="saveFood(event)">Save</button>

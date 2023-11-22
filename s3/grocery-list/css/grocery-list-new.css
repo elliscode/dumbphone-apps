@@ -14,7 +14,7 @@ body {
     border-bottom: 1px #ddd solid;
     padding:5px;
     box-sizing:border-box;
-    z-index:2;
+    z-index:3;
 }
 button {
     background-color:#fff;
@@ -55,17 +55,21 @@ button {
 .group {
     position:relative;
 }
-.group h2 {
+.group .section-header {
+    padding:0px;
     margin:0px;
     position:sticky;
-    top:75px;
+    top: 74px;
+    z-index:2;
+}
+.group h2 {
+    margin:0px;
     font-size:16px;
     color:#fff;
     background-color:#0020C9;
     font-weight:bold;
     text-align:center;
     padding:5px;
-    z-index:1;
     display: flex;
     align-content: center;
     justify-content: space-between;
@@ -88,6 +92,7 @@ button {
     right:0px;
     border-radius:0px;
     height:39px;
+    width:39px;
     border-top:0px;
     box-sizing:border-box;
 }
@@ -99,4 +104,10 @@ button {
 }
 .big {
     font-size: 20px;
+}
+#breadcrumb {
+    display:none;
+}
+.logout {
+    display:none;
 }

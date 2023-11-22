@@ -10,6 +10,7 @@
 
 <body>
 <div id="top-bar">
+    <div id="breadcrumb"><b><a href="..">Home</a></b> &gt; <b>grocery-list</b></div>
     <div id="title-bar">
         <a href="../index.html"><button style="width:30px">&lt;</button></a>
         <h1>Grocery List</h1>
@@ -19,20 +20,17 @@
         <button onclick="showSubmit(event)" id="add-item"><span>+</span>Add Item</button>
     </div>
     <div id="submit-bar">
-        <input class="big" onkeyup="enterKeyListener(event)" onfocus="hidePopups(event)" id="item-text-box" type="text" />
-        <button id="add" onclick="addToList(event)">&#9166;</button>
+        <input class="big" onkeyup="enterKeyListener(event)" onfocus="focusEvent(event)" onblur="startHide()" id="item-text-box" type="text" />
+        <button id="add" onclick="addToList(event)">+</button>
     </div>
 </div>
-<div id="content">
 
+<div id="content">
+</div>
 
 <div id="loading">
     <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
 </div>
-
-
-</div>
-
 
 <div style="display:none;" id="modal-bg">
     <div id="modal-popup">
@@ -54,6 +52,9 @@
     <p id="info-p">
     </p>
     <button onclick="hidePopups(event)" class="delete">&times;</button>
+</div>
+<div class="logout">
+    <button onclick="logOut(event)">Log out</button>
 </div>
 <script src="../js/utils.js"></script>
 <script src="js/list.js"></script>

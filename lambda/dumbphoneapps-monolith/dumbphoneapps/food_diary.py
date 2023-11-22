@@ -170,7 +170,7 @@ def create_serving_route(event, user_data, body):
     food = dynamo_obj_to_python_obj(food_response["Item"])
 
     body_quantity = body["quantity"]
-    body_unit = body["name"]
+    body_unit = body["name"].strip()
     body_calories = body["calories"]
 
     multiplier = float(body_calories) / float(food["metadata"]["calories"])
@@ -178,7 +178,7 @@ def create_serving_route(event, user_data, body):
     found_serving = None
     for food_serving in food["metadata"]["servings"]:
         if food_serving["name"].endswith(body_unit):
-            found_food_serving = food_serving
+            found_serving = food_serving
             break
 
     if found_serving:
@@ -229,7 +229,7 @@ def set_serving_route(event, user_data, body):
     body_unit = body["name"]
     found_food_serving = None
     for food_serving in food["metadata"]["servings"]:
-        if body_unit == food_serving["name"]:
+        if body_unit.strip() == food_serving["name"].strip():
             found_food_serving = food_serving
             break
     if not found_food_serving:
@@ -326,7 +326,7 @@ def add_route(event, user_data, body):
     else:
         re_match = re.search(r"^(\d+\.*\d*)(.*)$", body["serving"])
         serving_amount = re_match.group(1)
-        serving_name = re_match.group(2)
+        serving_name = re_match.group(2).strip()
         new_food = {
             "key1": "food",
             "key2": create_id(32),

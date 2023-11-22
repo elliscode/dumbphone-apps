@@ -46,9 +46,18 @@ function handleAddList(event) {
         addItem(result.group, result.item);
     }
 }
+function findFirstChildWithClass(element, className) {
+    const results = element.getElementsByClassName(className);
+    if (results.length <= 0) {
+        return undefined;
+    }
+    return results[0];
+}
 function deleteFromList(event) {
     hidePopups(event);
-    const groupName = event.target.parentElement.parentElement.parentElement.children[0].children[1].textContent;
+    let groupElement = findParentWithClass(event.target, 'group');
+    const groupNameElement = findFirstChildWithClass(groupElement, 'name');
+    const groupName = groupNameElement.innerText;
     const textItem = event.target.parentElement;
     const text = textItem.children[0].textContent;
 
@@ -118,11 +127,22 @@ function handleShareResponse(event) {
         openInfoWindow("Something went wrong...");
     }
 }
+function findParentWithClass(element, className) {
+    let current = element;
+    while (!!current) {
+        if (current.classList.contains(className)) {
+            return current;
+        }
+        current = current.parentElement;
+    }
+    return current;
+}
 function moveUp(event) {
     hidePopups(event);
     const caller = event.target;
-    let groupId = caller.parentElement.parentElement.parentElement.id;
-    let otherGroup = caller.parentElement.parentElement.parentElement.previousElementSibling;
+    let groupElement = findParentWithClass(caller, 'group');
+    let groupId = groupElement.id;
+    let otherGroup = groupElement.previousElementSibling;
     if(otherGroup) {
         swapGroups(groupId, otherGroup.id);
         runOrderCall();
@@ -131,8 +151,9 @@ function moveUp(event) {
 function moveDown(event) {
     hidePopups(event);
     const caller = event.target;
-    let groupId = caller.parentElement.parentElement.parentElement.id;
-    let otherGroup = caller.parentElement.parentElement.parentElement.nextElementSibling;
+    let groupElement = findParentWithClass(caller, 'group');
+    let groupId = groupElement.id;
+    let otherGroup = groupElement.nextElementSibling;
     if(otherGroup) {
         swapGroups(otherGroup.id, groupId);
         runOrderCall();
@@ -177,6 +198,7 @@ function addItem(group, item) {
         groupLi = document.createElement('div');
         groupLi.id = groupId;
         groupLi.classList.add('group')
+
         let itemsList = document.createElement('h2');
         let blankItem = document.createElement("span");
         blankItem.classList.add('blank-item')
@@ -188,18 +210,31 @@ function addItem(group, item) {
         itemsList.appendChild(nameSpan);
         let controlsDiv = document.createElement('div');
         let upButton = document.createElement('button');
-        upButton.innerHTML = "&#11014;&#65039;"
+        upButtonImg = document.createElement('img');
+        upButtonImg.src = 'img/up.png';
+        upButton.appendChild(upButtonImg);
         upButton.addEventListener('click', moveUp);
         controlsDiv.appendChild(upButton);
         let downButton = document.createElement('button');
-        downButton.innerHTML = "&#11015;&#65039;"
+        downButtonImg = document.createElement('img');
+        downButtonImg.src = 'img/down.png';
+        downButton.appendChild(downButtonImg);
         downButton.addEventListener('click', moveDown);
         controlsDiv.appendChild(downButton);
         let shareButton = document.createElement('button');
-        shareButton.innerHTML = "&#128100;"
+        shareButtonImg = document.createElement('img');
+        shareButtonImg.src = 'img/share.png';
+        shareButton.appendChild(shareButtonImg);
         controlsDiv.appendChild(shareButton);
         itemsList.appendChild(controlsDiv);
-        groupLi.appendChild(itemsList);
+
+
+
+        let headerDiv = document.createElement('div');
+        headerDiv.classList.add('section-header');
+        headerDiv.appendChild(itemsList)
+
+        groupLi.appendChild(headerDiv);
         let ulInIt = document.createElement('ul');
         ulInIt.classList.add('ui-list');
         groupLi.appendChild(ulInIt)
@@ -306,9 +341,9 @@ if (!csrfToken) {
 }
 if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
     iosCookieRefresh();
-    setStylesheet('css/grocery-list-new.css')
+    setStylesheet('css/grocery-list-new.css?v=3')
 } else {
-    setStylesheet('css/grocery-list-old.css')
+    setStylesheet('css/grocery-list-old.css?v=2')
 }
 const loader = document.getElementById('loading');
 function handleGetList(event) {
@@ -333,6 +368,21 @@ function loadList(event) {
     xmlHttp.onload = handleGetList;
     xmlHttp.send(JSON.stringify({ 'csrf': csrfToken }));
 };
+let hideTimeout = undefined;
+function stopHide() {
+    if (!!hideTimeout) {
+        clearTimeout(hideTimeout);
+        hideTimeout = undefined;
+    }
+};
+function startHide(event) {
+    stopHide();
+    hideTimeout = setTimeout(hideSubmit, 1000);
+};
+function focusEvent(event) {
+    stopHide();
+    hidePopups(event);
+};
 const textBox = document.getElementById('item-text-box');
 const toolBar = document.getElementById('tool-bar');
 const submitBar = document.getElementById('submit-bar');
@@ -340,6 +390,10 @@ function showSubmit(event) {
     toolBar.style.display = 'none';
     submitBar.style.display = 'flex';
     textBox.focus();
+};
+function hideSubmit(event) {
+    toolBar.style.display = 'flex';
+    submitBar.style.display = 'none';
 };
 function enterKeyListener(event) {
     event.preventDefault();

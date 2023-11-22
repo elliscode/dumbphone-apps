@@ -1,3 +1,4 @@
+import os
 import json
 import urllib
 import re
@@ -7,6 +8,40 @@ from .grocery_list import (
 from .utils import sqs, get_user_data, ADMIN_PHONE, digits, lowercase_letters, uppercase_letters, authenticate, \
     create_id, format_response, python_obj_to_dynamo_obj, dynamo, TABLE_NAME, dynamo_obj_to_python_obj
 import time
+
+GOOGLE_API_KEY = os.environ["GOOGLE_API_KEY"]
+
+
+def get_maps_key_route(event):
+    body = json.loads(event["body"])
+    print(body)
+    location_token = body.get('locationToken')
+    if location_token and re.compile(r"[a-zA-Z0-9]{10}").match(location_token):
+        pass
+    else:
+        return format_response(
+            event=event,
+            http_code=404,
+            body={'key': None, 'message': 'Location token not found'},
+        )
+
+    response = dynamo.get_item(
+        TableName=TABLE_NAME,
+        Key=python_obj_to_dynamo_obj({"key1": "location", "key2": location_token}),
+    )
+
+    if 'Item' not in response:
+        return format_response(
+            event=event,
+            http_code=404,
+            body='Location token not found',
+        )
+
+    return format_response(
+        event=event,
+        http_code=200,
+        body={'key': GOOGLE_API_KEY},
+    )
 
 
 def get_location_route(event):
