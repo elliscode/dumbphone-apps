@@ -55,7 +55,9 @@ def setlistorder_route(event, user_data, body):
     old_userlist = get_userlist_data(phone)["lists"]
     print(new_userlist)
     print(old_userlist)
-    if not all(x in old_userlist for x in new_userlist) or not all(x in new_userlist for x in old_userlist):
+    if not all(x in old_userlist for x in new_userlist) or not all(
+        x in new_userlist for x in old_userlist
+    ):
         return format_response(
             event=event,
             http_code=500,

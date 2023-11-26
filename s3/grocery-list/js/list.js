@@ -75,10 +75,12 @@ function handleDeleteList(event) {
     console.log(JSON.stringify(result));
 }
 function openShareWindow(event) {
+    hidePopups();
     let share = document.getElementById('share');
     let listName = document.getElementById('list-name');
-    listName.innerText = event.target.parentElement.firstElementChild.innerText;
-    listName.setAttribute('hash', event.target.parentElement.parentElement.id);
+    let groupElement = findParentWithClass(event.target, 'group');
+    listName.innerText = groupElement.getElementsByTagName('h2')[0].innerText.trim();
+    listName.setAttribute('hash', groupElement.id);
     share.style.display = 'block';
 }
 function hidePopups(event) {
@@ -225,6 +227,7 @@ function addItem(group, item) {
         shareButtonImg = document.createElement('img');
         shareButtonImg.src = 'img/share.png';
         shareButton.appendChild(shareButtonImg);
+        shareButton.addEventListener('click', openShareWindow);
         controlsDiv.appendChild(shareButton);
         itemsList.appendChild(controlsDiv);
 
@@ -248,6 +251,7 @@ function addItem(group, item) {
     let itemLi = document.getElementById(itemId);
     if(!itemLi) {
         let itemLi = document.createElement('li');
+        itemLi.classList.add('list-item');
         itemLi.id = itemId;
         let nameDiv = document.createElement('div');
         nameDiv.classList.add('name');
@@ -286,8 +290,10 @@ function addItem(group, item) {
 
 function crossToggle(event) {
     let div = event.target;
-    let deleteButton = div.parentElement.querySelector('button.delete');
-    let list_hash = div.parentElement.parentElement.parentElement.id;
+    let listItem = findParentWithClass(div, 'list-item');
+    let deleteButton = listItem.querySelector('button.delete');
+    let groupElement = findParentWithClass(event.target, 'group');
+    let list_hash = groupElement.id;
     let newValue = undefined;
     if('line-through' == div.style.textDecoration) {
         div.style.textDecoration = 'none';
@@ -318,7 +324,7 @@ function askToDeleteGroup(event) {
 }
 
 function removeItem(item) {
-    let groupLi = item.parentElement.parentElement;
+    let groupLi = findParentWithClass(event.target, 'group');
     item.remove();
 
     let itemUl = groupLi.getElementsByClassName('ui-list')[0];
@@ -342,6 +348,7 @@ if (!csrfToken) {
 if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
     iosCookieRefresh();
     setStylesheet('css/grocery-list-new.css?v=3')
+    document.getElementById('item-text-box').addEventListener('blur', startHide);
 } else {
     setStylesheet('css/grocery-list-old.css?v=2')
 }
@@ -402,3 +409,16 @@ function enterKeyListener(event) {
     }
 };
 loadList();
+let sharedGroupId = getParameterByName('share');
+if (sharedGroupId) {
+    acceptShare(sharedGroupId);
+}
+function closeOnClick(event) {
+    if (event.target.classList.contains('modal-bg')) {
+        hidePopups(event);
+    }
+}
+let modalBgs = document.getElementsByClassName('modal-bg')
+for (let i = 0; i < modalBgs.length; i++) {
+    modalBgs[i].addEventListener('click', closeOnClick)
+}

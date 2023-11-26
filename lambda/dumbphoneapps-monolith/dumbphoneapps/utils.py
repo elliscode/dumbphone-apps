@@ -22,12 +22,16 @@ sqs = boto3.client("sqs")
 def format_response(event, http_code, body, headers=None):
     if isinstance(body, str):
         body = {"message": body}
-    if "origin" in event["headers"] and event["headers"]["origin"].startswith(DOMAIN_NAME_WWW):
+    if "origin" in event["headers"] and event["headers"]["origin"].startswith(
+        DOMAIN_NAME_WWW
+    ):
         domain_name = DOMAIN_NAME_WWW
-    elif "origin" in event["headers"] and event["headers"]["origin"].startswith(DOMAIN_NAME):
+    elif "origin" in event["headers"] and event["headers"]["origin"].startswith(
+        DOMAIN_NAME
+    ):
         domain_name = DOMAIN_NAME
     else:
-        print(f'Invalid origin {event["headers"]}')
+        print(f'Invalid origin {event["headers"].get("origin")}')
         http_code = 403
         body = {"message": "Forbidden"}
         domain_name = "*"
@@ -144,7 +148,6 @@ def authenticate(func):
     return wrapper_func
 
 
-
 @authenticate
 def ios_cookie_refresh_route(event, user_data, body):
     cookie_string = event["headers"]["cookie"]
@@ -152,7 +155,7 @@ def ios_cookie_refresh_route(event, user_data, body):
     token_data = get_token(cookie)
     # generate the date_string
     date_string = time.strftime(
-        "%a, %d %b %Y %H:%M:%S GMT", time.gmtime(float(token_data['expiration']))
+        "%a, %d %b %Y %H:%M:%S GMT", time.gmtime(float(token_data["expiration"]))
     )
     return format_response(
         event=event,
@@ -241,7 +244,10 @@ def otp_route(event):
 
     # generate and set OTP
     otp_data = get_otp(phone)
-    body_value = {"username":phone, "status": f"OTP already exists for {phone}, please log in"}
+    body_value = {
+        "username": phone,
+        "status": f"OTP already exists for {phone}, please log in",
+    }
     if otp_data is None or otp_data["expiration"] < int(time.time()):
         otp_value = "".join(secrets.choice(digits) for i in range(6))
         otp_data = create_otp(phone, otp_value)

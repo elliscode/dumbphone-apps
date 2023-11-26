@@ -5,8 +5,21 @@ import re
 from .grocery_list import (
     additem,
 )
-from .utils import sqs, get_user_data, ADMIN_PHONE, digits, lowercase_letters, uppercase_letters, authenticate, \
-    create_id, format_response, python_obj_to_dynamo_obj, dynamo, TABLE_NAME, dynamo_obj_to_python_obj
+from .utils import (
+    sqs,
+    get_user_data,
+    ADMIN_PHONE,
+    digits,
+    lowercase_letters,
+    uppercase_letters,
+    authenticate,
+    create_id,
+    format_response,
+    python_obj_to_dynamo_obj,
+    dynamo,
+    TABLE_NAME,
+    dynamo_obj_to_python_obj,
+)
 import time
 
 GOOGLE_API_KEY = os.environ["GOOGLE_API_KEY"]
@@ -15,14 +28,14 @@ GOOGLE_API_KEY = os.environ["GOOGLE_API_KEY"]
 def get_maps_key_route(event):
     body = json.loads(event["body"])
     print(body)
-    location_token = body.get('locationToken')
+    location_token = body.get("locationToken")
     if location_token and re.compile(r"[a-zA-Z0-9]{10}").match(location_token):
         pass
     else:
         return format_response(
             event=event,
             http_code=404,
-            body={'key': None, 'message': 'Location token not found'},
+            body={"key": None, "message": "Location token not found"},
         )
 
     response = dynamo.get_item(
@@ -30,31 +43,31 @@ def get_maps_key_route(event):
         Key=python_obj_to_dynamo_obj({"key1": "location", "key2": location_token}),
     )
 
-    if 'Item' not in response:
+    if "Item" not in response:
         return format_response(
             event=event,
             http_code=404,
-            body='Location token not found',
+            body="Location token not found",
         )
 
     return format_response(
         event=event,
         http_code=200,
-        body={'key': GOOGLE_API_KEY},
+        body={"key": GOOGLE_API_KEY},
     )
 
 
 def get_location_route(event):
     body = json.loads(event["body"])
     print(body)
-    location_token = body.get('locationToken')
+    location_token = body.get("locationToken")
     if location_token and re.compile(r"[a-zA-Z0-9]{10}").match(location_token):
         pass
     else:
         return format_response(
             event=event,
             http_code=404,
-            body='Location token not found',
+            body="Location token not found",
         )
 
     response = dynamo.get_item(
@@ -62,33 +75,37 @@ def get_location_route(event):
         Key=python_obj_to_dynamo_obj({"key1": "location", "key2": location_token}),
     )
 
-    if 'Item' not in response:
+    if "Item" not in response:
         return format_response(
             event=event,
             http_code=404,
-            body='Location token not found',
+            body="Location token not found",
         )
 
     location_data = dynamo_obj_to_python_obj(response["Item"])
 
-    if 'expiration' in location_data and location_data['expiration'] < int(time.time()):
+    if "expiration" in location_data and location_data["expiration"] < int(time.time()):
         return format_response(
             event=event,
             http_code=404,
-            body='Location token not found',
+            body="Location token not found",
         )
 
     return format_response(
         event=event,
         http_code=200,
-        body={'locationToken': location_token, 'lat': location_data['lat'], 'lon': location_data['lon']},
+        body={
+            "locationToken": location_token,
+            "lat": location_data["lat"],
+            "lon": location_data["lon"],
+        },
     )
 
 
 @authenticate
 def share_location_route(event, user_data, body):
     print(body)
-    location_token = body.get('locationToken')
+    location_token = body.get("locationToken")
     if location_token and re.compile(r"[a-zA-Z0-9]{10}").match(location_token):
         pass
     else:
@@ -96,19 +113,21 @@ def share_location_route(event, user_data, body):
 
     dynamo.put_item(
         TableName=TABLE_NAME,
-        Item=python_obj_to_dynamo_obj({
-            'key1': 'location',
-            'key2': location_token,
-            'lat': str(body['lat']),
-            'lon': str(body['lon']),
-            "expiration": int(time.time()) + (60 * 60),
-        }),
+        Item=python_obj_to_dynamo_obj(
+            {
+                "key1": "location",
+                "key2": location_token,
+                "lat": str(body["lat"]),
+                "lon": str(body["lon"]),
+                "expiration": int(time.time()) + (60 * 60),
+            }
+        ),
     )
 
     return format_response(
         event=event,
         http_code=200,
-        body={'locationToken': location_token},
+        body={"locationToken": location_token},
     )
 
 
