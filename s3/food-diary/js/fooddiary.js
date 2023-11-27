@@ -1,3 +1,13 @@
+function findParentWithClass(element, className) {
+    let current = element;
+    while (!!current) {
+        if (current.classList.contains(className)) {
+            return current;
+        }
+        current = current.parentElement;
+    }
+    return current;
+}
 function addToList(event) {
     const caller = event.target;
     const input = caller.parentElement.getElementsByTagName("input")[0];
@@ -166,7 +176,6 @@ function deleteEntry(event) {
 function changeQuantity(event) {
     const caller = event.target;
     let servings = document.getElementById('servings');
-    caller.parentElement.appendChild(servings);
     const key = caller.getAttribute('key');
     const timestamp = caller.getAttribute('timestamp');
     const foodHash = caller.getAttribute('food-hash');
@@ -189,19 +198,23 @@ function changeQuantity(event) {
 }
 function closeServings(event) {
     let servings = document.getElementById('servings');
-    document.body.appendChild(servings);
     servings.style.display = 'none';
+    let modalBg = findParentWithClass(servings, 'modal-bg');
+    modalBg.style.display = 'none';
 }
 function closeRecipeServings(event) {
     let servings = document.getElementById('recipe-servings');
-    document.body.appendChild(servings);
     servings.style.display = 'none';
+    let modalBg = findParentWithClass(servings, 'modal-bg');
+    modalBg.style.display = 'none';
 }
 function displayServing(event) {
     let xmlHttp = event.target;
     let item = JSON.parse(xmlHttp.responseText);
     let servings = document.getElementById('servings');
     servings.style.display = 'block';
+    let modalBg = findParentWithClass(servings, 'modal-bg');
+    modalBg.style.display = 'flex';
     let textBox = document.getElementById('servings-amount');
     let select = document.getElementById('servings-name');
     let edit = document.getElementById('servings-edit');
@@ -236,12 +249,16 @@ function displayServing(event) {
         option.innerText = 'new';
         select.appendChild(option);
     }
+    textBox.focus();
+    textBox.select();
 }
 function displayRecipeServing(event) {
     let xmlHttp = event.target;
     let item = JSON.parse(xmlHttp.responseText);
     let servings = document.getElementById('recipe-servings');
     servings.style.display = 'block';
+    let modalBg = findParentWithClass(servings, 'modal-bg');
+    modalBg.style.display = 'flex';
     let textBox = document.getElementById('recipe-servings-amount');
     let select = document.getElementById('recipe-servings-name');
     let servingsSave = document.getElementById('recipe-servings-save');
@@ -283,7 +300,6 @@ function editEitherFoodOrRecipe(event) {
     xmlHttp.onload = handleFood;
 
     let foodOrRecipeEdit = document.getElementById('food-or-recipe-edit');
-    caller.parentElement.appendChild(foodOrRecipeEdit);
 
     xmlHttp.send(JSON.stringify({
         'hash': hash,
@@ -303,12 +319,15 @@ function handleFood(event) {
     }
     let foodOrRecipeEdit = document.getElementById('food-or-recipe-edit');
     foodOrRecipeEdit.style.display = 'block';
+    let modalBg = findParentWithClass(foodOrRecipeEdit, 'modal-bg');
+    modalBg.style.display = 'flex';
 }
 
 function closeFood(event) {
     let foodOrRecipeEdit = document.getElementById('food-or-recipe-edit');
-    document.body.appendChild(foodOrRecipeEdit);
     foodOrRecipeEdit.style.display = 'none';
+    let modalBg = findParentWithClass(foodOrRecipeEdit, 'modal-bg');
+    modalBg.style.display = 'none';
 }
 function displayFood(event) {
     let foodEdit = document.getElementById('food-edit');
@@ -388,7 +407,6 @@ function createTableHeader() {
 function changeQuantityRow(event) {
     const caller = event.target;
     let servings = document.getElementById('recipe-servings');
-    caller.parentElement.appendChild(servings);
     const hash = caller.getAttribute('hash');
     const foodHash = caller.getAttribute('food-hash');
     let save = document.getElementById('servings-save');
@@ -576,10 +594,10 @@ function addToRecipe(event) {
 function showHideCallback(event) {
     let button = event.target;
     let total = button.getAttribute('total');
-    if("Show" == button.innerText) {
+    if("#" == button.innerText) {
         button.innerText = total;
     } else {
-        button.innerText = "Show";
+        button.innerText = "#";
     }
 }
 function setDate(event) {
@@ -700,7 +718,7 @@ function populateTable(event) {
             const td = document.createElement('td');
             td.style.textAlign = 'right';
             const button = document.createElement('button');
-            button.innerHTML = 'Show';
+            button.innerHTML = '#';
             button.setAttribute('total', data.total);
             button.addEventListener('click', showHideCallback);
             td.appendChild(button);
@@ -732,3 +750,63 @@ if (day.length < 2) {
 }
 
 document.getElementById('date-picker').value = year + '-' + month + '-' + day;
+
+const DEBUG = false;
+
+if (!csrfToken) {
+    window.location.replace("../signup.html");
+}
+
+if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
+    iosCookieRefresh();
+}
+
+setDate();
+
+document.addEventListener("keydown", function (e) {
+    if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+        e.preventDefault();
+    }
+}, false);
+
+let searches = document.getElementsByClassName("item-text-box");
+
+for(let i = 0; i < searches.length; i++) {
+    search = searches[i];
+    search.addEventListener("keyup", function (event) {
+        event.preventDefault();
+        if (event.keyCode === 13) {
+            let inputs = caller.parentElement.getElementsByTagName("input");
+            for(let j = 0; j < inputs.length; j++) {
+                inputs[j].click();
+                break;
+            }
+        }
+    });
+}
+
+function closeModalIfApplicable(event) {
+    if (event.target.classList.contains('modal-bg')) {
+        event.target.getElementsByClassName('modal')[0].style.display = 'none';
+        event.target.style.display = 'none';
+    }
+}
+
+let modalBackgrounds = document.getElementsByClassName('modal-bg');
+for (let i = 0; i < modalBackgrounds.length; i++) {
+    modalBg = modalBackgrounds[i];
+    modalBg.style.display = 'none';
+    modalBg.addEventListener('click', closeModalIfApplicable)
+}
+
+const servingsTextBox = document.getElementById('servings-amount');
+const servingsSaveButton = document.getElementById('servings-save');
+servingsTextBox.addEventListener("keyup", function (event) {
+    event.preventDefault();
+    if (event.keyCode === 13) {
+        servingsTextBox.blur();
+        servingsSaveButton.click();
+    }
+});
+
+const loader = document.getElementById('loading');

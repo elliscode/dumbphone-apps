@@ -4,10 +4,10 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Food Diary</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=3"/>
-    <link rel="stylesheet" href="css/fooddiary.css?v=3"/>
-    <link rel="stylesheet" href="../css/loader.css?v=3"/>
-    <link rel="icon" type="image/png" href="../img/favicon.png?v=3"/>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=4"/>
+    <link rel="stylesheet" href="css/fooddiary.css?v=4"/>
+    <link rel="stylesheet" href="../css/loader.css?v=4"/>
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=4"/>
 </head>
 
 <body>
@@ -25,56 +25,62 @@
     <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
 </div>
 
-<div id="servings">
-    <input id="servings-amount" type="tel" placeholder="amount" onkeydown="forceToDecimal(event)"/>
-    <select id="servings-name" onchange="servingChange(event)">
-        <option>Test One</option>
-        <option>Test Two</option>
-    </select>
-    <button style="display:none;" id="servings-edit" onclick="editServing(event)">&#x270E;</button>
-    <input type="text" id="servings-text" placeholder="serving name"/>
-    <input type="text" id="calories-text" placeholder="calories"/>
-    <button id="servings-save" onclick="saveServing(event)">Save</button>
-    <button id="servings-create" onclick="createServing(event)">Create</button>
-    <button onclick="closeServings(event)">&times;</button>
-</div>
-<div id="recipe-servings">
-    <input id="recipe-servings-amount" type="tel" placeholder="amount"/>
-    <select id="recipe-servings-name" onchange="servingRecipeChange(event)">
-        <option>Test One</option>
-        <option>Test Two</option>
-    </select>
-    <button id="recipe-servings-save" onclick="alterRecipeServing(event)">Save</button>
-    <button onclick="closeRecipeServings(event)">&times;</button>
-</div>
-<div id="food-or-recipe-edit">
-    <div id="food-edit">
-        <table>
-            <tr><td>Name:</td><td><input id="food-edit-name" type="text"></input></td></tr>
-            <tr><td>Calories:</td><td><input id="food-edit-calories" type="tel"></input></td></tr>
-            <tr><td>Fat:</td><td><input id="food-edit-fat" type="tel"></input></td></tr>
-            <tr><td>Carbs:</td><td><input id="food-edit-carbs" type="tel"></input></td></tr>
-            <tr><td>Protein:</td><td><input id="food-edit-protein" type="tel"></input></td></tr>
-            <tr><td>Alcohol:</td><td><input id="food-edit-alcohol" type="tel"></input></td></tr>
-            <tr><td>Caffeine:</td><td><input id="food-edit-caffeine" type="tel"></input></td></tr>
-        </table>
-        <button id="food-edit-recipe" onclick="displayRecipe(event)">Edit Recipe</button>
-        <button id="food-edit-save" onclick="saveFood(event)">Save</button>
-        <button onclick="closeFood(event)">&times;</button>
+<div class="modal-bg">
+    <div class="modal" id="servings">
+        <input id="servings-amount" type="tel" placeholder="amount" onkeydown="forceToDecimal(event)"/>
+        <select id="servings-name" onchange="servingChange(event)">
+            <option>Test One</option>
+            <option>Test Two</option>
+        </select>
+        <button style="display:none;" id="servings-edit" onclick="editServing(event)">&#x270E;</button>
+        <input type="text" id="servings-text" placeholder="serving name"/>
+        <input type="text" id="calories-text" placeholder="calories"/>
+        <button id="servings-save" onclick="saveServing(event)">Save</button>
+        <button id="servings-create" onclick="createServing(event)">Create</button>
+        <button onclick="closeServings(event)">&times;</button>
     </div>
-    <div id="recipe-edit">
-        <table id="ingredients">
-        </table>
-        <div style="position:relative;">
-            <div>
-                <input type="text" id="recipe-search" onkeyup="queueSearch(event)">
-            </div>
-            <ul class="suggestions"></ul>
-        </div>
-        <div>
-            <button id="recipe-edit-food" onclick="displayFood(event)">Edit Food</button>
-            <button id="recipe-edit-save" onclick="saveRecipe(event)">Save</button>
+</div>
+<div class="modal-bg">
+    <div class="modal" id="recipe-servings">
+        <input id="recipe-servings-amount" type="tel" placeholder="amount"/>
+        <select id="recipe-servings-name" onchange="servingRecipeChange(event)">
+            <option>Test One</option>
+            <option>Test Two</option>
+        </select>
+        <button id="recipe-servings-save" onclick="alterRecipeServing(event)">Save</button>
+        <button onclick="closeRecipeServings(event)">&times;</button>
+    </div>
+</div>
+<div class="modal-bg">
+    <div class="modal" id="food-or-recipe-edit">
+        <div id="food-edit">
+            <table>
+                <tr><td>Name:</td><td><input id="food-edit-name" type="text"></input></td></tr>
+                <tr><td>Calories:</td><td><input id="food-edit-calories" type="tel"></input></td></tr>
+                <tr><td>Fat:</td><td><input id="food-edit-fat" type="tel"></input></td></tr>
+                <tr><td>Carbs:</td><td><input id="food-edit-carbs" type="tel"></input></td></tr>
+                <tr><td>Protein:</td><td><input id="food-edit-protein" type="tel"></input></td></tr>
+                <tr><td>Alcohol:</td><td><input id="food-edit-alcohol" type="tel"></input></td></tr>
+                <tr><td>Caffeine:</td><td><input id="food-edit-caffeine" type="tel"></input></td></tr>
+            </table>
+            <button id="food-edit-recipe" onclick="displayRecipe(event)">Edit Recipe</button>
+            <button id="food-edit-save" onclick="saveFood(event)">Save</button>
             <button onclick="closeFood(event)">&times;</button>
+        </div>
+        <div id="recipe-edit">
+            <table id="ingredients">
+            </table>
+            <div style="position:relative;">
+                <div>
+                    <input class="big" type="text" id="recipe-search" onkeyup="queueSearch(event)">
+                </div>
+                <ul class="suggestions"></ul>
+            </div>
+            <div>
+                <button id="recipe-edit-food" onclick="displayFood(event)">Edit Food</button>
+                <button id="recipe-edit-save" onclick="saveRecipe(event)">Save</button>
+                <button onclick="closeFood(event)">&times;</button>
+            </div>
         </div>
     </div>
 </div>
@@ -85,36 +91,6 @@
 </div>
 <script src="../js/utils.js?v=3"></script>
 <script src="js/fooddiary.js?v=3"></script>
-<script>
-    const DEBUG = false;
-    if (!csrfToken) {
-        window.location.replace("../signup.html");
-    }
-    if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
-        iosCookieRefresh();
-    }
-    setDate();
-    document.addEventListener("keydown", function (e) {
-        if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
-            e.preventDefault();
-        }
-    }, false);
-    let searches = document.getElementsByClassName("item-text-box");
-    for(let i = 0; i < searches.length; i++) {
-        search = searches[i];
-        search.addEventListener("keyup", function (event) {
-            event.preventDefault();
-            if (event.keyCode === 13) {
-                let inputs = caller.parentElement.getElementsByTagName("input");
-                for(let j = 0; j < inputs.length; j++) {
-                    inputs[j].click();
-                    break;
-                }
-            }
-        });
-    }
-    const loader = document.getElementById('loading');
-</script>
 </body>
 
 </html>
