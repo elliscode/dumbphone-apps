@@ -347,10 +347,10 @@ if (!csrfToken) {
 }
 if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
     iosCookieRefresh();
-    setStylesheet('css/grocery-list-new.css?v=2')
+    setStylesheet('css/grocery-list-new.css?v=3')
     document.getElementById('item-text-box').addEventListener('blur', startHide);
 } else {
-    setStylesheet('css/grocery-list-old.css?v=2')
+    setStylesheet('css/grocery-list-old.css?v=3')
 }
 const loader = document.getElementById('loading');
 function handleGetList(event) {

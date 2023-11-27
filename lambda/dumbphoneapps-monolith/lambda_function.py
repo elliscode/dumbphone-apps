@@ -36,6 +36,7 @@ from dumbphoneapps.one_offs import (
     get_location_route,
     get_maps_key_route,
 )
+from dumbphoneapps.weather import get_forecast_route
 
 
 def lambda_handler(event, context):
@@ -104,5 +105,7 @@ def route(event):
         return get_location_route(event)
     if path_equals(event=event, method="POST", path="/one-offs/get-maps-key"):
         return get_maps_key_route(event)
+    if path_equals(event=event, method="POST", path="/weather/get-forecast"):
+        return get_forecast_route(event)
 
     return format_response(event=event, http_code=404, body="No matching route found")

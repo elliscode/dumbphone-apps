@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Weather</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=3"/>
+    <link rel="stylesheet" href="../css/loader.css?v=3"/>
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=3"/>
+    <style>
+button#get-weather {
+    width:100%;
+    max-width:200px;
+    height:200px;
+    font-size:20px;
+}
+pre#json {
+    white-space:pre-wrap;
+}
+.weather h1 {
+    font-variant: small-caps;
+    font-size:16px;
+    margin:0px;
+    text-align:center;
+    text-wrap: nowrap;
+}
+.weather h2 {
+    font-variant: small-caps;
+    font-size:12px;
+    margin:0px;
+    text-align:center;
+    text-wrap: nowrap;
+}
+.weather h3 {
+    font-variant: small-caps;
+    font-size: 20px;
+    margin: 10px 0px 10px 0px;
+    text-wrap: nowrap;
+}
+.current {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom:10px;
+}
+.current img {
+    width:64px;
+    height:64px;
+}
+.current-temps {
+    display:flex;
+    align-items: flex-end;
+}
+.current-temp {
+    font-size: 26px;
+    margin: 0px;
+    line-height: 1em;
+    text-wrap: nowrap;
+}
+.current-high {
+    margin: 0px;
+    text-wrap: nowrap;
+}
+.current-high::before {
+    content:"\2191";
+    margin-left:5px;
+}
+.current-low {
+    margin: 0px;
+    text-wrap: nowrap;
+}
+.current-low::before {
+    content:"\2193";
+    margin-left:5px;
+}
+.day {
+    display:flex;
+    flex-direction: row;
+    width:100%;
+    overflow-x: scroll;
+    overflow-y: hidden;
+}
+.hour {
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right:10px;
+}
+.hour .time {
+    font-variant: small-caps;
+    font-size:12px;
+    margin:0px;
+    text-align:center;
+    text-wrap: nowrap;
+}
+.hour img {
+    width:32px;
+    height:32px;
+}
+.hour .temp {
+    font-size: 12px;
+    margin: 0px;
+    line-height: 1em;
+    text-wrap: nowrap;
+}
+    </style>
+</head>
+
+<body>
+<div><b><a href="../index.html">Home</a></b> &gt; <b>weather</b></div>
+
+<button id="get-weather" onclick="getCurrentLocation(event)">Get weather for your location</button>
+
+<p>Powered by <a href="https://www.weatherapi.com/" title="Weather API">WeatherAPI.com</a></p>
+
+<pre id="json"></pre>
+
+<div class="weather">
+    <h1><span id="location-text">&ndash; &ndash; &ndash; &ndash;</span></h1>
+    <h2><span id="time-text">&ndash; &ndash; &ndash; &ndash;</span></h2>
+    <div class="current">
+        <div>
+            <h3><span id="weather-text">N/A</span></h3>
+            <div class="current-temps">
+                <p class="current-temp"><span id="current-temp-text">&ndash; &ndash;</span>&deg;</p>
+                <p class="current-high"><span id="current-high-text">&ndash; &ndash;</span>&deg;</p>
+                <p class="current-low"><span id="current-low-text">&ndash; &ndash;</span>&deg;</p>
+            </div>
+        </div>
+        <img id="current-image" src="img/white-square.png" />
+    </div>
+    <div class="day">
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="hour">
+            <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+            <img src="img/white-square.png" />
+            <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+    </div>
+</div>
+
+<div class="logout">
+    <button onclick="logOut(event)">Log out</button>
+</div>
+<script src="../js/utils.js?v=3"></script>
+<script src="js/weather.js?v=3"></script>
+</body>
+
+</html>

@@ -36,5 +36,5 @@ function handleIosCookieRefresh(event) {
     localStorage.setItem('dumbphoneapps-cookie-refresh-time', timeInt.toString());
 }
 const csrfToken = localStorage.getItem('dumbphoneapps-csrf-token');
-const API_DOMAIN = 'https://test.dumbphoneapps.com';
-const UI_DOMAIN = 'https://aws.dumbphoneapps.com';
+const API_DOMAIN = 'https://api.dumbphoneapps.com';
+const UI_DOMAIN = 'https://www.dumbphoneapps.com';
