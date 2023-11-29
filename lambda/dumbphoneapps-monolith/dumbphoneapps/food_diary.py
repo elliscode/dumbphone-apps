@@ -254,10 +254,21 @@ def set_serving_route(event, user_data, body):
     ] = f"{determined_multiplier * float(food['metadata']['calories'])}"
     diary_entry["multiplier"] = f"{determined_multiplier}"
     diary_entry["unit"] = body_unit
-    dynamo.put_item(
-        TableName=TABLE_NAME,
-        Item=python_obj_to_dynamo_obj(diary_entry),
-    )
+
+    serving_entry = {
+        "key1": f"serving_{user_data['key2']}",
+        "key2": body["hash"],
+        "multiplier": f"{determined_multiplier}",
+        "unit": body_unit,
+        "expiration": int(time.time()) + (30 * 24 * 60 * 60),
+    }
+
+    items = [
+        {"PutRequest": {"Item": python_obj_to_dynamo_obj(diary_entry)}},
+        {"PutRequest": {"Item": python_obj_to_dynamo_obj(serving_entry)}},
+    ]
+
+    dynamo.batch_write_item(RequestItems={TABLE_NAME: items})
     return format_response(
         event=event,
         http_code=200,
@@ -299,25 +310,61 @@ def delete_route(event, user_data, body):
 @authenticate
 def add_route(event, user_data, body):
     if "hash" in body:
-        response = dynamo.get_item(
-            TableName=TABLE_NAME,
-            Key=python_obj_to_dynamo_obj({"key1": "food", "key2": body["hash"]}),
-        )
-        food_item = dynamo_obj_to_python_obj(response["Item"])
-        dynamo.put_item(
-            TableName=TABLE_NAME,
-            Item=python_obj_to_dynamo_obj(
-                {
-                    "key1": f'diary_{user_data["key2"]}_{body["date"]}',
-                    "key2": f"{time.mktime(time.gmtime())}",
-                    "name": f'{food_item["name"]}',
-                    "calories": f'{food_item["metadata"]["calories"]}',
-                    "food_id": f'{body["hash"]}',
-                    "multiplier": f"1",
-                    "unit": f"kcal",
+        food_key = {"key1": "food", "key2": body["hash"]}
+        previous_serving_key = {
+            "key1": f"serving_{user_data['key2']}",
+            "key2": body["hash"],
+        }
+        response = dynamo.batch_get_item(
+            RequestItems={
+                TABLE_NAME: {
+                    "Keys": [
+                        python_obj_to_dynamo_obj(food_key),
+                        python_obj_to_dynamo_obj(previous_serving_key),
+                    ]
                 }
-            ),
+            }
         )
+        responses = response["Responses"][TABLE_NAME]
+        print(responses)
+        food_item = None
+        serving_entry = None
+        for response_item in responses:
+            python_response_item = dynamo_obj_to_python_obj(response_item)
+            if python_response_item["key1"] == "food":
+                food_item = python_response_item
+            elif python_response_item["key1"] == f"serving_{user_data['key2']}":
+                serving_entry = python_response_item
+        if not serving_entry:
+            serving_entry = {
+                "key1": f"serving_{user_data['key2']}",
+                "key2": body["hash"],
+                "multiplier": f"{1}",
+                "unit": "kcal",
+            }
+
+        serving_entry["expiration"] = int(time.time()) + (30 * 24 * 60 * 60)
+
+        calculated_calories = float(food_item["metadata"]["calories"]) * float(
+            serving_entry["multiplier"]
+        )
+
+        diary_entry = {
+            "key1": f'diary_{user_data["key2"]}_{body["date"]}',
+            "key2": f"{time.mktime(time.gmtime())}",
+            "name": f'{food_item["name"]}',
+            "calories": f"{calculated_calories}",
+            "food_id": f'{body["hash"]}',
+            "multiplier": f"{serving_entry['multiplier']}",
+            "unit": f"{serving_entry['unit']}",
+        }
+
+        items = [
+            {"PutRequest": {"Item": python_obj_to_dynamo_obj(diary_entry)}},
+            {"PutRequest": {"Item": python_obj_to_dynamo_obj(serving_entry)}},
+        ]
+
+        dynamo.batch_write_item(RequestItems={TABLE_NAME: items})
         return format_response(
             event=event,
             http_code=200,

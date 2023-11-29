@@ -286,7 +286,7 @@ def create_token(phone):
         "key1": "token",
         "key2": create_id(32),
         "csrf": create_id(32),
-        "user": phone,  # m    d    h    m    s
+        "user": phone,  # .               m    d    h    m    s
         "expiration": int(time.time()) + (4 * 30 * 24 * 60 * 60),
     }
     dynamo_data = python_obj_to_dynamo_obj(python_data)
