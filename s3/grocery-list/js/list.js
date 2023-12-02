@@ -31,7 +31,7 @@ function addToList(event) {
     if ("LI" == caller.parentElement.parentElement.tagName) {
         groupName = caller.parentElement.firstElementChild.textContent;
     }
-    let url = API_DOMAIN + '/additem';
+    let url = API_DOMAIN + '/grocery-list/add-item';
     let body = determineAddUrl({ 'groupName': groupName, 'input': input.value });
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
@@ -63,7 +63,7 @@ function deleteFromList(event) {
 
     removeItem(textItem);
 
-    let url = API_DOMAIN + '/deleteitem';
+    let url = API_DOMAIN + '/grocery-list/delete-item';
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true); // false for synchronous request
     xmlHttp.withCredentials = true;
@@ -98,7 +98,7 @@ function sendShareRequest(event) {
     let listName = document.getElementById('list-name');
     let group_hash = listName.getAttribute('hash');
 
-    let url = API_DOMAIN + '/sendsharelist';
+    let url = API_DOMAIN + '/grocery-list/send-share-list';
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true); // false for synchronous request
     xmlHttp.withCredentials = true;
@@ -106,7 +106,7 @@ function sendShareRequest(event) {
     xmlHttp.send(JSON.stringify({'csrf': csrfToken, 'user': user, 'list_id': group_hash}));
 }
 function acceptShare(group_hash) {
-    let url = API_DOMAIN + '/acceptsharelist';
+    let url = API_DOMAIN + '/grocery-list/accept-share-list';
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true); // false for synchronous request
     xmlHttp.withCredentials = true;
@@ -139,6 +139,27 @@ function findParentWithClass(element, className) {
     }
     return current;
 }
+function clearCrossedOffItems(event) {
+    hidePopups(event);
+    const caller = event.target;
+    let groupElement = findParentWithClass(caller, 'group');
+    let groupId = groupElement.id;
+
+    let crossedOffItems = Array.from(groupElement.getElementsByClassName('crossed-off'));
+    while (crossedOffItems.length > 0) {
+        crossedOffItem = crossedOffItems.pop();
+        let listItem = findParentWithClass(crossedOffItem, 'list-item');
+        removeItem(listItem);
+    }
+
+    let url = API_DOMAIN + '/grocery-list/clean-up-list';
+    let body = {'list_id': groupId, 'csrf': csrfToken};
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true); // false for synchronous request
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleToggle;
+    xmlHttp.send(JSON.stringify(body));
+}
 function moveUp(event) {
     hidePopups(event);
     const caller = event.target;
@@ -163,7 +184,7 @@ function moveDown(event) {
 }
 
 function runOrderCall() {
-    let url = API_DOMAIN + '/setlistorder';
+    let url = API_DOMAIN + '/grocery-list/set-list-order';
     const groups = document.querySelectorAll('div#content>div.group')
     let group_hashes = [];
     for(let index = 0; index < groups.length; index++) {
@@ -211,24 +232,34 @@ function addItem(group, item) {
         nameSpan.innerText = group.name
         itemsList.appendChild(nameSpan);
         let controlsDiv = document.createElement('div');
+        let broomButton = document.createElement('button');
+        let broomButtonImg = document.createElement('img');
+        broomButtonImg.src = 'img/broom.png';
+        broomButton.appendChild(broomButtonImg);
+        broomButton.addEventListener('click', clearCrossedOffItems);
+        controlsDiv.appendChild(broomButton);
+
         let upButton = document.createElement('button');
-        upButtonImg = document.createElement('img');
+        let upButtonImg = document.createElement('img');
         upButtonImg.src = 'img/up.png';
         upButton.appendChild(upButtonImg);
         upButton.addEventListener('click', moveUp);
         controlsDiv.appendChild(upButton);
+
         let downButton = document.createElement('button');
-        downButtonImg = document.createElement('img');
+        let downButtonImg = document.createElement('img');
         downButtonImg.src = 'img/down.png';
         downButton.appendChild(downButtonImg);
         downButton.addEventListener('click', moveDown);
         controlsDiv.appendChild(downButton);
+
         let shareButton = document.createElement('button');
-        shareButtonImg = document.createElement('img');
+        let shareButtonImg = document.createElement('img');
         shareButtonImg.src = 'img/share.png';
         shareButton.appendChild(shareButtonImg);
         shareButton.addEventListener('click', openShareWindow);
         controlsDiv.appendChild(shareButton);
+
         itemsList.appendChild(controlsDiv);
 
 
@@ -258,7 +289,7 @@ function addItem(group, item) {
         nameDiv.innerHTML = item.name;
         nameDiv.addEventListener('click', crossToggle);
         if (item.crossed_off) {
-            nameDiv.style.textDecoration = 'line-through';
+            nameDiv.classList.add('crossed-off')
         }
         itemLi.appendChild(nameDiv);
         let deleteButton = document.createElement('button');
@@ -295,16 +326,16 @@ function crossToggle(event) {
     let groupElement = findParentWithClass(event.target, 'group');
     let list_hash = groupElement.id;
     let newValue = undefined;
-    if('line-through' == div.style.textDecoration) {
-        div.style.textDecoration = 'none';
+    if(div.classList.contains('crossed-off')) {
+        div.classList.remove('crossed-off')
         deleteButton.style.display = 'none';
         newValue = false;
     } else {
-        div.style.textDecoration = 'line-through';
+        div.classList.add('crossed-off');
         deleteButton.style.display = 'block';
         newValue = true;
     }
-    let url = API_DOMAIN + '/' + 'setcrossedoff';
+    let url = API_DOMAIN + '/grocery-list/set-crossed-off';
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
     xmlHttp.withCredentials = true;
@@ -347,10 +378,10 @@ if (!csrfToken) {
 }
 if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
     iosCookieRefresh();
-    setStylesheet('css/grocery-list-new.css?v=3')
+    setStylesheet('css/grocery-list-new.css?v=4')
     document.getElementById('item-text-box').addEventListener('blur', startHide);
 } else {
-    setStylesheet('css/grocery-list-old.css?v=3')
+    setStylesheet('css/grocery-list-old.css?v=5')
 }
 const loader = document.getElementById('loading');
 function handleGetList(event) {
@@ -368,7 +399,7 @@ function handleGetList(event) {
 }
 function loadList(event) {
     loader.style.display = 'block';
-    let url = API_DOMAIN + '/getlist';
+    let url = API_DOMAIN + '/grocery-list/get-list';
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
     xmlHttp.withCredentials = true;

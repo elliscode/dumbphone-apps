@@ -180,6 +180,45 @@ def setcrossedoff_route(event, user_data, body):
     )
 
 
+@authenticate
+def cleanuplist_route(event, user_data, body):
+    phone = user_data["key2"]
+
+    userlist_data = get_userlist_data(phone)
+    if userlist_data is None:
+        userlist_data = create_userlist_data(phone)
+
+    list_data = get_list_data(userlist_data["lists"])
+
+    found_list = None
+
+    for this_list in list_data:
+        if this_list["key2"] == body["list_id"]:
+            found_list = this_list
+            break
+    if found_list is None:
+        return format_response(
+            event=event,
+            http_code=404,
+            body="Provided list does not exist",
+        )
+
+    items = found_list["items"]
+
+    if items is None:
+        items = {}
+
+    items = {k: v for k, v in items.items() if not v}
+
+    set_list_data(found_list["key2"], found_list["name"], items)
+
+    return format_response(
+        event=event,
+        http_code=200,
+        body="List successfully cleaned up",
+    )
+
+
 def delete_list(list_id):
     dynamo_data = python_obj_to_dynamo_obj(
         {

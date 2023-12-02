@@ -159,3 +159,6 @@ button {
 .share-enterer label {
     white-space:nowrap;
 }
+.crossed-off {
+    text-decoration: line-through;
+}

@@ -196,3 +196,9 @@ table, th, td {
 #breadcrumb {
     display: inline;
 }
+.crossed-off {
+    text-decoration: line-through;
+}
+h2 button {
+    padding: 1px 0px;
+}

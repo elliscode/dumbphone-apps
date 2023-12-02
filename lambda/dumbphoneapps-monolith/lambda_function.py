@@ -16,6 +16,7 @@ from dumbphoneapps.grocery_list import (
     setlistorder_route,
     sendsharelist_route,
     acceptsharelist_route,
+    cleanuplist_route,
 )
 
 from dumbphoneapps.food_diary import (
@@ -61,22 +62,24 @@ def route(event):
         return otp_route(event)
     if path_equals(event=event, method="POST", path="/login"):
         return login_route(event)
-    if path_equals(event=event, method="POST", path="/getlist"):
+    if path_equals(event=event, method="POST", path="/grocery-list/get-list"):
         return getlist_route(event)
-    if path_equals(event=event, method="POST", path="/additem"):
+    if path_equals(event=event, method="POST", path="/grocery-list/add-item"):
         return additem_route(event)
-    if path_equals(event=event, method="POST", path="/deleteitem"):
+    if path_equals(event=event, method="POST", path="/grocery-list/delete-item"):
         return deleteitem_route(event)
-    if path_equals(event=event, method="POST", path="/deletelist"):
+    if path_equals(event=event, method="POST", path="/grocery-list/delete-list"):
         return deletelist_route(event)
-    if path_equals(event=event, method="POST", path="/setcrossedoff"):
+    if path_equals(event=event, method="POST", path="/grocery-list/set-crossed-off"):
         return setcrossedoff_route(event)
-    if path_equals(event=event, method="POST", path="/setlistorder"):
+    if path_equals(event=event, method="POST", path="/grocery-list/set-list-order"):
         return setlistorder_route(event)
-    if path_equals(event=event, method="POST", path="/sendsharelist"):
+    if path_equals(event=event, method="POST", path="/grocery-list/send-share-list"):
         return sendsharelist_route(event)
-    if path_equals(event=event, method="POST", path="/acceptsharelist"):
+    if path_equals(event=event, method="POST", path="/grocery-list/accept-share-list"):
         return acceptsharelist_route(event)
+    if path_equals(event=event, method="POST", path="/grocery-list/clean-up-list"):
+        return cleanuplist_route(event)
     if path_equals(event=event, method="POST", path="/food-diary/get-day"):
         return get_day_route(event)
     if path_equals(event=event, method="POST", path="/food-diary/search"):
