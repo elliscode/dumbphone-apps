@@ -36,6 +36,8 @@ from dumbphoneapps.one_offs import (
     share_location_route,
     get_location_route,
     get_maps_key_route,
+    generate_presigned_post,
+    generate_presigned_get,
 )
 from dumbphoneapps.weather import get_forecast_route
 
@@ -110,5 +112,9 @@ def route(event):
         return get_maps_key_route(event)
     if path_equals(event=event, method="POST", path="/weather/get-forecast"):
         return get_forecast_route(event)
+    if path_equals(event=event, method="POST", path="/one-offs/generate-presigned-post"):
+        return generate_presigned_post(event)
+    if path_equals(event=event, method="POST", path="/one-offs/generate-presigned-get"):
+        return generate_presigned_get(event)
 
     return format_response(event=event, http_code=404, body="No matching route found")

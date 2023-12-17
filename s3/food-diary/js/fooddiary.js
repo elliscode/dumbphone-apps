@@ -419,6 +419,14 @@ function changeQuantityRow(event) {
         'hash': foodHash,
         'csrf': csrfToken,
     }));
+    let calculatedValues = JSON.parse(caller.getAttribute('calculated-values'));
+    document.getElementById("current-serving").value = calculatedValues
+    "current-calories"
+    "current-fat"
+    "current-carbs"
+    "current-protein"
+    "current-alcohol"
+    "current-caffeine"
 }
 function createTableRow(ingredient) {
     let tr = document.createElement('tr');
@@ -664,6 +672,7 @@ function populateTable(event) {
             button.innerText = '#';
             button.setAttribute('food-hash', entry.food.hash);
             button.setAttribute('timestamp', entry.timestamp);
+            button.setAttribute('calculated-values', JSON.stringify(entry.calculated_values));
             button.setAttribute('key', data.key);
             button.addEventListener('click', changeQuantity);
             td.appendChild(button);
@@ -685,7 +694,7 @@ function populateTable(event) {
         {
             const td = document.createElement('td');
             td.style.textAlign = 'right';
-            td.innerText = Math.round(entry.derived_values.calories);
+            td.innerText = Math.round(entry.calculated_values.calories);
             tr.appendChild(td);
         }
         {

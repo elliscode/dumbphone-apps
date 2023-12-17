@@ -85,3 +85,7 @@ button:active {
     padding:1px 6px;
     margin:0px;
 }
+
+#current-values p {
+    margin:0px;
+}

@@ -27,6 +27,15 @@
 
 <div class="modal-bg">
     <div class="modal" id="servings">
+        <div id="current-values">
+            <p>Serving: <span id="current-serving"></span></p>
+            <p>Calories: <span id="current-calories"></span></p>
+            <p>Fat: <span id="current-fat"></span></p>
+            <p>Carbs: <span id="current-carbs"></span></p>
+            <p>Protein: <span id="current-protein"></span></p>
+            <p>Alcohol: <span id="current-alcohol"></span></p>
+            <p>Caffeine: <span id="current-caffeine"></span></p>
+        </div>
         <input id="servings-amount" type="tel" placeholder="amount" onkeydown="forceToDecimal(event)"/>
         <select id="servings-name" onchange="servingChange(event)">
             <option>Test One</option>

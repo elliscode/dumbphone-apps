@@ -16,10 +16,17 @@ from .utils import (
     dynamo,
     TABLE_NAME,
     dynamo_obj_to_python_obj,
+    boto3,
 )
 import time
 
+sts_connection = boto3.client('sts')
+
 GOOGLE_API_KEY = os.environ["GOOGLE_API_KEY"]
+PRESIGNED_AWS_ACCESS_KEY_ID = os.environ["PRESIGNED_AWS_ACCESS_KEY_ID"]
+PRESIGNED_AWS_SECRET_ACCESS_KEY = os.environ["PRESIGNED_AWS_SECRET_ACCESS_KEY"]
+
+CONTENT_TYPES = {'3gp': 'video/3gpp', 'png': 'image/png', 'jpg': 'image/jpg'}
 
 
 def get_maps_key_route(event):
@@ -218,3 +225,93 @@ def twilio_route(event):
             "Content-Type": "application/xml",
         },
     }
+
+@authenticate
+def generate_presigned_post(event, user_data, body):
+    extension = body.get("extension","")
+    phone = user_data["key2"]
+    if extension not in ['jpg','png','3gp']:
+        return format_response(
+            event=event,
+            http_code=400,
+            body=f"Invalid extension supplied {extension}",
+        )
+    s3 = boto3.client(
+        's3',
+        aws_access_key_id=PRESIGNED_AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=PRESIGNED_AWS_SECRET_ACCESS_KEY,
+    )
+
+    try:
+        file_name = create_id(10)
+        response = s3.generate_presigned_post(
+            Bucket='dumbphoneapps-user-space', 
+            Key=f'{file_name}.{extension}', 
+            ExpiresIn=600,
+            Fields={"Content-Type": CONTENT_TYPES[extension]},
+            Conditions=[["starts-with", "$Content-Type", ""]],
+        )
+        print("Got presigned POST URL: %s", response["url"])
+        return format_response(
+            event=event,
+            http_code=200,
+            body=response,
+        )
+    except Exception as e:
+        print(e)
+        print(
+            "Couldn't get a presigned POST URL for bucket '%s' and object '%s'",
+            'dumbphoneapps-user-space',
+            '7325676361/item.png',
+        )
+    return format_response(
+        event=event,
+        http_code=500,
+        body="Could not create a presigned url",
+    )
+
+
+def generate_presigned_get(event):
+    body = json.loads(event["body"])
+    print(body)
+    data_id = body.get("id","")
+    s3 = boto3.client(
+        's3',
+        aws_access_key_id=PRESIGNED_AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=PRESIGNED_AWS_SECRET_ACCESS_KEY,
+    )
+
+    try:
+        object_key = f'{data_id}'
+        view_url = s3.generate_presigned_url(
+            'get_object',
+            Params={
+                'Bucket': "dumbphoneapps-user-space",
+                'Key': object_key,
+            },
+            ExpiresIn=600,
+        )
+        download_url = s3.generate_presigned_url(
+            'get_object',
+            Params={
+                'Bucket': "dumbphoneapps-user-space",
+                'Key': object_key,
+                'ResponseContentDisposition': 'attachment',
+            },
+            ExpiresIn=600,
+        )
+        return format_response(
+            event=event,
+            http_code=200,
+            body={"url": view_url, "download_url": download_url},
+        )
+    except Exception as e:
+        print(e)
+        print(
+            "Couldn't get a presigned GET URL"
+        )
+    return format_response(
+        event=event,
+        http_code=500,
+        body="Could not create a presigned url",
+    )
