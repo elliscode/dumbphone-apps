@@ -260,9 +260,7 @@ def generate_presigned_post(event, user_data, body):
     except Exception as e:
         print(e)
         print(
-            "Couldn't get a presigned POST URL for bucket '%s' and object '%s'",
-            'dumbphoneapps-user-space',
-            '7325676361/item.png',
+            "Couldn't get a presigned POST URL",
         )
     return format_response(
         event=event,
