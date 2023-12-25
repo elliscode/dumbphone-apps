@@ -237,6 +237,7 @@ def set_serving_route(event, user_data, body):
             found_food_serving = {
                 "multiplier": "1",
                 "amount": food["metadata"]["calories"],
+                "name": "kcal",
             }
         else:
             return format_response(
