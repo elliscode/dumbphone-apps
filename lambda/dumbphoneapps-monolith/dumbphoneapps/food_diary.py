@@ -249,11 +249,15 @@ def set_serving_route(event, user_data, body):
         * float(body_amount)
         / float(found_food_serving["amount"])
     )
-    diary_entry[
-        "calories"
-    ] = f"{determined_multiplier * float(food['metadata']['calories'])}"
+    print(determined_multiplier)
+    if "calculated_values" not in diary_entry:
+        diary_entry["calculated_values"] = {}
+    diary_entry["calculated_values"]["calories"] = f"{determined_multiplier * float(food['metadata']['calories'])}"
+    diary_entry["calculated_values"]["serving_amount"] = f"{body_amount}"
+    diary_entry["calculated_values"]["serving_name"] = f"{found_food_serving['name']}"
     diary_entry["multiplier"] = f"{determined_multiplier}"
     diary_entry["unit"] = body_unit
+    print(diary_entry)
 
     serving_entry = {
         "key1": f"serving_{user_data['key2']}",
@@ -345,15 +349,15 @@ def add_route(event, user_data, body):
 
         serving_entry["expiration"] = int(time.time()) + (30 * 24 * 60 * 60)
 
-        calculated_calories = float(food_item["metadata"]["calories"]) * float(
-            serving_entry["multiplier"]
-        )
+        calculated_values = {}
+        for value_key in ['alcohol', 'caffeine', 'calories', 'carbs', 'fat', 'protein',]:
+            calculated_values[value_key] = f"{float(food_item['metadata'][value_key]) * float(serving_entry['multiplier'])}"
 
         diary_entry = {
             "key1": f'diary_{user_data["key2"]}_{body["date"]}',
             "key2": f"{time.mktime(time.gmtime())}",
             "name": f'{food_item["name"]}',
-            "calories": f"{calculated_calories}",
+            "calculated_values": calculated_values,
             "food_id": f'{body["hash"]}',
             "multiplier": f"{serving_entry['multiplier']}",
             "unit": f"{serving_entry['unit']}",
@@ -394,10 +398,15 @@ def add_route(event, user_data, body):
                 ],
             },
         }
+
+        calculated_values = {}
+        for value_key in ['alcohol', 'caffeine', 'calories', 'carbs', 'fat', 'protein',]:
+            calculated_values[value_key] = new_food['metadata'][value_key]
+
         new_diary_entry = {
             "key1": f"diary_{user_data['key2']}_{body['date']}",
             "key2": f"{time.mktime(time.gmtime())}",
-            "calories": f"{new_food['metadata']['calories']}",
+            "calculated_values": calculated_values,
             "food_id": new_food["key2"],
             "multiplier": f"{1}",
             "name": new_food["name"],
@@ -435,9 +444,12 @@ def get_day_route(event, user_data, body):
         python_item = dynamo_obj_to_python_obj(item)
         result = {}
         result["food"] = {"hash": python_item["food_id"], "name": python_item["name"]}
-        result["derived_values"] = {"calories": python_item["calories"]}
+        if "calculated_values" in python_item:
+            result["calculated_values"] = python_item["calculated_values"]
+        elif "calories" in python_item:
+            result["calculated_values"] = {"calories": python_item["calories"]}
         result["timestamp"] = python_item["key2"]
-        total = total + float(python_item["calories"])
+        total = total + float(result["calculated_values"]["calories"])
         entries.append(result)
     return format_response(
         event=event,
