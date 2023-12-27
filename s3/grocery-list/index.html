@@ -4,24 +4,26 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Shopping List</title>
-    <link rel="stylesheet" href="../css/loader.css?v=4"/>
-    <link rel="icon" type="image/png" href="../img/favicon.png?v=4"/>
+    <link rel="stylesheet" href="../css/loader.css?v=6"/>
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=6"/>
 </head>
 
 <body>
 <div id="top-bar">
     <div id="breadcrumb"><b><a href="..">Home</a></b> &gt; <b>grocery-list</b></div>
-    <div id="title-bar">
-        <a href="../index.html"><button style="width:30px">&lt;</button></a>
-        <h1>Grocery List</h1>
-        <span style="width:30px"></span>
-    </div>
-    <div id="tool-bar">
-        <button onclick="showSubmit(event)" id="add-item"><span>+</span>Add Item</button>
-    </div>
-    <div id="submit-bar">
-        <input class="big" onkeyup="enterKeyListener(event)" onfocus="focusEvent(event)" id="item-text-box" type="text" />
-        <button id="add" onclick="addToList(event)">+</button>
+    <div id="dont-display-while-loading" style="display:none;">
+        <div id="title-bar">
+            <a href="../index.html"><button style="width:30px">&lt;</button></a>
+            <h1>Grocery List</h1>
+            <span style="width:30px"></span>
+        </div>
+        <div id="tool-bar">
+            <button onclick="showSubmit(event)" id="add-item"><span>+</span>Add Item</button>
+        </div>
+        <div id="submit-bar">
+            <input class="big" onkeyup="enterKeyListener(event)" onfocus="focusEvent(event)" id="item-text-box" type="text" />
+            <button id="add" onclick="addToList(event)">+</button>
+        </div>
     </div>
 </div>
 
@@ -60,8 +62,8 @@
 <div class="logout">
     <button onclick="logOut(event)">Log out</button>
 </div>
-<script src="../js/utils.js?v=4"></script>
-<script src="js/list.js?v=4"></script>
+<script src="../js/utils.js?v=6"></script>
+<script src="js/list.js?v=6"></script>
 <script>
 </script>
 </body>

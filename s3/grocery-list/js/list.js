@@ -378,12 +378,13 @@ if (!csrfToken) {
 }
 if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
     iosCookieRefresh();
-    setStylesheet('css/grocery-list-new.css?v=4')
+    setStylesheet('css/grocery-list-new.css?v=6')
     document.getElementById('item-text-box').addEventListener('blur', startHide);
 } else {
-    setStylesheet('css/grocery-list-old.css?v=5')
+    setStylesheet('css/grocery-list-old.css?v=6')
 }
 const loader = document.getElementById('loading');
+const dontDisplayWhileLoading = document.getElementById('dont-display-while-loading');
 function handleGetList(event) {
     const result = defaultHandler(event);
     let groups = Object.keys(result);
@@ -396,6 +397,7 @@ function handleGetList(event) {
         }
     }
     loader.style.display = 'none';
+    dontDisplayWhileLoading.style.display = 'block';
 }
 function loadList(event) {
     loader.style.display = 'block';
