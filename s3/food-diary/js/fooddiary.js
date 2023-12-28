@@ -254,8 +254,10 @@ function displayServing(event) {
         select.appendChild(option);
     }
     
-    textBox.value = calculatedValues.serving_amount;
-    select.value = calculatedValues.serving_name;
+    if (calculatedValues.hasOwnProperty('serving_amount') && calculatedValues.hasOwnProperty('serving_name')) {
+        textBox.value = calculatedValues.serving_amount;
+        select.value = calculatedValues.serving_name;
+    }
     textBox.focus();
     textBox.select();
 }
