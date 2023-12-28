@@ -173,6 +173,7 @@ function deleteEntry(event) {
         'csrf': csrfToken,
     }));
 }
+let calculatedValues = undefined;
 function changeQuantity(event) {
     const caller = event.target;
     let servings = document.getElementById('servings');
@@ -187,6 +188,9 @@ function changeQuantity(event) {
     servingsCreate.setAttribute('food-hash',foodHash);
     servingsCreate.setAttribute("key", key);
     servingsCreate.setAttribute("hash", foodHash);
+
+    calculatedValues = JSON.parse(caller.getAttribute('calculated-values'));
+
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", API_DOMAIN + '/food-diary/get_serving', true);
     xmlHttp.withCredentials = true;
@@ -249,6 +253,9 @@ function displayServing(event) {
         option.innerText = 'new';
         select.appendChild(option);
     }
+    
+    textBox.value = calculatedValues.serving_amount;
+    select.value = calculatedValues.serving_name;
     textBox.focus();
     textBox.select();
 }
@@ -419,14 +426,6 @@ function changeQuantityRow(event) {
         'hash': foodHash,
         'csrf': csrfToken,
     }));
-    let calculatedValues = JSON.parse(caller.getAttribute('calculated-values'));
-    document.getElementById("current-serving").value = calculatedValues
-    "current-calories"
-    "current-fat"
-    "current-carbs"
-    "current-protein"
-    "current-alcohol"
-    "current-caffeine"
 }
 function createTableRow(ingredient) {
     let tr = document.createElement('tr');
