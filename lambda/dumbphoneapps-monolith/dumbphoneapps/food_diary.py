@@ -347,12 +347,34 @@ def add_route(event, user_data, body):
                 "multiplier": f"{1}",
                 "unit": "kcal",
             }
+        
+        actual_serving = None
+        for food_serving in food_item["metadata"]["servings"]:
+            if "name" in food_serving and food_serving["name"].strip() == serving_entry["unit"].strip():
+                actual_serving = food_serving
+                break
+        if actual_serving is None:
+            actual_serving = {
+                "multiplier": "1",
+                "amount": food_item["metadata"]["calories"],
+                "name": "kcal",
+            }
+            serving_entry = {
+                "key1": f"serving_{user_data['key2']}",
+                "key2": body["hash"],
+                "multiplier": f"{1}",
+                "unit": "kcal",
+            }
+            
 
         serving_entry["expiration"] = int(time.time()) + (30 * 24 * 60 * 60)
 
         calculated_values = {}
         for value_key in ['alcohol', 'caffeine', 'calories', 'carbs', 'fat', 'protein',]:
             calculated_values[value_key] = f"{float(food_item['metadata'][value_key]) * float(serving_entry['multiplier'])}"
+        serving_amount = float(actual_serving['amount']) * float(serving_entry['multiplier']) / float(actual_serving['multiplier'])
+        calculated_values["serving_amount"] = f"{serving_amount:g}"
+        calculated_values["serving_name"] = f"{serving_entry['unit']}"
 
         diary_entry = {
             "key1": f'diary_{user_data["key2"]}_{body["date"]}',
