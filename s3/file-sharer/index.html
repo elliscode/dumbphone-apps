@@ -157,13 +157,19 @@ function handleGetFiles(event) {
     if (xmlHttp.status >= 200 && xmlHttp.status < 300) {
         results = {}
         let responseJson = JSON.parse(xmlHttp.responseText)
-        let sortedArray = responseJson.files.sort((x,y) => x.uploadDate - y.uploadDate)
+        let sortedArray = responseJson.files.sort((x,y) => y.uploadDate - x.uploadDate)
         if (sortedArray.length > 0) {
             let title = document.createElement('p');
             title.innerText = 'Previously uploaded items:';
             document.body.appendChild(title);
             for (let item of sortedArray) {
                 let paragraph = document.createElement('p');
+                let timeSpan = document.createElement('span');
+                timeSpan.innerText = (new Date(parseInt(item.uploadDate) * 1000)).toLocaleString();
+                paragraph.appendChild(timeSpan);
+                let spaceSpan = document.createElement('span');
+                spaceSpan.innerHTML = ' &mdash; ';
+                paragraph.appendChild(spaceSpan);
                 let link = document.createElement('a');
                 link.href = UI_DOMAIN + '/fs/?id=' + item.name;
                 link.innerText = item.name;
