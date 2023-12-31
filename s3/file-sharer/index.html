@@ -28,7 +28,7 @@ body {
 </form>
 
 <div id="link-div" style="display:none;">
-    <p>Share your file! Send this link to your friends!</p>
+    <p id="status"></p>
     <p id="link"></p>
     <a id="sms-link">Click here to send as SMS</a>
 </div>
@@ -108,9 +108,11 @@ function handleUpload(event) {
     fileInput.disabled = false;
     const submitButton = document.getElementById('submit')
     submitButton.disabled = false;
+    submitButton.value = 'Upload file';
     const form = document.getElementById('form');
     form.reset();    
 
+    const statusText = document.getElementById('status');
     if (200 <= xmlHttp.status && xmlHttp.status < 300) {
         const linkDiv = document.getElementById('link-div');
         linkDiv.style.display = 'block';
@@ -120,11 +122,58 @@ function handleUpload(event) {
 
         const smsLink = document.getElementById('sms-link');
         smsLink.style.display = 'block';
-        smsLink.href = "sms://?&body=" + encodeURIComponent(`I'm sharing a ${fileType}: ` + UI_DOMAIN.substring(8) + '/fs/?id=' + fileName);
-    } else {
+        smsLink.href = "sms://?&body=" + encodeURIComponent(UI_DOMAIN.substring(8) + '/fs/?id=' + fileName);
 
+        statusText.innerText = 'Share your file! Send this link to your friends!';
+        
+        sendAcknowledgement(fileName);
+    } else {
+        statusText.innerText = 'Upload failed, refresh the page and try again...';
     }
 }
+function sendAcknowledgement(fileName) {
+    let url = API_DOMAIN + '/one-offs/acknowledge-presigned-post-success';
+    xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true); // false for synchronous request
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleAcknowledgement;
+    xmlHttp.send(JSON.stringify({'csrf': csrfToken, 'fullFileName': fileName}));
+}
+function handleAcknowledgement(event) {
+    let xmlHttp = event.target;
+    console.log(xmlHttp.status);
+}
+function getFiles(event) {
+    let url = API_DOMAIN + '/one-offs/get-uploaded-items';
+    xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true); // false for synchronous request
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleGetFiles;
+    xmlHttp.send(JSON.stringify({'csrf': csrfToken}));
+}
+function handleGetFiles(event) {
+    let xmlHttp = event.target;
+    console.log(xmlHttp.status);
+    if (xmlHttp.status >= 200 && xmlHttp.status < 300) {
+        results = {}
+        let responseJson = JSON.parse(xmlHttp.responseText)
+        let sortedArray = responseJson.files.sort((x,y) => x.uploadDate - y.uploadDate)
+        if (sortedArray.length > 0) {
+            let title = document.createElement('p');
+            title.innerText = 'Previously uploaded items:';
+            document.body.appendChild(title);
+            for (let item of sortedArray) {
+                let paragraph = document.createElement('p');
+                let link = document.createElement('a');
+                link.href = UI_DOMAIN + '/fs/?id=' + item.name;
+                link.innerText = item.name;
+                paragraph.appendChild(link);
+                document.body.appendChild(paragraph);
+            }
+        }
+    }
+}
+setTimeout(getFiles, 100);
 </script>
 </body>
 

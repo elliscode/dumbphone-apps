@@ -20,13 +20,13 @@ from .utils import (
 )
 import time
 
-sts_connection = boto3.client('sts')
+sts_connection = boto3.client("sts")
 
 GOOGLE_API_KEY = os.environ["GOOGLE_API_KEY"]
 PRESIGNED_AWS_ACCESS_KEY_ID = os.environ["PRESIGNED_AWS_ACCESS_KEY_ID"]
 PRESIGNED_AWS_SECRET_ACCESS_KEY = os.environ["PRESIGNED_AWS_SECRET_ACCESS_KEY"]
 
-CONTENT_TYPES = {'3gp': 'video/3gpp', 'png': 'image/png', 'jpg': 'image/jpg'}
+CONTENT_TYPES = {"3gp": "video/3gpp", "png": "image/png", "jpg": "image/jpg"}
 
 
 def get_maps_key_route(event):
@@ -226,18 +226,48 @@ def twilio_route(event):
         },
     }
 
+
+@authenticate
+def gather_uploaded_items_route(event, user_data, body):
+    phone = user_data["key2"]
+    response = dynamo.query(
+        TableName=TABLE_NAME,
+        KeyConditions={
+            "key1": {
+                "AttributeValueList": [{"S": f"uploaded_file_{phone}"}],
+                "ComparisonOperator": "EQ",
+            },
+        },
+    )
+
+    output = []
+
+    if "Items" in response:
+        for item in response["Items"]:
+            python_item = dynamo_obj_to_python_obj(item)
+            file_name = python_item["name"]
+            upload_date = python_item["key2"]
+            output.append({"name": file_name, "uploadDate": upload_date})
+
+    return format_response(
+        event=event,
+        http_code=200,
+        body={"files": output},
+    )
+
+
 @authenticate
 def generate_presigned_post(event, user_data, body):
-    extension = body.get("extension","")
+    extension = body.get("extension", "")
     phone = user_data["key2"]
-    if extension not in ['jpg','png','3gp']:
+    if extension not in ["jpg", "png", "3gp"]:
         return format_response(
             event=event,
             http_code=400,
             body=f"Invalid extension supplied {extension}",
         )
     s3 = boto3.client(
-        's3',
+        "s3",
         aws_access_key_id=PRESIGNED_AWS_ACCESS_KEY_ID,
         aws_secret_access_key=PRESIGNED_AWS_SECRET_ACCESS_KEY,
     )
@@ -245,8 +275,8 @@ def generate_presigned_post(event, user_data, body):
     try:
         file_name = create_id(10)
         response = s3.generate_presigned_post(
-            Bucket='dumbphoneapps-user-space', 
-            Key=f'{file_name}.{extension}', 
+            Bucket="dumbphoneapps-user-space",
+            Key=f"{file_name}.{extension}",
             ExpiresIn=600,
             Fields={"Content-Type": CONTENT_TYPES[extension]},
             Conditions=[["starts-with", "$Content-Type", ""]],
@@ -269,35 +299,70 @@ def generate_presigned_post(event, user_data, body):
     )
 
 
+@authenticate
+def acknowledge_presigned_post_success_route(event, user_data, body):
+    phone = user_data["key2"]
+
+    file_name = body.get("fullFileName", None)
+
+    if not file_name:
+        return format_response(
+            event=event,
+            http_code=400,
+            body="You did not supply a fullFileName in your POST body",
+        )
+
+    acknowledge_time = int(time.time())
+    expiration_time = acknowledge_time + (7 * 24 * 60 * 60)
+
+    uploaded_file_entry = {
+        "key1": f"uploaded_file_{phone}",
+        "key2": f"{acknowledge_time:d}",
+        "name": f"{file_name}",
+        "expiration": int(expiration_time),
+    }
+
+    dynamo.put_item(
+        TableName=TABLE_NAME,
+        Item=python_obj_to_dynamo_obj(uploaded_file_entry),
+    )
+
+    return format_response(
+        event=event,
+        http_code=200,
+        body="Successfully acknowledged the post",
+    )
+
 def generate_presigned_get(event):
     body = json.loads(event["body"])
     print(body)
-    data_id = body.get("id","")
+    data_id = body.get("id", "")
     s3 = boto3.client(
-        's3',
+        "s3",
         aws_access_key_id=PRESIGNED_AWS_ACCESS_KEY_ID,
         aws_secret_access_key=PRESIGNED_AWS_SECRET_ACCESS_KEY,
     )
 
     try:
-        object_key = f'{data_id}'
+        object_key = f"{data_id}"
         view_url = s3.generate_presigned_url(
-            'get_object',
+            "get_object",
             Params={
-                'Bucket': "dumbphoneapps-user-space",
-                'Key': object_key,
+                "Bucket": "dumbphoneapps-user-space",
+                "Key": object_key,
             },
             ExpiresIn=600,
         )
         download_url = s3.generate_presigned_url(
-            'get_object',
+            "get_object",
             Params={
-                'Bucket': "dumbphoneapps-user-space",
-                'Key': object_key,
-                'ResponseContentDisposition': 'attachment',
+                "Bucket": "dumbphoneapps-user-space",
+                "Key": object_key,
+                "ResponseContentDisposition": "attachment",
             },
             ExpiresIn=600,
         )
+
         return format_response(
             event=event,
             http_code=200,
@@ -305,9 +370,7 @@ def generate_presigned_get(event):
         )
     except Exception as e:
         print(e)
-        print(
-            "Couldn't get a presigned GET URL"
-        )
+        print("Couldn't get a presigned GET URL")
     return format_response(
         event=event,
         http_code=500,

@@ -168,3 +168,5 @@ logfile
 *.zip
 
 .vscode/
+
+Pipfile.lock

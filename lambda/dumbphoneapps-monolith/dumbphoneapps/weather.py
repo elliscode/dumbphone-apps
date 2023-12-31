@@ -14,8 +14,8 @@ http = urllib3.PoolManager()
 @authenticate
 def get_forecast_route(event, user_data, body):
     print(body)
-    lat = body['lat']
-    lon = body['lon']
+    lat = body["lat"]
+    lon = body["lon"]
     response = http.request(
         "GET",
         f"https://api.weatherapi.com/v1/forecast.json?key={WEATHER_API_KEY}&q={lat},{lon}&days=1&aqi=no&alerts=no",
