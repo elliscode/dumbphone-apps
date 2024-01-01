@@ -62,7 +62,7 @@ function runFileUpload(event) {
     const fileName = file.name;
     const extension = fileName.substring(fileName.lastIndexOf('.') + 1);
 
-    if (extension == '3gp') {
+    if (extension == '3gp' || extension == 'mp4') {
         fileType = 'video';
     } else {
         fileType = 'picture';
