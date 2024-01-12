@@ -177,7 +177,7 @@ def create_serving_route(event, user_data, body):
 
     found_serving = None
     for food_serving in food["metadata"]["servings"]:
-        if food_serving["name"].endswith(body_unit):
+        if food_serving["name"].lower() == body_unit.lower():
             found_serving = food_serving
             break
 

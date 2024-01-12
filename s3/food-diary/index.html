@@ -43,7 +43,7 @@
         </select>
         <button style="display:none;" id="servings-edit" onclick="editServing(event)">&#x270E;</button>
         <input type="text" id="servings-text" placeholder="serving name"/>
-        <input type="text" id="calories-text" placeholder="calories"/>
+        <input type="tel" id="calories-text" placeholder="calories" onkeydown="forceToDecimal(event)"/>
         <button id="servings-save" onclick="saveServing(event)">Save</button>
         <button id="servings-create" onclick="createServing(event)">Create</button>
         <button onclick="closeServings(event)">&times;</button>
@@ -51,7 +51,7 @@
 </div>
 <div class="modal-bg">
     <div class="modal" id="recipe-servings">
-        <input id="recipe-servings-amount" type="tel" placeholder="amount"/>
+        <input id="recipe-servings-amount" type="tel" onkeydown="forceToDecimal(event)" placeholder="amount"/>
         <select id="recipe-servings-name" onchange="servingRecipeChange(event)">
             <option>Test One</option>
             <option>Test Two</option>
@@ -65,12 +65,12 @@
         <div id="food-edit">
             <table>
                 <tr><td>Name:</td><td><input id="food-edit-name" type="text"></input></td></tr>
-                <tr><td>Calories:</td><td><input id="food-edit-calories" type="tel"></input></td></tr>
-                <tr><td>Fat:</td><td><input id="food-edit-fat" type="tel"></input></td></tr>
-                <tr><td>Carbs:</td><td><input id="food-edit-carbs" type="tel"></input></td></tr>
-                <tr><td>Protein:</td><td><input id="food-edit-protein" type="tel"></input></td></tr>
-                <tr><td>Alcohol:</td><td><input id="food-edit-alcohol" type="tel"></input></td></tr>
-                <tr><td>Caffeine:</td><td><input id="food-edit-caffeine" type="tel"></input></td></tr>
+                <tr><td>Calories:</td><td><input id="food-edit-calories" type="tel" onkeydown="forceToDecimal(event)"></input></td></tr>
+                <tr><td>Fat:</td><td><input id="food-edit-fat" type="tel" onkeydown="forceToDecimal(event)"></input></td></tr>
+                <tr><td>Carbs:</td><td><input id="food-edit-carbs" type="tel" onkeydown="forceToDecimal(event)"></input></td></tr>
+                <tr><td>Protein:</td><td><input id="food-edit-protein" type="tel" onkeydown="forceToDecimal(event)"></input></td></tr>
+                <tr><td>Alcohol:</td><td><input id="food-edit-alcohol" type="tel" onkeydown="forceToDecimal(event)"></input></td></tr>
+                <tr><td>Caffeine:</td><td><input id="food-edit-caffeine" type="tel" onkeydown="forceToDecimal(event)"></input></td></tr>
             </table>
             <button id="food-edit-recipe" onclick="displayRecipe(event)">Edit Recipe</button>
             <button id="food-edit-save" onclick="saveFood(event)">Save</button>
