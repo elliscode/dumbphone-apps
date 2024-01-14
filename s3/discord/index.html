@@ -22,7 +22,7 @@
 
 <input id="token" type="text" onkeyup="setToken(event)"></input>
 <hr />
-<button class="discord" onclick="getGuilds(event)">Load Guilds</button>
+<button class="discord" onclick="getUser(event)">Load Guilds</button>
 
 <div id="loading">
     <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
@@ -50,6 +50,30 @@ function clearDiscordButtons() {
         let discordButton = discordButtons[i];
         discordButton.remove();
     }
+}
+
+function getUser() {
+    let url = API_DOMAIN + '/discord/api/v10/users/@me';
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true);
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleUser;
+    let payload = {
+        'csrf': csrfToken,
+        'discordToken': tokenBox.value,
+        'method': 'GET',
+    }
+    xmlHttp.send(JSON.stringify(payload));
+}
+
+let userId = undefined;
+function handleUser(event) {
+    let xmlHttp = event.target;
+    let responseJson = JSON.parse(xmlHttp.responseText)
+
+    userId = responseJson.id;
+
+    getGuilds();
 }
 
 function getGuilds() {
@@ -115,8 +139,10 @@ function handleChannels(event) {
     }
 }
 
+let channelId = undefined;
 function getMessages(event) {
-    let url = `${API_DOMAIN}/discord/api/v10/channels/${event.target.getAttribute('discord-id')}/messages`;
+    channelId = event.target.getAttribute('discord-id');
+    let url = `${API_DOMAIN}/discord/api/v10/channels/${channelId}/messages`;
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
     xmlHttp.withCredentials = true;
@@ -132,8 +158,6 @@ function getMessages(event) {
 function handleMessages(event) {
     let xmlHttp = event.target;
     let responseJson = JSON.parse(xmlHttp.responseText)
-
-    const channelId = /.*\/channels\/(\d+)\/messages/.exec(xmlHttp.responseURL)[1];
 
     clearDiscordButtons()
     const refreshButton = document.createElement('button');
@@ -200,8 +224,35 @@ function handleMessages(event) {
                 p.appendChild(topSub);
             }
         }
+        if (message.author.id == userId) {
+            let deleteButton = document.createElement('button');
+            deleteButton.innerHTML = '&times;';
+            deleteButton.setAttribute('discord-id', message.id);
+            deleteButton.onclick=deleteMessage;
+            p.appendChild(deleteButton);
+        }
         document.body.appendChild(p);
     }
+}
+
+function deleteMessage(event) {
+    let url = API_DOMAIN + `/discord/api/v10/channels/${channelId}/messages/${event.target.getAttribute('discord-id')}`;
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true);
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleDeleteMessage;
+    let payload = {
+        'csrf': csrfToken,
+        'discordToken': tokenBox.value,
+        'method': 'DELETE',
+    }
+    xmlHttp.send(JSON.stringify(payload));
+}
+
+function handleDeleteMessage(event) {
+    let xmlHttp = event.target;
+    let responseJson = JSON.parse(xmlHttp.responseText)
+    getMessages({'target': {'getAttribute': ()=>{return channelId}}});
 }
 
 function sendMessage(event) {
@@ -229,7 +280,7 @@ function sendMessage(event) {
 function handleSendMessage(event) {
     let xmlHttp = event.target;
     let responseJson = JSON.parse(xmlHttp.responseText)
-    getMessages({'target': {'getAttribute': ()=>{return responseJson.channel_id}}});
+    getMessages({'target': {'getAttribute': ()=>{return channelId}}});
 }
 
 function enterKeyListener(event) {

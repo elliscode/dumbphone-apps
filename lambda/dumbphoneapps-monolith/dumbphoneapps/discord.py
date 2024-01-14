@@ -27,13 +27,7 @@ def discord_route(event, user_data, body):
     
     discord_headers = {'Authorization': f'Bot {body["discordToken"]}'}
     
-    if body["method"] == "GET":
-        response = http.request(
-            body["method"],
-            discord_uri,
-            headers=discord_headers
-        )
-    elif body["method"] == "POST":
+    if body["method"] == "POST":
         discord_fields = {'content': body['content']}
         
         response = http.request_encode_body(
@@ -43,9 +37,19 @@ def discord_route(event, user_data, body):
             encode_multipart=False,
             fields=discord_fields,
         )
+    else:
+        response = http.request(
+            body["method"],
+            discord_uri,
+            headers=discord_headers
+        )
 
-    response_text = response.data.decode("utf-8")
-    response_json = json.loads(response_text)
+    response_json = {}
+    try:
+        response_text = response.data.decode("utf-8")
+        response_json = json.loads(response_text)
+    except:
+        pass
 
     return format_response(
         event=event,
