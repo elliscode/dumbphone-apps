@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Discord Client</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=3"/>
+    <link rel="stylesheet" href="../css/loader.css?v=3"/>
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=3"/>
+    <style>
+        body {
+            padding-bottom: 30px;
+        }
+        .add-to-group button {
+            height:20px;
+        }
+    </style>
+</head>
+
+<body>
+<div><b><a href="../index.html">Home</a></b> &gt; <b>discord</b></div>
+
+<input id="token" type="text" onkeyup="setToken(event)"></input>
+<hr />
+<button class="discord" onclick="getGuilds(event)">Load Guilds</button>
+
+<div id="loading">
+    <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+</div>
+
+<div class="logout">
+    <button onclick="logOut(event)">Log out</button>
+</div>
+<script src="../js/utils.js?v=3"></script>
+<script>
+const tokenBox = document.getElementById('token');
+// check if you had a token saved
+function setToken() {
+    localStorage.setItem('dumbphoneapps-discord-bot-token', tokenBox.value);
+}
+function getSavedToken() {
+    let tokenValue = localStorage.getItem('dumbphoneapps-discord-bot-token');
+    return tokenValue;
+}
+tokenBox.value = getSavedToken();
+
+function clearDiscordButtons() {
+    let discordButtons = Array.from(document.getElementsByClassName('discord'));
+    for (let i = discordButtons.length - 1; i >= 0; i--) {
+        let discordButton = discordButtons[i];
+        discordButton.remove();
+    }
+}
+
+function getGuilds() {
+    let url = API_DOMAIN + '/discord/api/v10/users/@me/guilds';
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true);
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handeGuilds;
+    let payload = {
+        'csrf': csrfToken,
+        'discordToken': tokenBox.value,
+        'method': 'GET',
+    }
+    xmlHttp.send(JSON.stringify(payload));
+}
+
+function handeGuilds(event) {
+    let xmlHttp = event.target;
+    let responseJson = JSON.parse(xmlHttp.responseText)
+
+    clearDiscordButtons()
+    for (let i = 0; i < responseJson.length; i++) {
+        let guild = responseJson[i];
+        let guildButton = document.createElement('button');
+        guildButton.classList.add('discord');
+        guildButton.textContent = guild.name;
+        guildButton.id=guild.id;
+        guildButton.onclick=getChannels;
+        document.body.appendChild(guildButton);
+    }
+}
+
+function getChannels(event) {
+    let url = `${API_DOMAIN}/discord/api/v10/guilds/${event.target.id}/channels`;
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true);
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleChannels;
+    let payload = {
+        'csrf': csrfToken,
+        'discordToken': tokenBox.value,
+        'method': 'GET',
+    }
+    xmlHttp.send(JSON.stringify(payload));
+}
+
+function handleChannels(event) {
+    let xmlHttp = event.target;
+    let responseJson = JSON.parse(xmlHttp.responseText)
+
+    clearDiscordButtons()
+    for (let i = 0; i < responseJson.length; i++) {
+        let channel = responseJson[i];
+        let channelButton = document.createElement('button');
+        channelButton.classList.add('discord');
+        channelButton.textContent = channel.name;
+        channelButton.id=channel.id;
+        channelButton.onclick=getMessages;
+        document.body.appendChild(channelButton);
+    }
+}
+
+function getMessages(event) {
+    let url = `${API_DOMAIN}/discord/api/v10/channels/${event.target.id}/messages`;
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true);
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleMessages;
+    let payload = {
+        'csrf': csrfToken,
+        'discordToken': tokenBox.value,
+        'method': 'GET',
+    }
+    xmlHttp.send(JSON.stringify(payload));
+}
+
+function handleMessages(event) {
+    let xmlHttp = event.target;
+    let responseJson = JSON.parse(xmlHttp.responseText)
+
+    clearDiscordButtons()
+    for (let i = 0; i < responseJson.length; i++) {
+        let message = responseJson[i];
+        let p = document.createElement('p');
+        p.classList.add('discord');
+        p.innerText = message.content;
+        document.body.appendChild(p);
+    }
+}
+
+
+
+// if (!csrfToken) {
+//     window.location.replace("../signup.html");
+// }
+// if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
+//     iosCookieRefresh();
+// }
+const loader = document.getElementById('loading');
+loader.style.display = 'none';
+</script>
+</body>
+
+</html>
