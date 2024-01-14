@@ -86,7 +86,7 @@ def discord_route(event, user_data, body):
     
     discord_headers = {'Authorization': f'Bot {body["discordToken"]}'}
     
-    if body["method"] == "POST":
+    if body["method"] == "POST" and 'content' in body:
         discord_fields = {'content': body['content']}
         
         response = http.request_encode_body(
@@ -95,6 +95,20 @@ def discord_route(event, user_data, body):
             headers=discord_headers,
             encode_multipart=False,
             fields=discord_fields,
+        )
+    elif body["method"] == "POST":
+        discord_headers['Content-Type'] = 'application/json'
+        post_body = body.copy()
+        post_body.pop('csrf')
+        post_body.pop('discordToken')
+        post_body.pop('method')
+        print(post_body)
+        print(discord_headers)
+        response = http.request(
+            body["method"],
+            discord_uri,
+            headers=discord_headers,
+            body=bytes(json.dumps(post_body), encoding="utf-8"),
         )
     else:
         response = http.request(
