@@ -76,14 +76,14 @@ function handeGuilds(event) {
         let guildButton = document.createElement('button');
         guildButton.classList.add('discord');
         guildButton.textContent = guild.name;
-        guildButton.id=guild.id;
+        guildButton.setAttribute('discord-id', guild.id);
         guildButton.onclick=getChannels;
         document.body.appendChild(guildButton);
     }
 }
 
 function getChannels(event) {
-    let url = `${API_DOMAIN}/discord/api/v10/guilds/${event.target.id}/channels`;
+    let url = `${API_DOMAIN}/discord/api/v10/guilds/${event.target.getAttribute('discord-id')}/channels`;
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
     xmlHttp.withCredentials = true;
@@ -103,17 +103,20 @@ function handleChannels(event) {
     clearDiscordButtons()
     for (let i = 0; i < responseJson.length; i++) {
         let channel = responseJson[i];
+        if (channel.type != 0) {
+            continue;
+        }
         let channelButton = document.createElement('button');
         channelButton.classList.add('discord');
         channelButton.textContent = channel.name;
-        channelButton.id=channel.id;
+        channelButton.setAttribute('discord-id', channel.id);
         channelButton.onclick=getMessages;
         document.body.appendChild(channelButton);
     }
 }
 
 function getMessages(event) {
-    let url = `${API_DOMAIN}/discord/api/v10/channels/${event.target.id}/messages`;
+    let url = `${API_DOMAIN}/discord/api/v10/channels/${event.target.getAttribute('discord-id')}/messages`;
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
     xmlHttp.withCredentials = true;
@@ -136,36 +139,80 @@ function handleMessages(event) {
     const refreshButton = document.createElement('button');
     refreshButton.innerText = 'Refresh';
     refreshButton.classList.add('discord');
-    refreshButton.id = channelId;
+    refreshButton.style.display = 'block';
+    refreshButton.setAttribute('discord-id', channelId);
     refreshButton.onclick=getMessages;
     document.body.appendChild(refreshButton);
 
     const textBox = document.createElement('textarea');
     textBox.classList.add('discord');
+    textBox.style.display = 'block';
     textBox.id='message-box';
+    textBox.onkeyup=enterKeyListener;
     document.body.appendChild(textBox);
 
     const submitButton = document.createElement('button');
     submitButton.classList.add('discord');
     submitButton.innerText = 'Send';
     submitButton.onclick=sendMessage;
-    submitButton.id=channelId;
+    submitButton.setAttribute('discord-id', channelId);
+    submitButton.id="submit";
+    submitButton.style.display = 'block';
     document.body.appendChild(submitButton);
 
     for (let i = 0; i < responseJson.length; i++) {
         let message = responseJson[i];
         let p = document.createElement('p');
+        p.setAttribute('discord-id', message.id);
         p.classList.add('discord');
-        p.innerText = message.content;
+        if (message.author.global_name) {
+            let sub = document.createElement('span');
+            sub.innerHTML = message.author.global_name;
+            p.appendChild(sub);
+        } else {
+            let span = document.createElement('span');
+            span.innerText = message.author.username;
+            p.appendChild(span);
+        }
+        {
+            let span = document.createElement('span');
+            span.innerHTML = ' &mdash; ';
+            p.appendChild(span);
+        }
+        {
+            let span = document.createElement('span');
+            span.innerText = message.content;
+            p.appendChild(span);
+        }
+        if (message.reactions) {
+            for (let reaction of message.reactions) {
+                let topSub = document.createElement('sub');
+                {
+                    let span = document.createElement('span');
+                    span.innerText = reaction.emoji.name;
+                    topSub.appendChild(span);
+                }
+                {
+                    let sub = document.createElement('sub');
+                    sub.innerText = reaction.count;
+                    topSub.appendChild(sub);
+                }
+                p.appendChild(topSub);
+            }
+        }
         document.body.appendChild(p);
     }
 }
 
 function sendMessage(event) {
     let messageBox = document.getElementById('message-box');
+    let submitButton = document.getElementById('submit');
     const messageText = messageBox.value;
 
-    let url = `${API_DOMAIN}/discord/api/v10/channels/${event.target.id}/messages`;
+    messageBox.disabled=true;
+    submitButton.disabled=true;
+
+    let url = `${API_DOMAIN}/discord/api/v10/channels/${event.target.getAttribute('discord-id')}/messages`;
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
     xmlHttp.withCredentials = true;
@@ -182,15 +229,22 @@ function sendMessage(event) {
 function handleSendMessage(event) {
     let xmlHttp = event.target;
     let responseJson = JSON.parse(xmlHttp.responseText)
-    getMessages({'target': {'id': responseJson.channel_id}});
+    getMessages({'target': {'getAttribute': ()=>{return responseJson.channel_id}}});
 }
 
-// if (!csrfToken) {
-//     window.location.replace("../signup.html");
-// }
-// if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
-//     iosCookieRefresh();
-// }
+function enterKeyListener(event) {
+    event.preventDefault();
+    if (event.keyCode === 13) {
+        document.getElementById("submit").click();
+    }
+}
+
+if (!csrfToken) {
+    window.location.replace("../signup.html");
+}
+if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
+    iosCookieRefresh();
+}
 const loader = document.getElementById('loading');
 loader.style.display = 'none';
 </script>
