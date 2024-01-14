@@ -289,6 +289,9 @@ function handleMessages(event) {
 }
 
 function deleteMessage(event) {
+    loader.style.display = 'block';
+    clearDiscordButtons();
+
     let url = API_DOMAIN + `/discord/api/v10/channels/${channelId}/messages/${event.target.getAttribute('discord-id')}`;
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
@@ -313,8 +316,8 @@ function sendMessage(event) {
     let submitButton = document.getElementById('submit');
     const messageText = messageBox.value;
 
-    messageBox.disabled=true;
-    submitButton.disabled=true;
+    loader.style.display = 'block';
+    clearDiscordButtons();
 
     let url = `${API_DOMAIN}/discord/api/v10/channels/${event.target.getAttribute('discord-id')}/messages`;
     let xmlHttp = new XMLHttpRequest();
