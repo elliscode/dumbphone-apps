@@ -19,6 +19,9 @@
             bottom:0px;
             right:0px;
         }
+        img {
+            max-width:700px;
+        }
     </style>
 </head>
 
@@ -239,56 +242,85 @@ function handleMessages(event) {
     for (let i = 0; i < responseJson.length; i++) {
         let message = responseJson[i];
         let p = document.createElement('p');
-        p.setAttribute('discord-id', message.id);
-        p.classList.add('discord');
-        {
-            let span = document.createElement('a');
-            if (message.author.global_name) {
-                span.innerHTML = message.author.global_name;
-            } else {
-                span.innerText = message.author.username;
-            }
-            span.onclick=openDirectMessage;
-            span.setAttribute('discord-id', message.author.id);
-            span.style.cursor='pointer';
-            p.appendChild(span);
-        }
-        {
-            let span = document.createElement('span');
-            span.innerHTML = ' &mdash; ';
-            p.appendChild(span);
-        }
-        {
-            let span = document.createElement('span');
-            span.innerText = message.content;
-            p.appendChild(span);
-        }
-        if (message.reactions) {
-            for (let reaction of message.reactions) {
-                let topSub = document.createElement('sub');
-                {
-                    let span = document.createElement('span');
-                    span.innerText = reaction.emoji.name;
-                    topSub.appendChild(span);
-                }
-                {
-                    let sub = document.createElement('sub');
-                    sub.innerText = reaction.count;
-                    topSub.appendChild(sub);
-                }
-                p.appendChild(topSub);
-            }
-        }
-        if (message.author.id == userId) {
-            let deleteButton = document.createElement('button');
-            deleteButton.innerHTML = '&times;';
-            deleteButton.setAttribute('discord-id', message.id);
-            deleteButton.onclick=deleteMessage;
-            p.appendChild(deleteButton);
-        }
+        buildMessage(p, message);
         document.body.appendChild(p);
     }
     loader.style.display = 'none';
+}
+function buildMessage(parentElement, message) {
+    parentElement.setAttribute('discord-id', message.id);
+    parentElement.classList.add('discord');
+    if (message.hasOwnProperty('referenced_message')) {
+        let blockQuote = document.createElement('blockquote');
+        parentElement.appendChild(blockQuote);
+        buildMessage(blockQuote, message.referenced_message);
+    }
+    {
+        let span = document.createElement('a');
+        if (message.author.global_name) {
+            span.innerHTML = message.author.global_name;
+        } else {
+            span.innerText = message.author.username;
+        }
+        if (message.author.id != userId) {
+            span.onclick=openDirectMessage;
+            span.setAttribute('discord-id', message.author.id);
+            span.style.cursor='pointer';
+        }
+        parentElement.appendChild(span);
+    }
+    {
+        let span = document.createElement('span');
+        span.innerHTML = ' &mdash; ';
+        parentElement.appendChild(span);
+    }
+    {
+        let span = document.createElement('span');
+        span.innerText = message.content;
+        parentElement.appendChild(span);
+    }
+    if (message.reactions) {
+        for (let reaction of message.reactions) {
+            let topSub = document.createElement('sub');
+            {
+                let span = document.createElement('span');
+                span.innerText = reaction.emoji.name;
+                topSub.appendChild(span);
+            }
+            {
+                let sub = document.createElement('sub');
+                sub.innerText = reaction.count;
+                topSub.appendChild(sub);
+            }
+            parentElement.appendChild(topSub);
+        }
+    }
+    if (message.author.id == userId) {
+        let deleteButton = document.createElement('button');
+        deleteButton.innerHTML = '&times;';
+        deleteButton.setAttribute('discord-id', message.id);
+        deleteButton.onclick=deleteMessage;
+        parentElement.appendChild(deleteButton);
+    }
+    if (message.embeds) {
+        for (let embed of message.embeds) {
+            let lineBreak = document.createElement('br');
+            parentElement.appendChild(lineBreak);
+            let embedLink = document.createElement('a');
+            embedLink.href = embed.url;
+            embedLink.innerText = embed.title;
+            parentElement.appendChild(embedLink);
+        }
+    }
+    if (message.attachments) {
+        for (let attachment of message.attachments) {
+            let lineBreak = document.createElement('br');
+            parentElement.appendChild(lineBreak);
+            let attachmentImg = document.createElement('img');
+            attachmentImg.src = attachment.url;
+            parentElement.appendChild(attachmentImg);
+        }
+    }
 }
 function openDirectMessage(event) {
     loader.style.display = 'block';
