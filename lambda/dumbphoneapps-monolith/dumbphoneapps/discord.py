@@ -20,6 +20,65 @@ import time
 
 
 @authenticate
+def get_discord_token_route(event, user_data, body):
+    response = dynamo.get_item(
+        TableName=TABLE_NAME,
+        Key=python_obj_to_dynamo_obj({"key1": "discord", "key2": user_data['key2']}),
+    )
+
+    if "Item" not in response:
+        return format_response(
+            event=event,
+            http_code=404,
+            body="Discord token not found",
+        )
+        
+    discord_data = dynamo_obj_to_python_obj(response["Item"])
+    
+    if 'token' not in discord_data:
+        return format_response(
+            event=event,
+            http_code=404,
+            body="Discord token not found in the database",
+        )
+
+    return format_response(
+        event=event,
+        http_code=200,
+        body={'discordToken': discord_data.get('token')},
+    )
+    
+    
+    
+@authenticate
+def set_discord_token_route(event, user_data, body):
+    if "discordToken" not in body:
+        return format_response(
+            event=event,
+            http_code=400,
+            body="You must supply a discordToken",
+        )
+        
+    python_data = {
+        "key1": "discord",
+        "key2": user_data['key2'],
+        "token": body['discordToken'],
+    }
+    dynamo_data = python_obj_to_dynamo_obj(python_data)
+    dynamo.put_item(
+        TableName=TABLE_NAME,
+        Item=dynamo_data,
+    )
+
+    return format_response(
+        event=event,
+        http_code=200,
+        body='Successfully wrote the discordToken to the database',
+    )
+    
+
+
+@authenticate
 def discord_route(event, user_data, body):
     discord_uri = event["path"].replace('/discord/','https://discord.com/',1)
     

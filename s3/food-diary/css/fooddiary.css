@@ -51,29 +51,6 @@
     cursor:pointer;
 }
 
-.modal-bg {
-    background-color:#fffe;
-    display: flex;
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    height: 100%;
-    z-index: 3;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal {
-    background-color: #fff;
-    padding: 5px;
-    border: 1px black solid;
-    width: fit-content;
-    height: fit-content;
-    max-width: 100%;
-    max-height: 100%;
-}
-
 button {
     width:fit-content;
     padding:1px 6px;
