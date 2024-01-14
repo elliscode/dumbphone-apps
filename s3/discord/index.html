@@ -130,7 +130,28 @@ function handleMessages(event) {
     let xmlHttp = event.target;
     let responseJson = JSON.parse(xmlHttp.responseText)
 
+    const channelId = /.*\/channels\/(\d+)\/messages/.exec(xmlHttp.responseURL)[1];
+
     clearDiscordButtons()
+    const refreshButton = document.createElement('button');
+    refreshButton.innerText = 'Refresh';
+    refreshButton.classList.add('discord');
+    refreshButton.id = channelId;
+    refreshButton.onclick=getMessages;
+    document.body.appendChild(refreshButton);
+
+    const textBox = document.createElement('textarea');
+    textBox.classList.add('discord');
+    textBox.id='message-box';
+    document.body.appendChild(textBox);
+
+    const submitButton = document.createElement('button');
+    submitButton.classList.add('discord');
+    submitButton.innerText = 'Send';
+    submitButton.onclick=sendMessage;
+    submitButton.id=channelId;
+    document.body.appendChild(submitButton);
+
     for (let i = 0; i < responseJson.length; i++) {
         let message = responseJson[i];
         let p = document.createElement('p');
@@ -140,7 +161,29 @@ function handleMessages(event) {
     }
 }
 
+function sendMessage(event) {
+    let messageBox = document.getElementById('message-box');
+    const messageText = messageBox.value;
 
+    let url = `${API_DOMAIN}/discord/api/v10/channels/${event.target.id}/messages`;
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true);
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleSendMessage;
+    let payload = {
+        'csrf': csrfToken,
+        'discordToken': tokenBox.value,
+        'method': 'POST',
+        'content': messageText,
+    }
+    xmlHttp.send(JSON.stringify(payload));
+}
+
+function handleSendMessage(event) {
+    let xmlHttp = event.target;
+    let responseJson = JSON.parse(xmlHttp.responseText)
+    getMessages({'target': {'id': responseJson.channel_id}});
+}
 
 // if (!csrfToken) {
 //     window.location.replace("../signup.html");

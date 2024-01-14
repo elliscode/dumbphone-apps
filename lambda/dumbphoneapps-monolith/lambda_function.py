@@ -6,6 +6,7 @@ from dumbphoneapps.utils import (
     path_equals,
     format_response,
     ios_cookie_refresh_route,
+    path_starts_with,
 )
 from dumbphoneapps.grocery_list import (
     getlist_route,
@@ -18,7 +19,9 @@ from dumbphoneapps.grocery_list import (
     acceptsharelist_route,
     cleanuplist_route,
 )
-
+from dumbphoneapps.discord import (
+    discord_route,
+)
 from dumbphoneapps.food_diary import (
     get_day_route,
     search_route,
@@ -122,5 +125,7 @@ def route(event):
         return acknowledge_presigned_post_success_route(event)
     if path_equals(event=event, method="POST", path="/one-offs/get-uploaded-items"):
         return gather_uploaded_items_route(event)
+    if path_starts_with(event=event, method="POST", path="/discord/"):
+        return discord_route(event)
 
     return format_response(event=event, http_code=404, body="No matching route found")
