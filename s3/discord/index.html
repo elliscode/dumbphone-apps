@@ -31,6 +31,10 @@
 <body>
 <div><b><a href="../index.html">Home</a></b> &gt; <b>discord</b></div>
 
+<hr />
+
+<div id="history"></div>
+
 <button class="settings" for="settings-div" onclick="openSettings(event)">Settings</button>
 
 <div style="display:none;" id="settings-div" class="modal-bg">
@@ -54,6 +58,7 @@
 </div>
 <script src="../js/utils.js?v=3"></script>
 <script>
+const history = [];
 const messageTypes = ['DEFAULT', 'RECIPIENT_ADD', 'RECIPIENT_REMOVE', 'CALL', 'CHANNEL_NAME_CHANGE', 'CHANNEL_ICON_CHANGE', 'CHANNEL_PINNED_MESSAGE', 'USER_JOIN', 'GUILD_BOOST', 'GUILD_BOOST_TIER_1', 'GUILD_BOOST_TIER_2', 'GUILD_BOOST_TIER_3', 'CHANNEL_FOLLOW_ADD', 'GUILD_DISCOVERY_DISQUALIFIED', 'GUILD_DISCOVERY_REQUALIFIED', 'GUILD_DISCOVERY_GRACE_PERIOD_INITIAL_WARNING', 'GUILD_DISCOVERY_GRACE_PERIOD_FINAL_WARNING', 'THREAD_CREATED', 'REPLY', 'CHAT_INPUT_COMMAND', 'THREAD_STARTER_MESSAGE', 'GUILD_INVITE_REMINDER', 'CONTEXT_MENU_COMMAND', 'AUTO_MODERATION_ACTION', 'ROLE_SUBSCRIPTION_PURCHASE', 'INTERACTION_PREMIUM_UPSELL', 'STAGE_START', 'STAGE_END', 'STAGE_SPEAKER', 'STAGE_TOPIC', 'GUILD_APPLICATION_PREMIUM_SUBSCRIPTION'];
 const loader = document.getElementById('loading');
 const tokenBox = document.getElementById('token');
@@ -133,6 +138,10 @@ function handleUser(event) {
 }
 
 function getGuilds() {
+    addToHistory("guilds", "guilds", getGuilds);
+
+    loader.style.display = 'block';
+    clearDiscordButtons();
     let url = API_DOMAIN + '/discord/api/v10/users/@me/guilds';
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
@@ -163,9 +172,13 @@ function handeGuilds(event) {
 }
 
 function getChannels(event) {
+    const thisGuildName = event.target.innerText;
+    const thisGuildId = event.target.getAttribute('discord-id');
+    addToHistory(`channels-${thisGuildId}`, thisGuildName, createMethodWithFakeEvent(getChannels, thisGuildName, thisGuildId));
+
     loader.style.display = 'block';
     clearDiscordButtons();
-    let url = `${API_DOMAIN}/discord/api/v10/guilds/${event.target.getAttribute('discord-id')}/channels`;
+    let url = `${API_DOMAIN}/discord/api/v10/guilds/${thisGuildId}/channels`;
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
     xmlHttp.withCredentials = true;
@@ -196,9 +209,17 @@ function handleChannels(event) {
     }
     loader.style.display = 'none';
 }
-
-let channelId = undefined;
+function createMethodWithFakeEvent(method, name, id) {
+    return ()=>{method(createFakeEvent(name, id))};
+}
+function createFakeEvent(name, id) {
+    return {'target': {'innerText': name, 'getAttribute': ()=>{return id}}};
+}
 function getMessages(event) {
+    const thisChannelName = event.target.innerText;
+    const thisChannelId = event.target.getAttribute('discord-id');
+    addToHistory(`messages-${thisChannelId}`, thisChannelName, createMethodWithFakeEvent(getMessages, thisChannelName, thisChannelId));
+
     loader.style.display = 'block';
     clearDiscordButtons();
     channelId = event.target.getAttribute('discord-id');
@@ -392,8 +413,9 @@ function openDirectMessage(event) {
 function handleOpenDirectMessage(event) {
     let xmlHttp = event.target;
     let responseJson = JSON.parse(xmlHttp.responseText)
-    channelId = responseJson.id;
-    getMessages({'target': {'getAttribute': ()=>{return channelId}}});
+    const thisChannelName = responseJson.name;
+    const thisChannelId = responseJson.id;
+    getMessages(createFakeEvent(thisChannelName, thisChannelId));
 }
 function deleteMessage(event) {
     loader.style.display = 'block';
@@ -415,7 +437,7 @@ function deleteMessage(event) {
 function handleDeleteMessage(event) {
     let xmlHttp = event.target;
     let responseJson = JSON.parse(xmlHttp.responseText)
-    getMessages({'target': {'getAttribute': ()=>{return channelId}}});
+    history[history.length-1].method();
 }
 
 function sendMessage(event) {
@@ -443,7 +465,7 @@ function sendMessage(event) {
 function handleSendMessage(event) {
     let xmlHttp = event.target;
     let responseJson = JSON.parse(xmlHttp.responseText)
-    getMessages({'target': {'getAttribute': ()=>{return channelId}}});
+    history[history.length-1].method();
 }
 
 function enterKeyListener(event) {
@@ -465,6 +487,40 @@ function openSettings(event) {
     let forId = event.target.getAttribute('for');
     let modalToShow = document.getElementById(forId);
     modalToShow.style.display = 'flex';
+}
+
+function addToHistory(id, name, method) {
+    if (history.length != 0) {
+        let mostRecentItem = history[history.length-1];
+        if (mostRecentItem.id == id) {
+            return;
+        }
+    }
+    if (history.length > 10) {
+        history.shift();
+    }
+    history.push({'id': id, 'name': name, 'method': method});
+    renderHistory();
+}
+
+function renderHistory() {
+    let historyElement = document.getElementById('history');
+    while(historyElement.firstChild) {
+        historyElement.firstChild.remove();
+    }
+    let separator = document.createElement('span');
+    for (let i = history.length-1; i >= 0; i--) {
+        item = history[i];
+        historyElement.appendChild(separator);
+
+        let span = document.createElement('span');
+        span.onclick = item.method;
+        span.innerText = item.name;
+        historyElement.appendChild(span);
+
+        separator = document.createElement('span');
+        separator.innerHTML = ' &lt; ';
+    }
 }
 
 if (!csrfToken) {
