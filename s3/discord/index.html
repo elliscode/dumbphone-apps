@@ -10,6 +10,8 @@
     <style>
         body {
             padding-bottom: 30px;
+            background-color:rgb(49,51,56);
+            color:rgb(255,255,255);
         }
         .add-to-group button {
             height:20px;
@@ -48,6 +50,37 @@
         }
         .history-container > p > span {
             padding:0px 3px;
+        }
+        .input-div {
+            display:flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        p.discord {
+            margin: 16px 0px 0px 0px;
+        }
+        .username {
+            font-weight:bold;
+        }
+        .reaction {
+            background-color:rgb(57,54,85);
+            border: 1px solid rgb(102,75,246);
+            border-radius: 5px;
+            padding:3px;
+            color:rgb(230,230,230);
+        }
+        button {
+            background-color:rgb(64,66,73);
+            color:rgb(230,230,230);
+            border: 0px solid rgb(64,66,73);
+            border-radius: 5px;
+            padding:3px 5px;
+        }
+        a {
+            color: rgb(3,152,234);
+        }
+        a:visited {
+            color: rgb(115, 3, 234);
         }
     </style>
 </head>
@@ -293,27 +326,32 @@ function handleMessages(event) {
     let xmlHttp = event.target;
     let responseJson = JSON.parse(xmlHttp.responseText)
 
+    const inputDiv = document.createElement('div');
+    inputDiv.classList.add('discord');
+    inputDiv.classList.add('input-div');
+
     const refreshButton = document.createElement('button');
     refreshButton.innerText = 'Refresh';
-    refreshButton.classList.add('discord');
     refreshButton.style.display = 'block';
     refreshButton.onclick=getMessages;
-    document.body.appendChild(refreshButton);
+    inputDiv.appendChild(refreshButton);
 
-    const textBox = document.createElement('textarea');
-    textBox.classList.add('discord');
+    const textBox = document.createElement('input');
+    textBox.type = 'text';
     textBox.style.display = 'block';
+    textBox.style.flexGrow = '1';
     textBox.id='message-box';
     textBox.onkeyup=enterKeyListener;
-    document.body.appendChild(textBox);
+    inputDiv.appendChild(textBox);
 
     const submitButton = document.createElement('button');
-    submitButton.classList.add('discord');
     submitButton.innerText = 'Send';
     submitButton.onclick=sendMessage;
     submitButton.id="submit";
     submitButton.style.display = 'block';
-    document.body.appendChild(submitButton);
+    inputDiv.appendChild(submitButton);
+
+    document.body.appendChild(inputDiv);
 
     let channelId = undefined;
     for (let i = 0; i < responseJson.length; i++) {
@@ -343,7 +381,8 @@ function buildMessage(parentElement, message) {
         buildMessage(blockQuote, message.referenced_message);
     }
     {
-        let span = document.createElement('a');
+        let span = document.createElement('span');
+        span.classList.add('username');
         if (message.author.global_name) {
             span.innerHTML = message.author.global_name;
         } else {
@@ -376,7 +415,8 @@ function buildMessage(parentElement, message) {
                 if (!message.content.includes(mentionTag)) {
                     continue;
                 }
-                let a = document.createElement('a');
+                let a = document.createElement('span');
+                a.classList.add('username');
                 if (mention.global_name) {
                     a.innerText = mention.global_name;
                 } else {
@@ -395,6 +435,7 @@ function buildMessage(parentElement, message) {
     if (message.reactions) {
         for (let reaction of message.reactions) {
             let topSub = document.createElement('sub');
+            topSub.classList.add('reaction');
             {
                 let span = document.createElement('span');
                 span.innerText = reaction.emoji.name;
@@ -413,6 +454,7 @@ function buildMessage(parentElement, message) {
         deleteButton.innerHTML = '&times;';
         deleteButton.classList.add('delete-button');
         deleteButton.setAttribute('discord-id', message.id);
+        deleteButton.setAttribute('channel-id', message.channel_id);
         deleteButton.onclick=deleteMessage;
         parentElement.appendChild(deleteButton);
     }
@@ -484,6 +526,8 @@ function handleOpenDirectMessage(event) {
     getMessages(createFakeEvent(thisChannelName, thisChannelId));
 }
 function deleteMessage(event) {
+    let channelId = event.target.getAttribute('channel-id');
+
     loader.style.display = 'block';
     clearDiscordButtons();
 
