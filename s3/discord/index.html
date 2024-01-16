@@ -29,9 +29,6 @@
         img {
             max-width:700px;
         }
-        .delete-button {
-            margin-left: 5px;
-        }
         .history-container {
             position:relative;
             width:100%;
@@ -68,19 +65,20 @@
             border-radius: 5px;
             padding:3px;
             color:rgb(230,230,230);
+            margin-left: 1px;
         }
         button {
             background-color:rgb(64,66,73);
             color:rgb(230,230,230);
-            border: 0px solid rgb(64,66,73);
+            border: 1px solid rgb(49,51,56);;
             border-radius: 5px;
-            padding:3px 5px;
+            padding:3px 6px;
         }
         a {
             color: rgb(3,152,234);
         }
         a:visited {
-            color: rgb(115, 3, 234);
+            color: rgb(53, 3, 234);
         }
     </style>
 </head>
@@ -340,6 +338,7 @@ function handleMessages(event) {
     textBox.type = 'text';
     textBox.style.display = 'block';
     textBox.style.flexGrow = '1';
+    textBox.style.width='30px';
     textBox.id='message-box';
     textBox.onkeyup=enterKeyListener;
     inputDiv.appendChild(textBox);
@@ -626,6 +625,7 @@ function renderHistory() {
         let span = document.createElement('span');
         span.onclick = item.method;
         span.innerText = item.name;
+        span.style.cursor='pointer';
         historyElement.appendChild(span);
 
         separator = document.createElement('span');
