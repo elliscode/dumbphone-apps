@@ -60,6 +60,7 @@
             font-weight:bold;
         }
         .reaction {
+            display: inline-block;
             background-color:rgb(57,54,85);
             border: 1px solid rgb(102,75,246);
             border-radius: 5px;
@@ -117,7 +118,7 @@
 <script src="../js/utils.js?v=3"></script>
 <script>
 // constants
-const messageTypes = ['DEFAULT', 'RECIPIENT_ADD', 'RECIPIENT_REMOVE', 'CALL', 'CHANNEL_NAME_CHANGE', 'CHANNEL_ICON_CHANGE', 'CHANNEL_PINNED_MESSAGE', 'USER_JOIN', 'GUILD_BOOST', 'GUILD_BOOST_TIER_1', 'GUILD_BOOST_TIER_2', 'GUILD_BOOST_TIER_3', 'CHANNEL_FOLLOW_ADD', 'GUILD_DISCOVERY_DISQUALIFIED', 'GUILD_DISCOVERY_REQUALIFIED', 'GUILD_DISCOVERY_GRACE_PERIOD_INITIAL_WARNING', 'GUILD_DISCOVERY_GRACE_PERIOD_FINAL_WARNING', 'THREAD_CREATED', 'REPLY', 'CHAT_INPUT_COMMAND', 'THREAD_STARTER_MESSAGE', 'GUILD_INVITE_REMINDER', 'CONTEXT_MENU_COMMAND', 'AUTO_MODERATION_ACTION', 'ROLE_SUBSCRIPTION_PURCHASE', 'INTERACTION_PREMIUM_UPSELL', 'STAGE_START', 'STAGE_END', 'STAGE_SPEAKER', 'STAGE_TOPIC', 'GUILD_APPLICATION_PREMIUM_SUBSCRIPTION'];
+const messageTypes = ['DEFAULT', 'RECIPIENT_ADD', 'RECIPIENT_REMOVE', 'CALL', 'CHANNEL_NAME_CHANGE', 'CHANNEL_ICON_CHANGE', 'CHANNEL_PINNED_MESSAGE', 'Welcome {username}. Say hi!', 'GUILD_BOOST', 'GUILD_BOOST_TIER_1', 'GUILD_BOOST_TIER_2', 'GUILD_BOOST_TIER_3', 'CHANNEL_FOLLOW_ADD', 'GUILD_DISCOVERY_DISQUALIFIED', 'GUILD_DISCOVERY_REQUALIFIED', 'GUILD_DISCOVERY_GRACE_PERIOD_INITIAL_WARNING', 'GUILD_DISCOVERY_GRACE_PERIOD_FINAL_WARNING', 'THREAD_CREATED', 'REPLY', 'CHAT_INPUT_COMMAND', 'THREAD_STARTER_MESSAGE', 'GUILD_INVITE_REMINDER', 'CONTEXT_MENU_COMMAND', 'AUTO_MODERATION_ACTION', 'ROLE_SUBSCRIPTION_PURCHASE', 'INTERACTION_PREMIUM_UPSELL', 'STAGE_START', 'STAGE_END', 'STAGE_SPEAKER', 'STAGE_TOPIC', 'GUILD_APPLICATION_PREMIUM_SUBSCRIPTION'];
 const loader = document.getElementById('loading');
 const tokenBox = document.getElementById('token');
 
@@ -316,6 +317,7 @@ function getMessages(event) {
         'csrf': csrfToken,
         'discordToken': tokenBox.value,
         'method': 'GET',
+        'limit': 100,
     }
     xmlHttp.send(JSON.stringify(payload));
 }
@@ -369,6 +371,7 @@ function handleMessages(event) {
     }
     refreshButton.setAttribute('discord-id', channelId);
     submitButton.setAttribute('discord-id', channelId);
+
     loader.style.display = 'none';
 }
 function buildMessage(parentElement, message) {
@@ -401,7 +404,7 @@ function buildMessage(parentElement, message) {
     }
     if (!message.content && message.embeds.length == 0 && message.attachments.length == 0) {
         let span = document.createElement('span');
-        span.innerText = messageTypes[message.type];
+        span.innerText = messageTypes[message.type].replace('{username}', message.author.global_name ? message.author.global_name : message.author.username);
         parentElement.appendChild(span);
     }
     {

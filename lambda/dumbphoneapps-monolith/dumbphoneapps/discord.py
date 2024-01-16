@@ -110,6 +110,17 @@ def discord_route(event, user_data, body):
             headers=discord_headers,
             body=bytes(json.dumps(post_body), encoding="utf-8"),
         )
+    elif body["method"] == "GET":
+        get_params = body.copy()
+        get_params.pop('csrf')
+        get_params.pop('discordToken')
+        get_params.pop('method')
+        url_suffix = generate_query_parameters(get_params)
+        response = http.request(
+            body["method"],
+            discord_uri + url_suffix,
+            headers=discord_headers
+        )
     else:
         response = http.request(
             body["method"],
@@ -129,3 +140,13 @@ def discord_route(event, user_data, body):
         http_code=200,
         body=response_json,
     )
+
+
+def generate_query_parameters(params):
+    output = ""
+    separator = "?"
+    for key in params:
+        value = params[key]
+        output += separator + urllib.parse.quote(key) + '=' + urllib.parse.quote(value)
+        separator = "&" 
+    return output
