@@ -4,7 +4,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Discord Client</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=5"/>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=8"/>
     <link rel="stylesheet" href="../css/loader.css?v=3"/>
     <link rel="icon" type="image/png" href="../img/favicon.png?v=3"/>
     <style>
@@ -15,15 +15,39 @@
             height:20px;
         }
         .settings {
-            position:fixed;
-            bottom:0px;
-            right:0px;
+            position:absolute;
+            top:26px;
+            right:8px;
+        }
+        .back {
+            position:absolute;
+            top:26px;
+            left:8px;
         }
         img {
             max-width:700px;
         }
         .delete-button {
             margin-left: 5px;
+        }
+        .history-container {
+            position:relative;
+            width:100%;
+        }
+        .history-container > p {
+            overflow-x: scroll;
+            text-wrap: nowrap;
+            white-space: nowrap;
+            min-width: 100%;
+            min-height: 1.1em;
+            text-align: right;
+            margin: 0px;
+        }
+        .history-container>p::-webkit-scrollbar {
+            display:none;
+        }
+        .history-container > p > span {
+            padding:0px 3px;
         }
     </style>
 </head>
@@ -33,9 +57,12 @@
 
 <hr />
 
-<div id="history"></div>
+<div class="history-container">
+    <p id="history"></p>
+</div>
 
 <button class="settings" for="settings-div" onclick="openSettings(event)">Settings</button>
+<button class="back" onclick="goBack(event)">&lt; Back</button>
 
 <div style="display:none;" id="settings-div" class="modal-bg">
     <div class="modal">
@@ -58,10 +85,16 @@
 </div>
 <script src="../js/utils.js?v=3"></script>
 <script>
-const history = [];
+// constants
 const messageTypes = ['DEFAULT', 'RECIPIENT_ADD', 'RECIPIENT_REMOVE', 'CALL', 'CHANNEL_NAME_CHANGE', 'CHANNEL_ICON_CHANGE', 'CHANNEL_PINNED_MESSAGE', 'USER_JOIN', 'GUILD_BOOST', 'GUILD_BOOST_TIER_1', 'GUILD_BOOST_TIER_2', 'GUILD_BOOST_TIER_3', 'CHANNEL_FOLLOW_ADD', 'GUILD_DISCOVERY_DISQUALIFIED', 'GUILD_DISCOVERY_REQUALIFIED', 'GUILD_DISCOVERY_GRACE_PERIOD_INITIAL_WARNING', 'GUILD_DISCOVERY_GRACE_PERIOD_FINAL_WARNING', 'THREAD_CREATED', 'REPLY', 'CHAT_INPUT_COMMAND', 'THREAD_STARTER_MESSAGE', 'GUILD_INVITE_REMINDER', 'CONTEXT_MENU_COMMAND', 'AUTO_MODERATION_ACTION', 'ROLE_SUBSCRIPTION_PURCHASE', 'INTERACTION_PREMIUM_UPSELL', 'STAGE_START', 'STAGE_END', 'STAGE_SPEAKER', 'STAGE_TOPIC', 'GUILD_APPLICATION_PREMIUM_SUBSCRIPTION'];
 const loader = document.getElementById('loading');
 const tokenBox = document.getElementById('token');
+
+// caching
+const history = [];
+const channelToGuildMap = {};
+const guildToNameMap = {};
+
 // check if you had a token saved
 function setToken() {
     let url = API_DOMAIN + '/set-discord-token';
@@ -77,6 +110,9 @@ function setToken() {
 }
 function handleSetToken(event) {
     hideAllModals();
+}
+function goBack(event) {
+    backMethod();
 }
 function getToken() {
     let url = API_DOMAIN + '/get-discord-token';
@@ -136,9 +172,13 @@ function handleUser(event) {
 
     getGuilds();
 }
-
+let backMethod = ()=>{};
 function getGuilds() {
-    addToHistory("guilds", "guilds", getGuilds);
+    addToHistory(
+        "guilds",
+        "guilds",
+        getGuilds,
+    );
 
     loader.style.display = 'block';
     clearDiscordButtons();
@@ -167,14 +207,20 @@ function handeGuilds(event) {
         guildButton.setAttribute('discord-id', guild.id);
         guildButton.onclick=getChannels;
         document.body.appendChild(guildButton);
+        guildToNameMap[guild.id] = guild.name;
     }
+    backMethod = ()=>{};
     loader.style.display = 'none';
 }
 
 function getChannels(event) {
     const thisGuildName = event.target.innerText;
     const thisGuildId = event.target.getAttribute('discord-id');
-    addToHistory(`channels-${thisGuildId}`, thisGuildName, createMethodWithFakeEvent(getChannels, thisGuildName, thisGuildId));
+    addToHistory(
+        `channels-${thisGuildId}`,
+        thisGuildName,
+        createMethodWithFakeEvent(getChannels, thisGuildName, thisGuildId),
+    );
 
     loader.style.display = 'block';
     clearDiscordButtons();
@@ -206,7 +252,9 @@ function handleChannels(event) {
         channelButton.setAttribute('discord-id', channel.id);
         channelButton.onclick=getMessages;
         document.body.appendChild(channelButton);
+        channelToGuildMap[channel.id] = channel.guild_id;
     }
+    backMethod = getGuilds;
     loader.style.display = 'none';
 }
 function createMethodWithFakeEvent(method, name, id) {
@@ -218,11 +266,16 @@ function createFakeEvent(name, id) {
 function getMessages(event) {
     const thisChannelName = event.target.innerText;
     const thisChannelId = event.target.getAttribute('discord-id');
-    addToHistory(`messages-${thisChannelId}`, thisChannelName, createMethodWithFakeEvent(getMessages, thisChannelName, thisChannelId));
+    addToHistory(
+        `messages-${thisChannelId}`,
+        thisChannelName,
+        createMethodWithFakeEvent(getMessages, thisChannelName, thisChannelId),
+    );
+    backMethod = getGuilds;
 
     loader.style.display = 'block';
     clearDiscordButtons();
-    channelId = event.target.getAttribute('discord-id');
+    const channelId = event.target.getAttribute('discord-id');
     let url = `${API_DOMAIN}/discord/api/v10/channels/${channelId}/messages`;
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
@@ -244,7 +297,6 @@ function handleMessages(event) {
     refreshButton.innerText = 'Refresh';
     refreshButton.classList.add('discord');
     refreshButton.style.display = 'block';
-    refreshButton.setAttribute('discord-id', channelId);
     refreshButton.onclick=getMessages;
     document.body.appendChild(refreshButton);
 
@@ -259,17 +311,27 @@ function handleMessages(event) {
     submitButton.classList.add('discord');
     submitButton.innerText = 'Send';
     submitButton.onclick=sendMessage;
-    submitButton.setAttribute('discord-id', channelId);
     submitButton.id="submit";
     submitButton.style.display = 'block';
     document.body.appendChild(submitButton);
 
+    let channelId = undefined;
     for (let i = 0; i < responseJson.length; i++) {
         let message = responseJson[i];
+        channelId = message.channel_id
         let p = document.createElement('p');
         buildMessage(p, message);
         document.body.appendChild(p);
     }
+    if (channelToGuildMap.hasOwnProperty(channelId)) {
+        const thisGuildId = channelToGuildMap[channelId];
+        const thisGuildName = guildToNameMap[thisGuildId];
+        backMethod = createMethodWithFakeEvent(getChannels, thisGuildName, thisGuildId);
+    } else {
+        backMethod = getGuilds;
+    }
+    refreshButton.setAttribute('discord-id', channelId);
+    submitButton.setAttribute('discord-id', channelId);
     loader.style.display = 'none';
 }
 function buildMessage(parentElement, message) {
@@ -413,7 +475,11 @@ function openDirectMessage(event) {
 function handleOpenDirectMessage(event) {
     let xmlHttp = event.target;
     let responseJson = JSON.parse(xmlHttp.responseText)
-    const thisChannelName = responseJson.name;
+    const names = [];
+    for (let recipient of responseJson.recipients) {
+        names.push(recipient.global_name ? recipient.global_name : recipient.username);
+    }
+    const thisChannelName = names.join(' & ');
     const thisChannelId = responseJson.id;
     getMessages(createFakeEvent(thisChannelName, thisChannelId));
 }
@@ -496,7 +562,7 @@ function addToHistory(id, name, method) {
             return;
         }
     }
-    if (history.length > 10) {
+    if (history.length > 1024) {
         history.shift();
     }
     history.push({'id': id, 'name': name, 'method': method});
@@ -509,7 +575,7 @@ function renderHistory() {
         historyElement.firstChild.remove();
     }
     let separator = document.createElement('span');
-    for (let i = history.length-1; i >= 0; i--) {
+    for (let i = 0; i < history.length; i++) {
         item = history[i];
         historyElement.appendChild(separator);
 
@@ -519,8 +585,9 @@ function renderHistory() {
         historyElement.appendChild(span);
 
         separator = document.createElement('span');
-        separator.innerHTML = ' &lt; ';
+        separator.innerHTML = '&gt;';
     }
+    historyElement.scrollTo(historyElement.scrollWidth, 0);
 }
 
 if (!csrfToken) {

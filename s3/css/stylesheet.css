@@ -63,8 +63,8 @@ input.big {
 
 .logout {
     position:absolute;
-    top:0;
-    right:0;
+    top:0px;
+    right:8px;
 }
 
 .add-to-group {
