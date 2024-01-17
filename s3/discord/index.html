@@ -139,8 +139,9 @@ let history = [];
 let channelToGuildMap = {};
 let guildToNameMap = {};
 
-// check if you had a token saved
 function setToken() {
+    localStorage.removeItem('dumbphoneapps-discord-token');
+    localStorage.removeItem('dumbphoneapps-discord-user');
     let url = API_DOMAIN + '/set-discord-token';
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
@@ -159,30 +160,33 @@ function goBack(event) {
     backMethod();
 }
 function getToken() {
-    let url = API_DOMAIN + '/get-discord-token';
-    let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", url, true);
-    xmlHttp.withCredentials = true;
-    xmlHttp.onload = handleGetToken;
-    let payload = {
-        'csrf': csrfToken,
+    let existingToken = localStorage.getItem('dumbphoneapps-discord-token');
+    if (existingToken) {
+        setTokenInUi(existingToken);
+    } else {
+        let url = API_DOMAIN + '/get-discord-token';
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", url, true);
+        xmlHttp.withCredentials = true;
+        xmlHttp.onload = handleGetToken;
+        let payload = {
+            'csrf': csrfToken,
+        }
+        xmlHttp.send(JSON.stringify(payload));
     }
-    xmlHttp.send(JSON.stringify(payload));
 }
 function handleGetToken(event) {
     let xmlHttp = event.target;
-    let responseJson = JSON.parse(xmlHttp.responseText)
-    if (responseJson.discordToken) {
-        tokenBox.value = responseJson.discordToken;
-    }
-    let loadGuildsButton = document.createElement('button');
-    loadGuildsButton.classList.add('discord');
-    loadGuildsButton.onclick=getUser;
-    loadGuildsButton.innerText = "Load Guilds";
-    document.body.appendChild(loadGuildsButton);
-    loader.style.display = 'none';
+    let responseJson = JSON.parse(xmlHttp.responseText);
+    localStorage.setItem('dumbphoneapps-discord-token', responseJson.discordToken);
+    setTokenInUi(responseJson.discordToken);
 }
-
+function setTokenInUi(token) {
+    if (token) {
+        tokenBox.value = token;
+        getUser();
+    }
+}
 function clearDiscordButtons() {
     let discordButtons = Array.from(document.getElementsByClassName('discord'));
     for (let i = discordButtons.length - 1; i >= 0; i--) {
@@ -209,36 +213,52 @@ function clearLoadMoreDivs() {
 }
 
 function getUser() {
-    loader.style.display = 'block';
-    clearDiscordButtons();
-    let url = API_DOMAIN + '/discord/api/v10/users/@me';
-    let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", url, true);
-    xmlHttp.withCredentials = true;
-    xmlHttp.onload = handleUser;
-    let payload = {
-        'csrf': csrfToken,
-        'discordToken': tokenBox.value,
-        'method': 'GET',
+    let existingUser = localStorage.getItem('dumbphoneapps-discord-user');
+    if (existingUser) {
+        setUserInUi(existingUser);
+    } else {
+        loader.style.display = 'block';
+        clearDiscordButtons();
+        let url = API_DOMAIN + '/discord/api/v10/users/@me';
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", url, true);
+        xmlHttp.withCredentials = true;
+        xmlHttp.onload = handleUser;
+        let payload = {
+            'csrf': csrfToken,
+            'discordToken': tokenBox.value,
+            'method': 'GET',
+        }
+        xmlHttp.send(JSON.stringify(payload));
     }
-    xmlHttp.send(JSON.stringify(payload));
 }
 
 let userId = undefined;
 function handleUser(event) {
     let xmlHttp = event.target;
     let responseJson = JSON.parse(xmlHttp.responseText)
+    localStorage.setItem('dumbphoneapps-discord-user', responseJson.id);
+    setUserInUi(responseJson.id);
+}
+function setUserInUi(inputUserId) {
+    userId = inputUserId;
 
-    userId = responseJson.id;
-
-    getGuilds();
+    if (loadMostRecentHistoryItem()) {
+        return;
+    }
+    let loadGuildsButton = document.createElement('button');
+    loadGuildsButton.classList.add('discord');
+    loadGuildsButton.onclick=getGuilds;
+    loadGuildsButton.innerText = "Load Guilds";
+    document.body.appendChild(loadGuildsButton);
+    loader.style.display = 'none';
 }
 let backMethod = ()=>{};
 function getGuilds() {
     addToHistory(
         "guilds",
         "guilds",
-        getGuilds,
+        "getGuilds",
     );
 
     loader.style.display = 'block';
@@ -280,7 +300,9 @@ function getChannels(event) {
     addToHistory(
         `channels-${thisGuildId}`,
         thisGuildName,
-        createMethodWithFakeEvent(getChannels, thisGuildName, thisGuildId),
+        "getChannels",
+        thisGuildName,
+        thisGuildId,
     );
 
     loader.style.display = 'block';
@@ -331,7 +353,9 @@ function getMessages(event, dontClearExisting) {
     addToHistory(
         `messages-${thisChannelId}`,
         thisChannelName,
-        createMethodWithFakeEvent(getMessages, thisChannelName, thisChannelId),
+        "getMessages", 
+        thisChannelName, 
+        thisChannelId,
     );
     backMethod = getGuilds;
 
@@ -434,13 +458,20 @@ function handleMessages(event) {
 
     loader.style.display = 'none';
 
-    setTimeout(resizeImages, 1000);
+    setResizeObserver();
 }
-function resizeImages() {
+const resizeObserver = new ResizeObserver(entries => {
+    for (const entry of entries) {
+        if (entry.contentRect.width > 0) {
+            entry.target.style.width = `${entry.contentRect.width}px`;
+            entry.target.classList.remove('size-constraint');
+            resizeObserver.unobserve(entry.target);
+        }
+    }
+});
+function setResizeObserver() {
     for (let item of Array.from(document.getElementsByClassName('size-constraint'))) {
-        item.style.width = `${item.getBoundingClientRect().width}px`;
-        item.style.height = `${item.getBoundingClientRect().height}px`;
-        item.classList.remove('size-constraint');
+        resizeObserver.observe(item);
     }
 }
 function buildMessage(parentElement, message) {
@@ -685,7 +716,7 @@ function openSettings(event) {
     modalToShow.style.display = 'flex';
 }
 
-function addToHistory(id, name, method) {
+function addToHistory(id, name, methodName, arg1, arg2) {
     if (history.length != 0) {
         let mostRecentItem = history[history.length-1];
         if (mostRecentItem.id == id) {
@@ -695,10 +726,28 @@ function addToHistory(id, name, method) {
     if (history.length > 1024) {
         history.shift();
     }
-    history.push({'id': id, 'name': name, 'method': method});
+    let historyItem = {'id': id, 'name': name, 'methodName': methodName, 'arg1': arg1, 'arg2': arg2};
+    history.push(historyItem);
+    localStorage.setItem('dumbphoneapps-discord-most-recent', JSON.stringify(historyItem));
     renderHistory();
 }
-
+function loadMostRecentHistoryItem() {
+    let mostRecentItem = localStorage.getItem('dumbphoneapps-discord-most-recent');
+    if (!mostRecentItem) {
+        return false;
+    }
+    let item = JSON.parse(mostRecentItem);
+    let derivedMethod = undefined;
+    if (item.methodName == 'getGuilds') {
+        derivedMethod = createMethodWithFakeEvent(getGuilds, item.arg1, item.arg2);
+    } else if (item.methodName == 'getChannels') {
+        derivedMethod = createMethodWithFakeEvent(getChannels, item.arg1, item.arg2);
+    } else if (item.methodName == 'getMessages') {
+        derivedMethod = createMethodWithFakeEvent(getMessages, item.arg1, item.arg2);
+    }
+    derivedMethod();
+    return true;
+}
 function renderHistory() {
     let historyElement = document.getElementById('history');
     while(historyElement.firstChild) {
@@ -710,7 +759,15 @@ function renderHistory() {
         historyElement.appendChild(separator);
 
         let span = document.createElement('span');
-        span.onclick = item.method;
+        let derivedMethod = undefined;
+        if (item.methodName == 'getGuilds') {
+            derivedMethod = createMethodWithFakeEvent(getGuilds, item.arg1, item.arg2);
+        } else if (item.methodName == 'getChannels') {
+            derivedMethod = createMethodWithFakeEvent(getChannels, item.arg1, item.arg2);
+        } else if (item.methodName == 'getMessages') {
+            derivedMethod = createMethodWithFakeEvent(getMessages, item.arg1, item.arg2);
+        }
+        span.onclick = derivedMethod;
         span.innerText = item.name;
         span.style.cursor='pointer';
         historyElement.appendChild(span);
