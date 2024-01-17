@@ -93,6 +93,9 @@
         video, img {
             background-color:rgb(64,66,73);
         }
+        .lds-spinner div:after {
+            background-color:rgb(230,230,230);
+        }
     </style>
 </head>
 
@@ -140,7 +143,6 @@ let channelToGuildMap = {};
 let guildToNameMap = {};
 
 function setToken() {
-    localStorage.removeItem('dumbphoneapps-discord-token');
     localStorage.removeItem('dumbphoneapps-discord-user');
     let url = API_DOMAIN + '/set-discord-token';
     let xmlHttp = new XMLHttpRequest();
@@ -158,34 +160,6 @@ function handleSetToken(event) {
 }
 function goBack(event) {
     backMethod();
-}
-function getToken() {
-    let existingToken = localStorage.getItem('dumbphoneapps-discord-token');
-    if (existingToken) {
-        setTokenInUi(existingToken);
-    } else {
-        let url = API_DOMAIN + '/get-discord-token';
-        let xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("POST", url, true);
-        xmlHttp.withCredentials = true;
-        xmlHttp.onload = handleGetToken;
-        let payload = {
-            'csrf': csrfToken,
-        }
-        xmlHttp.send(JSON.stringify(payload));
-    }
-}
-function handleGetToken(event) {
-    let xmlHttp = event.target;
-    let responseJson = JSON.parse(xmlHttp.responseText);
-    localStorage.setItem('dumbphoneapps-discord-token', responseJson.discordToken);
-    setTokenInUi(responseJson.discordToken);
-}
-function setTokenInUi(token) {
-    if (token) {
-        tokenBox.value = token;
-        getUser();
-    }
 }
 function clearDiscordButtons() {
     let discordButtons = Array.from(document.getElementsByClassName('discord'));
@@ -226,7 +200,6 @@ function getUser() {
         xmlHttp.onload = handleUser;
         let payload = {
             'csrf': csrfToken,
-            'discordToken': tokenBox.value,
             'method': 'GET',
         }
         xmlHttp.send(JSON.stringify(payload));
@@ -270,7 +243,6 @@ function getGuilds() {
     xmlHttp.onload = handeGuilds;
     let payload = {
         'csrf': csrfToken,
-        'discordToken': tokenBox.value,
         'method': 'GET',
     }
     xmlHttp.send(JSON.stringify(payload));
@@ -314,7 +286,6 @@ function getChannels(event) {
     xmlHttp.onload = handleChannels;
     let payload = {
         'csrf': csrfToken,
-        'discordToken': tokenBox.value,
         'method': 'GET',
     }
     xmlHttp.send(JSON.stringify(payload));
@@ -373,7 +344,6 @@ function getMessages(event, dontClearExisting) {
     xmlHttp.onload = handleMessages;
     let payload = {
         'csrf': csrfToken,
-        'discordToken': tokenBox.value,
         'method': 'GET',
         'limit': 25,
     }
@@ -625,7 +595,6 @@ function openDirectMessage(event) {
     xmlHttp.onload = handleOpenDirectMessage;
     let payload = {
         'csrf': csrfToken,
-        'discordToken': tokenBox.value,
         'method': 'POST',
         'recipient_id': event.target.getAttribute('discord-id'),
     }
@@ -655,7 +624,6 @@ function deleteMessage(event) {
     xmlHttp.onload = handleDeleteMessage;
     let payload = {
         'csrf': csrfToken,
-        'discordToken': tokenBox.value,
         'method': 'DELETE',
     }
     xmlHttp.send(JSON.stringify(payload));
@@ -682,7 +650,6 @@ function sendMessage(event) {
     xmlHttp.onload = handleSendMessage;
     let payload = {
         'csrf': csrfToken,
-        'discordToken': tokenBox.value,
         'method': 'POST',
         'content': messageText,
     }
@@ -784,7 +751,8 @@ if (!csrfToken) {
 if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
     iosCookieRefresh();
 }
-getToken();
+getUser();
+localStorage.removeItem('dumbphoneapps-discord-token'); // to remove old approach
 </script>
 </body>
 

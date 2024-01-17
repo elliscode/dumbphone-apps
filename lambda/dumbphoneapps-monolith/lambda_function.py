@@ -22,7 +22,6 @@ from dumbphoneapps.grocery_list import (
 from dumbphoneapps.discord import (
     discord_route,
     set_discord_token_route,
-    get_discord_token_route,
 )
 from dumbphoneapps.food_diary import (
     get_day_route,
@@ -131,7 +130,5 @@ def route(event):
         return discord_route(event)
     if path_equals(event=event, method="POST", path="/set-discord-token"):
         return set_discord_token_route(event)
-    if path_equals(event=event, method="POST", path="/get-discord-token"):
-        return get_discord_token_route(event)
 
     return format_response(event=event, http_code=404, body="No matching route found")

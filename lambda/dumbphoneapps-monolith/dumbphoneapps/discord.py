@@ -18,38 +18,9 @@ from .utils import (
 )
 import time
 
+discord_token_cache = {}
 
-@authenticate
-def get_discord_token_route(event, user_data, body):
-    response = dynamo.get_item(
-        TableName=TABLE_NAME,
-        Key=python_obj_to_dynamo_obj({"key1": "discord", "key2": user_data['key2']}),
-    )
 
-    if "Item" not in response:
-        return format_response(
-            event=event,
-            http_code=404,
-            body="Discord token not found",
-        )
-        
-    discord_data = dynamo_obj_to_python_obj(response["Item"])
-    
-    if 'token' not in discord_data:
-        return format_response(
-            event=event,
-            http_code=404,
-            body="Discord token not found in the database",
-        )
-
-    return format_response(
-        event=event,
-        http_code=200,
-        body={'discordToken': discord_data.get('token')},
-    )
-    
-    
-    
 @authenticate
 def set_discord_token_route(event, user_data, body):
     if "discordToken" not in body:
@@ -70,6 +41,8 @@ def set_discord_token_route(event, user_data, body):
         Item=dynamo_data,
     )
 
+    discord_token_cache[user_data['key2']] = body['discordToken']
+
     return format_response(
         event=event,
         http_code=200,
@@ -84,7 +57,7 @@ def discord_route(event, user_data, body):
     
     http = urllib3.PoolManager()
     
-    discord_headers = {'Authorization': f'Bot {body["discordToken"]}'}
+    discord_headers = {'Authorization': f'Bot {get_discord_token(user_data)}'}
     
     if body["method"] == "POST" and 'content' in body:
         discord_fields = {'content': body['content']}
@@ -100,7 +73,6 @@ def discord_route(event, user_data, body):
         discord_headers['Content-Type'] = 'application/json'
         post_body = body.copy()
         post_body.pop('csrf')
-        post_body.pop('discordToken')
         post_body.pop('method')
         print(post_body)
         print(discord_headers)
@@ -113,7 +85,6 @@ def discord_route(event, user_data, body):
     elif body["method"] == "GET":
         get_params = body.copy()
         get_params.pop('csrf')
-        get_params.pop('discordToken')
         get_params.pop('method')
         url_suffix = generate_query_parameters(get_params)
         response = http.request(
@@ -150,3 +121,33 @@ def generate_query_parameters(params):
         output += separator + urllib.parse.quote(str(key)) + '=' + urllib.parse.quote(str(value))
         separator = "&" 
     return output
+
+
+def get_discord_token(user_data):
+    if user_data['key2'] in discord_token_cache:
+        return discord_token_cache[user_data['key2']]
+
+    response = dynamo.get_item(
+        TableName=TABLE_NAME,
+        Key=python_obj_to_dynamo_obj({"key1": "discord", "key2": user_data['key2']}),
+    )
+
+    if "Item" not in response:
+        return format_response(
+            event=event,
+            http_code=404,
+            body="Discord token not found",
+        )
+        
+    discord_data = dynamo_obj_to_python_obj(response["Item"])
+    
+    if 'token' not in discord_data:
+        return format_response(
+            event=event,
+            http_code=404,
+            body="Discord token not found in the database",
+        )
+
+    discord_token_cache[user_data['key2']] = discord_data.get('token')
+
+    return discord_data.get('token')
