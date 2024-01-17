@@ -26,7 +26,7 @@ GOOGLE_API_KEY = os.environ["GOOGLE_API_KEY"]
 PRESIGNED_AWS_ACCESS_KEY_ID = os.environ["PRESIGNED_AWS_ACCESS_KEY_ID"]
 PRESIGNED_AWS_SECRET_ACCESS_KEY = os.environ["PRESIGNED_AWS_SECRET_ACCESS_KEY"]
 
-CONTENT_TYPES = {"mp4": "video/mp4", "3gp": "video/3gpp", "png": "image/png", "jpg": "image/jpg", "jpeg": "image/jpg"}
+CONTENT_TYPES = {"mov": "video/quicktime", "mp4": "video/mp4", "3gp": "video/3gpp", "png": "image/png", "jpg": "image/jpg", "jpeg": "image/jpg"}
 
 
 def get_maps_key_route(event):
@@ -258,9 +258,9 @@ def gather_uploaded_items_route(event, user_data, body):
 
 @authenticate
 def generate_presigned_post(event, user_data, body):
-    extension = body.get("extension", "")
+    extension = body.get("extension", "").lower()
     phone = user_data["key2"]
-    if extension not in ["jpg", "png", "3gp", "jpeg", "mp4"]:
+    if extension not in ["jpg", "png", "3gp", "jpeg", "mp4", "mov"]:
         return format_response(
             event=event,
             http_code=400,

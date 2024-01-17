@@ -58,12 +58,20 @@ function handlePresignedUrl(event) {
     const hr = document.createElement('hr');
     document.body.appendChild(hr);
 
-    if (dataId.endsWith('3gp')) {
+    if (dataId.endsWith('3gp') || dataId.endsWith('mp4') || dataId.endsWith('mov')) {
+        let type = undefined;
+        if (dataId.endsWith('3gp')) {
+            type = '3gpp';
+        } else if (dataId.endsWith('mp4')) {
+            type = 'mp4';
+        } else if (dataId.endsWith('mov')) {
+            type = 'quicktime';
+        }
         let element = document.createElement('video');
         element.classList.add('video');
         element.controls = true;
         element.src = responseJson.url;
-        element.type = 'video/3gpp';
+        element.type = `video/${type}`;
         element.playsInline = true;
         element.muted = true;
         element.autoplay = true;

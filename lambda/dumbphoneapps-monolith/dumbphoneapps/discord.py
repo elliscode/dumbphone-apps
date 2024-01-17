@@ -147,6 +147,6 @@ def generate_query_parameters(params):
     separator = "?"
     for key in params:
         value = params[key]
-        output += separator + urllib.parse.quote(key) + '=' + urllib.parse.quote(value)
+        output += separator + urllib.parse.quote(str(key)) + '=' + urllib.parse.quote(str(value))
         separator = "&" 
     return output
