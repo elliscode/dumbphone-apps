@@ -92,12 +92,12 @@ function setUserInUi(inputUserId) {
     document.body.appendChild(loadGuildsButton);
     loader.style.display = 'none';
 }
-let backMethod = ()=>{};
+let backMethod = function () {};
 function getGuilds() {
     addToHistory(
         "guilds",
         "guilds",
-        "getGuilds",
+        "getGuilds"
     );
 
     loader.style.display = 'block';
@@ -128,7 +128,7 @@ function handeGuilds(event) {
         document.body.appendChild(guildButton);
         guildToNameMap[guild.id] = guild.name;
     }
-    backMethod = ()=>{};
+    backMethod = function () {};
     loader.style.display = 'none';
 }
 
@@ -140,7 +140,7 @@ function getChannels(event) {
         thisGuildName,
         "getChannels",
         thisGuildName,
-        thisGuildId,
+        thisGuildId
     );
 
     loader.style.display = 'block';
@@ -178,10 +178,10 @@ function handleChannels(event) {
     loader.style.display = 'none';
 }
 function createMethodWithFakeEvent(method, name, id) {
-    return ()=>{method(createFakeEvent(name, id))};
+    return function (event) {method(createFakeEvent(name, id))};
 }
 function createFakeEvent(name, id) {
-    return {'target': {'innerText': name, 'getAttribute': (name)=>{return name == 'discord-id' ? id : undefined;}}};
+    return {'target': {'innerText': name, 'getAttribute': function (name) {return name == 'discord-id' ? id : undefined;}}};
 }
 function getMessages(event, dontClearExisting) {
     let thisChannelName = event.target.innerText;
@@ -192,7 +192,7 @@ function getMessages(event, dontClearExisting) {
         thisChannelName,
         "getMessages", 
         thisChannelName, 
-        thisChannelId,
+        thisChannelId
     );
     backMethod = getGuilds;
 
@@ -288,7 +288,7 @@ function handleMessages(event) {
     reloadButton.classList.add('discord');
     reloadButton.setAttribute('discord-id', channelId);
     reloadButton.setAttribute('before-id', lastMessageId);
-    reloadButton.onclick = (e1)=>{getMessages(e1, true);}
+    reloadButton.onclick = function (e1) {getMessages(e1, true);};
     reloadDiv.appendChild(reloadButton);
     document.body.appendChild(reloadDiv);
 
@@ -331,7 +331,8 @@ function buildMessage(parentElement, message) {
         let span = document.createElement('span');
         span.innerText = message.content;
         if (message.mentions) {
-            for (let mention of message.mentions) {
+            for (let i = 0; i < message.mentions.length; i++) {
+                let mention = message.mentions[i];
                 let mentionTag = `<@${mention.id}>`;
                 let mentionTagHtml = `&lt;@${mention.id}&gt;`;
                 if (!message.content.includes(mentionTag)) {
@@ -355,7 +356,8 @@ function buildMessage(parentElement, message) {
         parentElement.appendChild(span);
     }
     if (message.reactions) {
-        for (let reaction of message.reactions) {
+        for (let i = 0; i < message.reactions.length; i++) {
+            let reaction = message.reactions[i];
             let topSub = document.createElement('sub');
             topSub.classList.add('reaction');
             {
@@ -381,7 +383,8 @@ function buildMessage(parentElement, message) {
         parentElement.appendChild(deleteButton);
     }
     if (message.embeds) {
-        for (let embed of message.embeds) {
+        for (let i = 0; i < message.embeds.length; i++) {
+            let embed = message.embeds[i];
             if (embed.hasOwnProperty('description')) {
                 let lineBreak = document.createElement('br');
                 parentElement.appendChild(lineBreak);
@@ -406,24 +409,25 @@ function buildMessage(parentElement, message) {
                 parentElement.appendChild(lineBreak);
                 let placeholder = document.createElement('div');
                 placeholder.classList.add('placeholder');
-                placeholder.onclick = (event)=>{loadImage(event.target, embed.image.url);}
+                placeholder.onclick = function (event) {loadImage(event.target, embed.image.url);};
                 parentElement.appendChild(placeholder);
             }
         }
     }
     if (message.attachments) {
-        for (let attachment of message.attachments) {
+        for (let i = 0; i < message.attachments.length; i++) {
+            let attachment = message.attachments[i];
             let lineBreak = document.createElement('br');
             parentElement.appendChild(lineBreak);
             if (attachment.content_type.startsWith('video/')) {
                 let placeholder = document.createElement('div');
                 placeholder.classList.add('placeholder');
-                placeholder.onclick = (event)=>{loadVideo(event.target, attachment.url, attachment.content_type);}
+                placeholder.onclick = function (event) {loadVideo(event.target, attachment.url, attachment.content_type);};
                 parentElement.appendChild(placeholder);
             } else {
                 let placeholder = document.createElement('div');
                 placeholder.classList.add('placeholder');
-                placeholder.onclick = (event)=>{loadImage(event.target, attachment.url);}
+                placeholder.onclick = function (event) {loadImage(event.target, attachment.url);};
                 parentElement.appendChild(placeholder);
             }
         }
@@ -452,7 +456,8 @@ function loadVideo(element, url, contentType) {
     setTimeout(setMediaSize, 1000);
 }
 function setMediaSize(event) {
-    for (let item of Array.from(document.getElementsByClassName('size-constraint'))) {
+    for (let i = 0; i < Array.from(document.getElementsByClassName('size-constraint')).length; i++) {
+        let item = Array.from(document.getElementsByClassName('size-constraint'))[i];
         item.style.width = `${item.getBoundingClientRect().width}px`;
         item.style.height = `${item.getBoundingClientRect().height}px`;
         item.classList.remove('size-constraint');
@@ -477,7 +482,8 @@ function handleOpenDirectMessage(event) {
     let xmlHttp = event.target;
     let responseJson = JSON.parse(xmlHttp.responseText)
     let names = [];
-    for (let recipient of responseJson.recipients) {
+    for (let i = 0; i < responseJson.recipients.length; i++) {
+        let recipient = responseJson.recipients[i];
         names.push(recipient.global_name ? recipient.global_name : recipient.username);
     }
     let thisChannelName = names.join(' & ');

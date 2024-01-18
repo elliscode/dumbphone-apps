@@ -11,16 +11,16 @@ function defaultHandler(event) {
     return result;
 }
 function getParameterByName(name, url = window.location.href) {
-    name = name.replace(/[\[\]]/g, '\\$&');
-    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-        results = regex.exec(url);
+    name = name.replace(new RegExp('[\[\]]', 'g'), '\\$&');
+    let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+    let results = regex.exec(url);
     if (!results) return null;
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 function iosCookieRefresh(event) {
     let cookieRefreshTime = localStorage.getItem('dumbphoneapps-cookie-refresh-time')
-    if (!cookieRefreshTime || !/\d+/.test(cookieRefreshTime) || parseInt(cookieRefreshTime) < (new Date()).getTime()) {
+    if (!cookieRefreshTime || !new RegExp('\d+').test(cookieRefreshTime) || parseInt(cookieRefreshTime) < (new Date()).getTime()) {
         let xmlHttp = new XMLHttpRequest();
         xmlHttp.open("POST", API_DOMAIN + '/ios-cookie-refresh', true);
         xmlHttp.withCredentials = true;

@@ -60,8 +60,7 @@
         }
     }
     function fillOutPhoneNumberBoxWithSearchParam() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const username = urlParams.get('username')
+        const username = getParameterByName('username')
         if(!!username) {
             document.getElementById('phone').value = username;
         }
