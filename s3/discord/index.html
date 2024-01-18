@@ -27,9 +27,6 @@
             top:26px;
             left:8px;
         }
-        img {
-            max-width:700px;
-        }
         .history-container {
             position:relative;
             width:100%;
@@ -632,7 +629,7 @@ function deleteMessage(event) {
 function handleDeleteMessage(event) {
     let xmlHttp = event.target;
     let responseJson = JSON.parse(xmlHttp.responseText)
-    history[history.length-1].method();
+    loadMostRecentHistoryItem();
 }
 
 function sendMessage(event) {
@@ -659,7 +656,7 @@ function sendMessage(event) {
 function handleSendMessage(event) {
     let xmlHttp = event.target;
     let responseJson = JSON.parse(xmlHttp.responseText)
-    history[history.length-1].method();
+    loadMostRecentHistoryItem();
 }
 
 function enterKeyListener(event) {
