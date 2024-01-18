@@ -90,8 +90,23 @@
         video, img {
             background-color:rgb(64,66,73);
         }
+        .placeholder {
+            background-color:rgb(64,66,73);
+            width: calc(100vw - 16px);
+            height: calc(50vh - 16px);
+        }
         .lds-spinner div:after {
             background-color:rgb(230,230,230);
+        }
+        .placeholder:before {
+            content: 'Click to load media';
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-content: center;
+            align-items: center;
+            justify-content: center;
+            text-align:center;
         }
     </style>
 </head>
@@ -424,22 +439,6 @@ function handleMessages(event) {
     document.body.appendChild(reloadDiv);
 
     loader.style.display = 'none';
-
-    setResizeObserver();
-}
-const resizeObserver = new ResizeObserver(entries => {
-    for (const entry of entries) {
-        if (entry.contentRect.width > 0) {
-            entry.target.style.width = `${entry.contentRect.width}px`;
-            entry.target.classList.remove('size-constraint');
-            resizeObserver.unobserve(entry.target);
-        }
-    }
-});
-function setResizeObserver() {
-    for (let item of Array.from(document.getElementsByClassName('size-constraint'))) {
-        resizeObserver.observe(item);
-    }
 }
 function buildMessage(parentElement, message) {
     parentElement.setAttribute('discord-id', message.id);
@@ -551,10 +550,14 @@ function buildMessage(parentElement, message) {
             if (embed.hasOwnProperty('image')) {
                 let lineBreak = document.createElement('br');
                 parentElement.appendChild(lineBreak);
-                let embedImg = document.createElement('img');
-                embedImg.classList.add('size-constraint');
-                embedImg.src = embed.image.url;
-                parentElement.appendChild(embedImg);
+                // let embedImg = document.createElement('img');
+                // embedImg.classList.add('size-constraint');
+                // embedImg.src = embed.image.url;
+                // parentElement.appendChild(embedImg);
+                let placeholder = document.createElement('div');
+                placeholder.classList.add('placeholder');
+                placeholder.onclick = (event)=>{loadImage(event.target, embed.image.url);}
+                parentElement.appendChild(placeholder);
             }
         }
     }
@@ -563,23 +566,60 @@ function buildMessage(parentElement, message) {
             let lineBreak = document.createElement('br');
             parentElement.appendChild(lineBreak);
             if (attachment.content_type.startsWith('video/')) {
-                let element = document.createElement('video');
-                element.classList.add('video');
-                element.classList.add('size-constraint');
-                element.controls = true;
-                element.src = attachment.url;
-                element.type = attachment.content_type;
-                element.playsInline = true;
-                element.muted = true;
-                element.autoplay = true;
-                parentElement.appendChild(element);
+                // let element = document.createElement('video');
+                // element.classList.add('video');
+                // element.classList.add('size-constraint');
+                // element.controls = true;
+                // element.src = attachment.url;
+                // element.type = attachment.content_type;
+                // element.playsInline = true;
+                // element.muted = true;
+                // element.autoplay = true;
+                // parentElement.appendChild(element);
+                let placeholder = document.createElement('div');
+                placeholder.classList.add('placeholder');
+                placeholder.onclick = (event)=>{loadVideo(event.target, attachment.url, attachment.content_type);}
+                parentElement.appendChild(placeholder);
             } else {
-                let attachmentImg = document.createElement('img');
-                attachmentImg.classList.add('size-constraint');
-                attachmentImg.src = attachment.url;
-                parentElement.appendChild(attachmentImg);
+                // let attachmentImg = document.createElement('img');
+                // attachmentImg.classList.add('size-constraint');
+                // attachmentImg.src = attachment.url;
+                // parentElement.appendChild(attachmentImg);
+                let placeholder = document.createElement('div');
+                placeholder.classList.add('placeholder');
+                placeholder.onclick = (event)=>{loadImage(event.target, attachment.url);}
+                parentElement.appendChild(placeholder);
             }
         }
+    }
+}
+function loadImage(element, url) {
+    let imageElement = document.createElement('img');
+    imageElement.classList.add('size-constraint');
+    imageElement.src = url;
+    element.appendChild(imageElement);
+    element.classList.remove('placeholder');
+    setTimeout(setMediaSize, 1000);
+}
+function loadVideo(element, url, contentType) {
+    let videoElement = document.createElement('video');
+    videoElement.classList.add('video');
+    videoElement.classList.add('size-constraint');
+    videoElement.controls = true;
+    videoElement.src = url;
+    videoElement.type = contentType;
+    videoElement.playsInline = true;
+    videoElement.muted = true;
+    videoElement.autoplay = true;
+    element.appendChild(videoElement);
+    element.classList.remove('placeholder');
+    setTimeout(setMediaSize, 1000);
+}
+function setMediaSize(event) {
+    for (let item of Array.from(document.getElementsByClassName('size-constraint'))) {
+        item.style.width = `${item.getBoundingClientRect().width}px`;
+        item.style.height = `${item.getBoundingClientRect().height}px`;
+        item.classList.remove('size-constraint');
     }
 }
 function openDirectMessage(event) {
@@ -687,7 +727,7 @@ function addToHistory(id, name, methodName, arg1, arg2) {
             return;
         }
     }
-    if (history.length > 1024) {
+    if (history.length > 64) {
         history.shift();
     }
     let historyItem = {'id': id, 'name': name, 'methodName': methodName, 'arg1': arg1, 'arg2': arg2};
