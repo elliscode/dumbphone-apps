@@ -51,7 +51,6 @@
       <button onclick="logOut(event)">Log out</button>
     </div>
 
-    <!-- prettier-ignore -->
     <script src="../js/utils.js?v=001"></script>
     <script>
       if (!!csrfToken) {
@@ -98,8 +97,8 @@
           let responseJson = JSON.parse(xmlHttp.responseText);
           apiKey = responseJson.key;
           if (window.isES6) {
-            let scriptTag = document.createElement('script');
-            scriptTag.src = 'js/map.js';
+            let scriptTag = document.createElement("script");
+            scriptTag.src = "js/map.js";
             document.body.appendChild(scriptTag);
           }
         }
@@ -142,7 +141,7 @@
             '<a href="https://www.google.com/maps/search/?api=1&query=' +
             value +
             '">Click here for directions</a>';
-          info.innerText = `last updated ${timestamp.toLocaleString()}`
+          info.innerText = `last updated ${timestamp.toLocaleString()}`;
           console.log(value);
           if (window.isES6) {
             moveMarker();
@@ -182,18 +181,25 @@
       getCurrentLocation();
     </script>
     <script>
+      // checking if the browser has es6 capability, and only then will
+      // i run the google map display code. This is for compatibility with
+      // KaiOS 2.5.2 and earlier, as the maps code uses ES6 stuff that I
+      // cannot remove, see here https://stackoverflow.com/a/64818146
+
       // Arrow functions support
-      () => { };
+      () => {};
 
       // Class support
-      class __ES6FeatureDetectionTest { };
+      class __ES6FeatureDetectionTest {}
 
       // Object initializer property and method shorthands
       let a = true;
-      let b = { 
+      let b = {
         a,
-        c() { return true; },
-        d: [1,2,3],
+        c() {
+          return true;
+        },
+        d: [1, 2, 3]
       };
 
       // Object destructuring
