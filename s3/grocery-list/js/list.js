@@ -355,7 +355,7 @@ function askToDeleteGroup(event) {
 }
 
 function removeItem(item) {
-    let groupLi = findParentWithClass(event.target, 'group');
+    let groupLi = findParentWithClass(item, 'group');
     item.remove();
 
     let itemUl = groupLi.getElementsByClassName('ui-list')[0];
