@@ -115,7 +115,7 @@ def path_equals(event, method, path):
     return event_method == method and (
         event_path == path or event_path == path + "/" or path == "*"
     )
-    
+
 
 def path_starts_with(event, method, path):
     event_path = event["path"]

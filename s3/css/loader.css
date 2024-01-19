@@ -1,17 +1,17 @@
 #loading {
-  position:fixed;
-  top:0px;
-  left:0px;
-  width:100%;
-  height:100%;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
 }
 .lds-spinner {
   display: block;
   position: absolute;
   width: 80px;
   height: 80px;
-  top:calc(50% - 40px);
-  left:calc(50% - 40px);
+  top: calc(50% - 40px);
+  left: calc(50% - 40px);
 }
 .lds-spinner div {
   transform-origin: 40px 40px;

@@ -118,11 +118,15 @@ def route(event):
         return get_maps_key_route(event)
     if path_equals(event=event, method="POST", path="/weather/get-forecast"):
         return get_forecast_route(event)
-    if path_equals(event=event, method="POST", path="/one-offs/generate-presigned-post"):
+    if path_equals(
+        event=event, method="POST", path="/one-offs/generate-presigned-post"
+    ):
         return generate_presigned_post(event)
     if path_equals(event=event, method="POST", path="/one-offs/generate-presigned-get"):
         return generate_presigned_get(event)
-    if path_equals(event=event, method="POST", path="/one-offs/acknowledge-presigned-post-success"):
+    if path_equals(
+        event=event, method="POST", path="/one-offs/acknowledge-presigned-post-success"
+    ):
         return acknowledge_presigned_post_success_route(event)
     if path_equals(event=event, method="POST", path="/one-offs/get-uploaded-items"):
         return gather_uploaded_items_route(event)

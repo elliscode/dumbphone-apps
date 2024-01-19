@@ -1,68 +1,75 @@
 .suggestions {
-    display: none;
-    position: absolute;
-    top: 28px;
-    left: 0px;
-    background-color: #fff;
-    padding: 0px;
-    margin: 0px;
-    max-height: 300px;
-    overflow-y: auto;
-    overflow-x: none;
-    z-index:2;
+  display: none;
+  position: absolute;
+  top: 28px;
+  left: 0px;
+  background-color: #fff;
+  padding: 0px;
+  margin: 0px;
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: none;
+  z-index: 2;
 }
 
 .suggestions li {
-    list-style: none;
-    padding: 5px;
-    border: 1px black solid;
+  list-style: none;
+  padding: 5px;
+  border: 1px black solid;
 }
 
-#servings, #recipe-servings {
-    display:none;
-    background-color: #fff;
-    z-index:2;
-    padding:5px;
-    border:1px black solid;
+#servings,
+#recipe-servings {
+  display: none;
+  background-color: #fff;
+  z-index: 2;
+  padding: 5px;
+  border: 1px black solid;
 }
-#servings, #recipe-servings {
-    width: fit-content;
+#servings,
+#recipe-servings {
+  width: fit-content;
 }
 #servings-amount {
-    width:50px;
+  width: 50px;
 }
-#servings-name, #recipe-servings-name, #calories-text, #servings-text {
-    width:75px;
+#servings-name,
+#recipe-servings-name,
+#calories-text,
+#servings-text {
+  width: 75px;
 }
 #food-or-recipe-edit {
-    display:none;
-    background-color: #fff;
-    z-index:2;
-    padding:5px;
-    border:1px black solid;
-    width: fit-content;
+  display: none;
+  background-color: #fff;
+  z-index: 2;
+  padding: 5px;
+  border: 1px black solid;
+  width: fit-content;
 }
 
-#food-edit table, #food-edit td, #food-edit tr {
-    border:none;
+#food-edit table,
+#food-edit td,
+#food-edit tr {
+  border: none;
 }
 
 .food {
-    cursor:pointer;
+  cursor: pointer;
 }
 
 button {
-    width:fit-content;
-    padding:1px 6px;
-    margin:0px;
+  width: fit-content;
+  padding: 1px 6px;
+  margin: 0px;
 }
 
 button:active {
-    width:fit-content;
-    padding:1px 6px;
-    margin:0px;
+  width: fit-content;
+  padding: 1px 6px;
+  margin: 0px;
 }
 
 #current-values p {
-    margin:0px;
+  margin: 0px;
 }

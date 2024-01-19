@@ -1,91 +1,95 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>File Sharer</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=8"/>
-    <link rel="stylesheet" href="../css/loader.css?v=3"/>
-    <link rel="icon" type="image/png" href="../img/favicon.png?v=3"/>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=001" />
+    <link rel="stylesheet" href="../css/loader.css?v=001" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=001" />
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
     <style>
-.video {
-    width: 100%;
-}
-.image {
-    width: 100%;
-}
+      .video {
+        width: 100%;
+      }
+      .image {
+        width: 100%;
+      }
     </style>
-</head>
+  </head>
 
-<body>
-<div><b><a href="../index.html">Home</a></b> &gt; <b>file-sharer</b></div>
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>file-sharer</b>
+    </div>
 
-<div style="display:none" class="logout">
-    <button onclick="logOut(event)">Log out</button>
-</div>
+    <div style="display: none" class="logout">
+      <button onclick="logOut(event)">Log out</button>
+    </div>
 
-<!-- prettier-ignore -->
-<script src="../js/utils.js?v=3"></script>
-<script>
-if (!!csrfToken) {
-    document.getElementsByClassName('logout')[0].style.display = 'block'
-}
+    <!-- prettier-ignore -->
+    <script src="../js/utils.js?v=001"></script>
+    <script>
+      if (!!csrfToken) {
+        document.getElementsByClassName("logout")[0].style.display = "block";
+      }
 
-const urlParams = new URLSearchParams(window.location.search);
-const dataId = urlParams.get('id');
+      const urlParams = new URLSearchParams(window.location.search);
+      const dataId = urlParams.get("id");
 
-function loadFile(id) {
-    let url = API_DOMAIN + '/one-offs/generate-presigned-get';
-    xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", url, true); // false for synchronous request
-    xmlHttp.withCredentials = true;
-    xmlHttp.onload = handlePresignedUrl;
-    xmlHttp.send(JSON.stringify({'id': id}));
-}
+      function loadFile(id) {
+        let url = API_DOMAIN + "/one-offs/generate-presigned-get";
+        xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", url, true); // false for synchronous request
+        xmlHttp.withCredentials = true;
+        xmlHttp.onload = handlePresignedUrl;
+        xmlHttp.send(JSON.stringify({ id: id }));
+      }
 
-function handlePresignedUrl(event) {
-    let xmlHttp = event.target;
-    let responseJson = JSON.parse(xmlHttp.responseText)
-    console.log(responseJson);
+      function handlePresignedUrl(event) {
+        let xmlHttp = event.target;
+        let responseJson = JSON.parse(xmlHttp.responseText);
+        console.log(responseJson);
 
-    const link = document.createElement('a');
-    link.href = responseJson.download_url;
-    link.download = true;
-    link.innerText = "Download";
-    document.body.appendChild(link);
+        const link = document.createElement("a");
+        link.href = responseJson.download_url;
+        link.download = true;
+        link.innerText = "Download";
+        document.body.appendChild(link);
 
-    const hr = document.createElement('hr');
-    document.body.appendChild(hr);
+        const hr = document.createElement("hr");
+        document.body.appendChild(hr);
 
-    if (dataId.endsWith('3gp') || dataId.endsWith('mp4') || dataId.endsWith('mov')) {
-        let type = undefined;
-        if (dataId.endsWith('3gp')) {
-            type = '3gpp';
-        } else if (dataId.endsWith('mp4')) {
-            type = 'mp4';
-        } else if (dataId.endsWith('mov')) {
-            type = 'quicktime';
+        if (
+          dataId.endsWith("3gp") ||
+          dataId.endsWith("mp4") ||
+          dataId.endsWith("mov")
+        ) {
+          let type = undefined;
+          if (dataId.endsWith("3gp")) {
+            type = "3gpp";
+          } else if (dataId.endsWith("mp4")) {
+            type = "mp4";
+          } else if (dataId.endsWith("mov")) {
+            type = "quicktime";
+          }
+          let element = document.createElement("video");
+          element.classList.add("video");
+          element.controls = true;
+          element.src = responseJson.url;
+          element.type = `video/${type}`;
+          element.playsInline = true;
+          element.muted = true;
+          element.autoplay = true;
+          document.body.appendChild(element);
+        } else {
+          let element = document.createElement("img");
+          element.classList.add("image");
+          element.src = responseJson.url;
+          document.body.appendChild(element);
         }
-        let element = document.createElement('video');
-        element.classList.add('video');
-        element.controls = true;
-        element.src = responseJson.url;
-        element.type = `video/${type}`;
-        element.playsInline = true;
-        element.muted = true;
-        element.autoplay = true;
-        document.body.appendChild(element);
-    } else {
-        let element = document.createElement('img');
-        element.classList.add('image');
-        element.src = responseJson.url;
-        document.body.appendChild(element);
-    }
-}
+      }
 
-loadFile(dataId);
-</script>
-</body>
-
+      loadFile(dataId);
+    </script>
+  </body>
 </html>

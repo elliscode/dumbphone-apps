@@ -1,54 +1,72 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Location Sharer</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=8"/>
-    <link rel="stylesheet" href="../css/loader.css?v=3"/>
-    <link rel="icon" type="image/png" href="../img/favicon.png?v=3"/>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=001" />
+    <link rel="stylesheet" href="../css/loader.css?v=001" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=001" />
     <style>
-        body {
-            padding-bottom: 30px;
-        }
-        .add-to-group button {
-            height:20px;
-        }
+      body {
+        padding-bottom: 30px;
+      }
+      .add-to-group button {
+        height: 20px;
+      }
     </style>
-</head>
+  </head>
 
-<body>
-<div><b><a href="../index.html">Home</a></b> &gt; <b>location-sharer</b></div>
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>location-sharer</b>
+    </div>
 
-<button id="share-button" onclick="getCurrentLocation(event)">Share location</button>
+    <button id="share-button" onclick="getCurrentLocation(event)">
+      Share location
+    </button>
 
-<div id="link-div" style="display:none;">
-    <p>Share your location! Send this link to your friends!</p>
-    <p id="link"></p>
-    <a id="sms-link">Click here to send as SMS</a>
-</div>
+    <div id="link-div" style="display: none">
+      <p>Share your location! Send this link to your friends!</p>
+      <p id="link"></p>
+      <a id="sms-link">Click here to send as SMS</a>
+    </div>
 
-<pre id="json"></pre>
+    <pre id="json"></pre>
 
-<div id="loading">
-    <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
-</div>
+    <div id="loading">
+      <div class="lds-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
 
-<div class="logout">
-    <button onclick="logOut(event)">Log out</button>
-</div>
-<script src="../js/utils.js?v=3"></script>
-<script src="js/location-sharer.js?v=3"></script>
-<script>
-    if (!csrfToken) {
+    <div class="logout">
+      <button onclick="logOut(event)">Log out</button>
+    </div>
+    <script src="../js/utils.js?v=001"></script>
+    <script src="js/location-sharer.js?v=001"></script>
+    <script>
+      if (!csrfToken) {
         window.location.replace("../signup.html");
-    }
-    if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
+      }
+      if (
+        !navigator.userAgent.includes("Chrome") &&
+        navigator.userAgent.includes("Safari")
+      ) {
         iosCookieRefresh();
-    }
-    const loader = document.getElementById('loading');
-    loader.style.display = 'none';
-</script>
-</body>
-
+      }
+      const loader = document.getElementById("loading");
+      loader.style.display = "none";
+    </script>
+  </body>
 </html>

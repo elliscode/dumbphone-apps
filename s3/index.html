@@ -1,32 +1,30 @@
 <!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dumbphone Apps</title>
-    <link rel="stylesheet" href="css/stylesheet.css?v=8" />
-    <link rel="icon" type="image/png" href="img/favicon.png?v=3" />
-</head>
+    <link rel="stylesheet" href="css/stylesheet.css?v=001" />
+    <link rel="icon" type="image/png" href="img/favicon.png?v=001" />
+  </head>
 
-<body>
+  <body>
     <div><b>Home</b></div>
     <ul>
-        <li><a href="grocery-list/index.html">Grocery List</a></li>
-        <li><a href="weather/index.html">Weather</a></li>
-        <li><a href="food-diary/index.html">Food Diary</a></li>
-        <li><a href="location-sharer/index.html">Location Sharer</a></li>
-        <li><a href="file-sharer/index.html">File Sharer</a></li>
-        <li><a href="discord/index.html">Discord</a></li>
+      <li><a href="grocery-list/index.html">Grocery List</a></li>
+      <li><a href="weather/index.html">Weather</a></li>
+      <li><a href="food-diary/index.html">Food Diary</a></li>
+      <li><a href="location-sharer/index.html">Location Sharer</a></li>
+      <li><a href="file-sharer/index.html">File Sharer</a></li>
+      <li><a href="discord/index.html">Discord</a></li>
     </ul>
     <div class="logout">
-        <button onclick="logOut(event)">Log out</button>
+      <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="js/utils.js?v=3"></script>
+    <script src="js/utils.js?v=001"></script>
     <script>
-        if (!csrfToken) {
-            window.location.replace("../signup.html");
-        }
+      if (!csrfToken) {
+        window.location.replace("../signup.html");
+      }
     </script>
-</body>
-
+  </body>
 </html>

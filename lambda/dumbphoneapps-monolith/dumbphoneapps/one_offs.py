@@ -26,7 +26,14 @@ GOOGLE_API_KEY = os.environ["GOOGLE_API_KEY"]
 PRESIGNED_AWS_ACCESS_KEY_ID = os.environ["PRESIGNED_AWS_ACCESS_KEY_ID"]
 PRESIGNED_AWS_SECRET_ACCESS_KEY = os.environ["PRESIGNED_AWS_SECRET_ACCESS_KEY"]
 
-CONTENT_TYPES = {"mov": "video/quicktime", "mp4": "video/mp4", "3gp": "video/3gpp", "png": "image/png", "jpg": "image/jpg", "jpeg": "image/jpg"}
+CONTENT_TYPES = {
+    "mov": "video/quicktime",
+    "mp4": "video/mp4",
+    "3gp": "video/3gpp",
+    "png": "image/png",
+    "jpg": "image/jpg",
+    "jpeg": "image/jpg",
+}
 
 
 def get_maps_key_route(event):
@@ -332,6 +339,7 @@ def acknowledge_presigned_post_success_route(event, user_data, body):
         http_code=200,
         body="Successfully acknowledged the post",
     )
+
 
 def generate_presigned_get(event):
     body = json.loads(event["body"])

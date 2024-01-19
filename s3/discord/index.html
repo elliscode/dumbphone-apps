@@ -1,48 +1,65 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Discord Client</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=10"/>
-    <link rel="stylesheet" href="../css/loader.css?v=10"/>
-    <link rel="stylesheet" href="css/discord.css?v=10"/>
-    <link rel="icon" type="image/png" href="../img/favicon.png?v=3"/>
-</head>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=001" />
+    <link rel="stylesheet" href="../css/loader.css?v=001" />
+    <link rel="stylesheet" href="css/discord.css?v=001" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=001" />
+  </head>
 
-<body>
-<div><b><a href="../index.html">Home</a></b> &gt; <b>discord</b></div>
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>discord</b>
+    </div>
 
-<hr />
+    <hr />
 
-<div class="history-container">
-    <p id="history"></p>
-</div>
+    <div class="history-container">
+      <p id="history"></p>
+    </div>
 
-<button class="settings" for="settings-div" onclick="openSettings(event)">Settings</button>
-<button class="back" onclick="goBack(event)">&lt; Back</button>
+    <button class="settings" for="settings-div" onclick="openSettings(event)">
+      Settings
+    </button>
+    <button class="back" onclick="goBack(event)">&lt; Back</button>
 
-<div style="display:none;" id="settings-div" class="modal-bg">
-    <div class="modal">
+    <div style="display: none" id="settings-div" class="modal-bg">
+      <div class="modal">
         <label>Discord Token:</label>
-        <input id="token" type="text"></input>
+        <input id="token" type="text" />
         <hr />
         <button id="save-settings" onclick="setToken(event)">Save</button>
-        <button id="cancel-settings" onclick="hideAllModals(event)">Cancel</button>
+        <button id="cancel-settings" onclick="hideAllModals(event)">
+          Cancel
+        </button>
+      </div>
     </div>
-</div>
 
-<hr />
+    <hr />
 
-<div id="loading">
-    <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
-</div>
+    <div id="loading">
+      <div class="lds-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
 
-<div class="logout">
-    <button onclick="logOut(event)">Log out</button>
-</div>
-<script src="../js/utils.js?v=22"></script>
-<script src="js/discord.js?v=22"></script>
-</body>
-
+    <div class="logout">
+      <button onclick="logOut(event)">Log out</button>
+    </div>
+    <script src="../js/utils.js?v=001"></script>
+    <script src="js/discord.js?v=001"></script>
+  </body>
 </html>
