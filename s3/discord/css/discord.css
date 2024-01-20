@@ -99,3 +99,10 @@ img {
   justify-content: center;
   text-align: center;
 }
+.modal {
+  background-color:rgb(64, 66, 73);
+  border-color:rgb(49, 51, 56);
+}
+.modal-bg {
+  background-color:rgba(0, 0, 0, 0.1);
+}
