@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Weather</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=001" />
+    <link rel="stylesheet" href="../css/loader.css?v=001" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=001" />
+    <style></style>
+  </head>
+
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>weather</b>
+    </div>
+
+    <div>
+      <label>Spotify Client ID:</label
+      ><input id="spotify-client-id" type="text" />
+      <label>Spotify Client Secret:</label
+      ><input id="spotify-client-secret" type="text" />
+      <button onclick="setSpotifyCredentials(event)">
+        Set spotify credentials
+      </button>
+    </div>
+    <div>
+      <button onclick="getSpotifyLoginUrl(event)">Get login url</button>
+    </div>
+    <div>
+      <input id="spotify-auth-code" type="text" />
+      <button onclick="setSpotifyAuthCode(event)">Set auth code</button>
+    </div>
+    <div>
+      <button onclick="getSpotifyAccessToken(event)">Get access token</button>
+    </div>
+
+    <div class="logout">
+      <button onclick="logOut(event)">Log out</button>
+    </div>
+    <script src="../js/utils.js?v=001"></script>
+    <script>
+      let spotifyClientId = document.getElementById("spotify-client-id");
+      let spotifyClientSecret = document.getElementById(
+        "spotify-client-secret"
+      );
+      let spotifyAuthCode = document.getElementById("spotify-auth-code");
+
+      function setSpotifyCredentials(event) {
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", API_DOMAIN + "/set-spotify-client", true);
+        xmlHttp.withCredentials = true;
+        xmlHttp.onload = handleSetSpotifyCredentials;
+        xmlHttp.send(
+          JSON.stringify({
+            csrf: csrfToken,
+            spotifyClientId: spotifyClientId.value,
+            spotifyClientSecret: spotifyClientSecret.value
+          })
+        );
+      }
+      function handleSetSpotifyCredentials(event) {
+        let responseJson = defaultHandler(event);
+        console.log(responseJson);
+        getSpotifyLoginUrl(undefined);
+      }
+
+      function getSpotifyLoginUrl(event) {
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", API_DOMAIN + "/get-spotify-login-url", true);
+        xmlHttp.withCredentials = true;
+        xmlHttp.onload = handleGetSpotifyLoginUrl;
+        xmlHttp.send(
+          JSON.stringify({
+            csrf: csrfToken
+          })
+        );
+      }
+      function handleGetSpotifyLoginUrl(event) {
+        let responseJson = defaultHandler(event);
+        console.log(responseJson);
+        window.location.href = responseJson.url;
+      }
+
+      function setSpotifyAuthCode(event) {
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", API_DOMAIN + "/set-spotify-auth-code", true);
+        xmlHttp.withCredentials = true;
+        xmlHttp.onload = handleSetSpotifyAuthCode;
+        xmlHttp.send(
+          JSON.stringify({
+            csrf: csrfToken,
+            spotifyAuthCode: spotifyAuthCode.value
+          })
+        );
+      }
+      function handleSetSpotifyAuthCode(event) {
+        let responseJson = defaultHandler(event);
+        console.log(responseJson);
+        getSpotifyAccessToken(undefined);
+      }
+
+      function getSpotifyAccessToken(event) {
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", API_DOMAIN + "/get-spotify-access-token", true);
+        xmlHttp.withCredentials = true;
+        xmlHttp.onload = handleGetSpotifyAccessToken;
+        xmlHttp.send(
+          JSON.stringify({
+            csrf: csrfToken
+          })
+        );
+      }
+      function handleGetSpotifyAccessToken(event) {
+        let responseJson = defaultHandler(event);
+        console.log(responseJson);
+      }
+
+      {
+        let code = getParameterByName('code');
+        if (code) {
+          spotifyAuthCode.value = code;
+          setSpotifyAuthCode(undefined);
+        }
+      }
+    </script>
+  </body>
+</html>

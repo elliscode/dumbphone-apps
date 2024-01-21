@@ -23,6 +23,12 @@ from dumbphoneapps.discord import (
     discord_route,
     set_discord_token_route,
 )
+from dumbphoneapps.spotify import (
+    set_spotify_client_route,
+    get_spotify_login_url_route,
+    set_spotify_auth_code_route,
+    get_spotify_access_token_route,
+)
 from dumbphoneapps.food_diary import (
     get_day_route,
     search_route,
@@ -134,5 +140,13 @@ def route(event):
         return discord_route(event)
     if path_equals(event=event, method="POST", path="/set-discord-token"):
         return set_discord_token_route(event)
+    if path_equals(event=event, method="POST", path="/set-spotify-client"):
+        return set_spotify_client_route(event)
+    if path_equals(event=event, method="POST", path="/get-spotify-login-url"):
+        return get_spotify_login_url_route(event)
+    if path_equals(event=event, method="POST", path="/set-spotify-auth-code"):
+        return set_spotify_auth_code_route(event)
+    if path_equals(event=event, method="POST", path="/get-spotify-access-token"):
+        return get_spotify_access_token_route(event)
 
     return format_response(event=event, http_code=404, body="No matching route found")

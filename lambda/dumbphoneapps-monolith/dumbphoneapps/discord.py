@@ -15,6 +15,7 @@ from .utils import (
     TABLE_NAME,
     dynamo_obj_to_python_obj,
     boto3,
+    generate_query_parameters,
 )
 import time
 
@@ -56,7 +57,16 @@ def discord_route(event, user_data, body):
 
     http = urllib3.PoolManager()
 
-    discord_headers = {"Authorization": f"Bot {get_discord_token(user_data)}"}
+    discord_token = get_discord_token(user_data)
+
+    if not discord_token:
+        return format_response(
+            event=event,
+            http_code=404,
+            body="Discord token not found in the database",
+        )
+
+    discord_headers = {"Authorization": f"Bot {discord_token}"}
 
     if body["method"] == "POST" and "content" in body:
         discord_fields = {"content": body["content"]}
@@ -106,21 +116,6 @@ def discord_route(event, user_data, body):
     )
 
 
-def generate_query_parameters(params):
-    output = ""
-    separator = "?"
-    for key in params:
-        value = params[key]
-        output += (
-            separator
-            + urllib.parse.quote(str(key))
-            + "="
-            + urllib.parse.quote(str(value))
-        )
-        separator = "&"
-    return output
-
-
 def get_discord_token(user_data):
     if user_data["key2"] in discord_token_cache:
         return discord_token_cache[user_data["key2"]]
@@ -131,20 +126,12 @@ def get_discord_token(user_data):
     )
 
     if "Item" not in response:
-        return format_response(
-            event=event,
-            http_code=404,
-            body="Discord token not found",
-        )
+        return None
 
     discord_data = dynamo_obj_to_python_obj(response["Item"])
 
     if "token" not in discord_data:
-        return format_response(
-            event=event,
-            http_code=404,
-            body="Discord token not found in the database",
-        )
+        return None
 
     discord_token_cache[user_data["key2"]] = discord_data.get("token")
 

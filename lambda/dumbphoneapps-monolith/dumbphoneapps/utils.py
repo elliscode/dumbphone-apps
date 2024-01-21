@@ -4,7 +4,7 @@ import time
 import boto3
 import re
 import secrets
-from urllib.parse import parse_qsl
+import urllib
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 
 ADMIN_PHONE = os.environ["ADMIN_PHONE"]
@@ -364,3 +364,18 @@ def create_id(length):
         secrets.choice(digits + lowercase_letters + uppercase_letters)
         for i in range(length)
     )
+
+
+def generate_query_parameters(params):
+    output = ""
+    separator = "?"
+    for key in params:
+        value = params[key]
+        output += (
+            separator
+            + urllib.parse.quote(str(key))
+            + "="
+            + urllib.parse.quote(str(value))
+        )
+        separator = "&"
+    return output
