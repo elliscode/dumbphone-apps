@@ -33,6 +33,13 @@
     <div>
       <button onclick="getSpotifyAccessToken(event)">Get access token</button>
     </div>
+    <div>
+      <input id="spotify-token" type="text" />
+    </div>
+    <div>
+      <button onclick="putPlay(event)">Play</button>
+      <button onclick="putPause(event)">Pause</button>
+    </div>
 
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
@@ -44,6 +51,7 @@
         "spotify-client-secret"
       );
       let spotifyAuthCode = document.getElementById("spotify-auth-code");
+      let spotifyToken = document.getElementById("spotify-token");
 
       function setSpotifyCredentials(event) {
         let xmlHttp = new XMLHttpRequest();
@@ -113,6 +121,29 @@
       function handleGetSpotifyAccessToken(event) {
         let responseJson = defaultHandler(event);
         console.log(responseJson);
+        spotifyToken.value = responseJson.access_token;
+      }
+
+      function putPause(event) {
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("PUT", "https://api.spotify.com/v1/me/player/pause", true);
+        xmlHttp.setRequestHeader("Authorization", `Bearer ${spotifyToken.value}`);
+        xmlHttp.onload = handlePutPause;
+        xmlHttp.send(undefined);
+      }
+      function handlePutPause(event) {
+        console.log(event.status);
+      }
+
+      function putPlay(event) {
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("PUT", "https://api.spotify.com/v1/me/player/play", true);
+        xmlHttp.setRequestHeader("Authorization", `Bearer ${spotifyToken.value}`);
+        xmlHttp.onload = handlePutPlay;
+        xmlHttp.send(undefined);
+      }
+      function handlePutPlay(event) {
+        console.log(event.status);
       }
 
       {
