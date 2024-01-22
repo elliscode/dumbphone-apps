@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Weather</title>
+    <title>Spotify Controls</title>
     <link rel="stylesheet" href="../css/stylesheet.css?v=001" />
     <link rel="stylesheet" href="../css/loader.css?v=001" />
     <link rel="icon" type="image/png" href="../img/favicon.png?v=001" />
@@ -11,10 +11,10 @@
 
   <body>
     <div>
-      <b><a href="../index.html">Home</a></b> &gt; <b>weather</b>
+      <b><a href="../index.html">Home</a></b> &gt; <b>spotify</b>
     </div>
 
-    <div>
+    <div style="display: none">
       <label>Spotify Client ID:</label
       ><input id="spotify-client-id" type="text" />
       <label>Spotify Client Secret:</label
@@ -26,19 +26,30 @@
     <div>
       <button onclick="getSpotifyLoginUrl(event)">Get login url</button>
     </div>
-    <div>
+    <div style="display: none">
       <input id="spotify-auth-code" type="text" />
       <button onclick="setSpotifyAuthCode(event)">Set auth code</button>
     </div>
-    <div>
+    <div style="display: none">
       <button onclick="getSpotifyAccessToken(event)">Get access token</button>
     </div>
-    <div>
+    <div style="display: none">
       <input id="spotify-token" type="text" />
     </div>
     <div>
+      <button onclick="postPrevious(event)">Previous</button>
       <button onclick="putPlay(event)">Play</button>
       <button onclick="putPause(event)">Pause</button>
+      <button onclick="postNext(event)">Next</button>
+    </div>
+    <div>
+      <button onclick="putRepeat(event, 'track')">Repeat track</button>
+      <button onclick="putRepeat(event, 'context')">Repeat list</button>
+      <button onclick="putRepeat(event, 'off')">Repeat off</button>
+    </div>
+    <div>
+      <button onclick="putShuffle(event, 'true')">Shuffle on</button>
+      <button onclick="putShuffle(event, 'false')">Shuffle off</button>
     </div>
 
     <div class="logout">
@@ -127,7 +138,10 @@
       function putPause(event) {
         let xmlHttp = new XMLHttpRequest();
         xmlHttp.open("PUT", "https://api.spotify.com/v1/me/player/pause", true);
-        xmlHttp.setRequestHeader("Authorization", `Bearer ${spotifyToken.value}`);
+        xmlHttp.setRequestHeader(
+          "Authorization",
+          `Bearer ${spotifyToken.value}`
+        );
         xmlHttp.onload = handlePutPause;
         xmlHttp.send(undefined);
       }
@@ -138,7 +152,10 @@
       function putPlay(event) {
         let xmlHttp = new XMLHttpRequest();
         xmlHttp.open("PUT", "https://api.spotify.com/v1/me/player/play", true);
-        xmlHttp.setRequestHeader("Authorization", `Bearer ${spotifyToken.value}`);
+        xmlHttp.setRequestHeader(
+          "Authorization",
+          `Bearer ${spotifyToken.value}`
+        );
         xmlHttp.onload = handlePutPlay;
         xmlHttp.send(undefined);
       }
@@ -146,8 +163,76 @@
         console.log(event.status);
       }
 
+      function putRepeat(event, mode) {
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open(
+          "PUT",
+          `https://api.spotify.com/v1/me/player/repeat?state=${mode}`,
+          true
+        );
+        xmlHttp.setRequestHeader(
+          "Authorization",
+          `Bearer ${spotifyToken.value}`
+        );
+        xmlHttp.onload = handlePutRepeat;
+        xmlHttp.send(undefined);
+      }
+      function handlePutRepeat(event) {
+        console.log(event.status);
+      }
+
+      function putShuffle(event, mode) {
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open(
+          "PUT",
+          `https://api.spotify.com/v1/me/player/shuffle?state=${mode}`,
+          true
+        );
+        xmlHttp.setRequestHeader(
+          "Authorization",
+          `Bearer ${spotifyToken.value}`
+        );
+        xmlHttp.onload = handlePutShuffle;
+        xmlHttp.send(undefined);
+      }
+      function handlePutShuffle(event) {
+        console.log(event.status);
+      }
+
+      function postPrevious(event, mode) {
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open(
+          "POST",
+          `https://api.spotify.com/v1/me/player/previous`,
+          true
+        );
+        xmlHttp.setRequestHeader(
+          "Authorization",
+          `Bearer ${spotifyToken.value}`
+        );
+        xmlHttp.onload = handlePostPrevious;
+        xmlHttp.send(undefined);
+      }
+      function handlePostPrevious(event) {
+        console.log(event.status);
+      }
+
+      function postNext(event, mode) {
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", `https://api.spotify.com/v1/me/player/next`, true);
+        xmlHttp.setRequestHeader(
+          "Authorization",
+          `Bearer ${spotifyToken.value}`
+        );
+        xmlHttp.onload = handlePostNext;
+        xmlHttp.send(undefined);
+      }
+      function handlePostNext(event) {
+        console.log(event.status);
+      }
+
       {
-        let code = getParameterByName('code');
+        let code = getParameterByName("code");
         if (code) {
           spotifyAuthCode.value = code;
           setSpotifyAuthCode(undefined);
