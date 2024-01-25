@@ -104,13 +104,13 @@ def get_token():
     except:
         return None
 
-    weather_token = response_json["access_token"]
+    weather_token = response_json["access_token"]  # h  m    s
     weather_token_expiration = int(time.time()) + (2 * 60 * 60)
 
     token_data = {
         "key1": "token",
         "key2": "weather",
-        "token": weather_token,  # .      h    m    s
+        "token": weather_token,
         "expiration": weather_token_expiration,
     }
     dynamo_data = python_obj_to_dynamo_obj(token_data)
