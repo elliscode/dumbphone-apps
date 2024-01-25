@@ -87,12 +87,22 @@ const weatherSymbolsNameMap = {
   15: 'Drizzle',
   16: 'Sandstorm',
 };
+let dayText = ['Sun','Mon','Tues','Wed','Thurs','Fri','Sat','Sun'];
 function displayWeather() {
   json.style.display = "none";
   json.innerText = "";
 
-  locationText.innerText = `${weatherData.daily.data[0].coordinates[0].lat},${weatherData.daily.data[0].coordinates[0].lon}`;
-  timeText.innerText = new Date(weatherData.daily.dateGenerated).toLocaleString();
+  let coordsString = `${weatherData.daily.data[0].coordinates[0].lat},${weatherData.daily.data[0].coordinates[0].lon}`;
+
+  while (locationText.firstChild) {
+    locationText.firstChild.remove();
+  }
+  let directionsLink = document.createElement('a');
+  directionsLink.href="https://www.google.com/maps/search/?api=1&query=" + coordsString;
+  directionsLink.innerText = coordsString;
+  locationText.appendChild(directionsLink);
+
+  timeText.innerText = new Date(weatherData.daily.dateGenerated).toDateString();
   let nameIndex = weatherData.daily.data[2].coordinates[0].dates[0].value % 100;
   weatherText.innerText = weatherSymbolsNameMap[nameIndex];
   currentTempText.innerText = Math.round(weatherData.hourly.data[0].coordinates[0].dates[0].value);
@@ -115,9 +125,17 @@ function displayWeather() {
     }
     let div = hourlyDivs[i];
 
-    div.style.display = "flex";
     div.getElementsByClassName("time")[0].innerText = thisDisplayHour + ' ' + thisAmOrPm;
     div.getElementsByTagName("img")[0].src = "img/" + weatherData.hourly.data[1].coordinates[0].dates[i].value + ".png";
     div.getElementsByClassName("temp")[0].innerText = Math.round(weatherData.hourly.data[0].coordinates[0].dates[i].value);
+  }
+
+  let dayDivs = document.getElementsByClassName("day");
+  for (let i = 1; i < 8; i++) {
+    let div = dayDivs[i-1];
+
+    div.getElementsByClassName("time")[0].innerText = dayText[(new Date(weatherData.daily.data[2].coordinates[0].dates[i].date)).getDay()];
+    div.getElementsByTagName("img")[0].src = "img/" + weatherData.daily.data[2].coordinates[0].dates[i].value + ".png";
+    div.getElementsByClassName("temp")[0].innerText = Math.round(weatherData.daily.data[0].coordinates[0].dates[i].value) + '-' + Math.round(weatherData.daily.data[1].coordinates[0].dates[i].value);
   }
 }

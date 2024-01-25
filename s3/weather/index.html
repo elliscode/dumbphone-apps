@@ -8,9 +8,10 @@
     <link rel="icon" type="image/png" href="../img/favicon.png?v=001" />
     <style>
       button#get-weather {
-        width: 100%;
-        max-width: 200px;
-        height: 200px;
+        width: calc(100vw - 16px);
+        max-width: 250px;
+        height: calc(100vw - 16px);
+        max-height: 250px;
         font-size: 20px;
       }
       pre#json {
@@ -72,7 +73,7 @@
         content: "\2193";
         margin-left: 5px;
       }
-      .day {
+      .hours {
         display: flex;
         flex-direction: row;
         width: 100%;
@@ -102,6 +103,36 @@
         line-height: 1em;
         text-wrap: nowrap;
       }
+      .days {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        overflow-x: scroll;
+        overflow-y: hidden;
+      }
+      .day {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-right: 10px;
+      }
+      .day .time {
+        font-variant: small-caps;
+        font-size: 12px;
+        margin: 0px;
+        text-align: center;
+        text-wrap: nowrap;
+      }
+      .day img {
+        width: 32px;
+        height: 32px;
+      }
+      .day .temp {
+        font-size: 12px;
+        margin: 0px;
+        line-height: 1em;
+        text-wrap: nowrap;
+      }
     </style>
   </head>
 
@@ -114,9 +145,9 @@
       Get weather for your location
     </button>
 
-    <p>
+    <p style="display:none;">
       Powered by
-      <a href="https://www.meteomatics.com/" title="Weather API"
+      <a href="https://www.meteomatics.com/" title="meteomatics Weather API"
         >meteomatics</a
       >
     </p>
@@ -124,8 +155,8 @@
     <pre id="json"></pre>
 
     <div class="weather">
-      <h1><span id="location-text">&ndash; &ndash; &ndash; &ndash;</span></h1>
-      <h2><span id="time-text">&ndash; &ndash; &ndash; &ndash;</span></h2>
+      <h1 style="display:none;"><span id="location-text">&ndash; &ndash; &ndash; &ndash;</span></h1>
+      <h2 style="display:none;"><span id="time-text">&ndash; &ndash; &ndash; &ndash;</span></h2>
       <div class="current">
         <div>
           <h3><span id="weather-text">N/A</span></h3>
@@ -143,7 +174,7 @@
         </div>
         <img id="current-image" src="img/white-square.png" />
       </div>
-      <div class="day">
+      <div class="hours">
         <div class="hour">
           <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
           <img src="img/white-square.png" />
@@ -263,6 +294,43 @@
           <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
           <img src="img/white-square.png" />
           <p class="temp"><span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+      </div>
+      <div class="days">
+        <div class="day">
+          <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+          <img src="img/white-square.png" />
+          <p class="temp"><span>&ndash; &ndash;</span>&deg; <span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="day">
+          <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+          <img src="img/white-square.png" />
+          <p class="temp"><span>&ndash; &ndash;</span>&deg; <span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="day">
+          <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+          <img src="img/white-square.png" />
+          <p class="temp"><span>&ndash; &ndash;</span>&deg; <span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="day">
+          <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+          <img src="img/white-square.png" />
+          <p class="temp"><span>&ndash; &ndash;</span>&deg; <span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="day">
+          <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+          <img src="img/white-square.png" />
+          <p class="temp"><span>&ndash; &ndash;</span>&deg; <span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="day">
+          <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+          <img src="img/white-square.png" />
+          <p class="temp"><span>&ndash; &ndash;</span>&deg; <span>&ndash; &ndash;</span>&deg;</p>
+        </div>
+        <div class="day">
+          <p class="time">&ndash; &ndash; &ndash; &ndash;</p>
+          <img src="img/white-square.png" />
+          <p class="temp"><span>&ndash; &ndash;</span>&deg; <span>&ndash; &ndash;</span>&deg;</p>
         </div>
       </div>
     </div>
