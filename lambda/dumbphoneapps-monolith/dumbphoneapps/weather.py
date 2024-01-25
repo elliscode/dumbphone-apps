@@ -77,6 +77,8 @@ def get_token():
         print("weather db hit")
         token_data = dynamo_obj_to_python_obj(response["Item"])
         if token_data["expiration"] > int(time.time()):
+            weather_token = token_data["token"]
+            weather_token_expiration = token_data["expiration"]
             return token_data["token"]
 
     print("weather db miss")
