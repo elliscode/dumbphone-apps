@@ -33,6 +33,7 @@ CONTENT_TYPES = {
     "png": "image/png",
     "jpg": "image/jpg",
     "jpeg": "image/jpg",
+    "gif": "image/gif",
 }
 
 
@@ -267,7 +268,7 @@ def gather_uploaded_items_route(event, user_data, body):
 def generate_presigned_post(event, user_data, body):
     extension = body.get("extension", "").lower()
     phone = user_data["key2"]
-    if extension not in ["jpg", "png", "3gp", "jpeg", "mp4", "mov"]:
+    if extension not in ["jpg", "png", "3gp", "jpeg", "mp4", "mov", "gif"]:
         return format_response(
             event=event,
             http_code=400,

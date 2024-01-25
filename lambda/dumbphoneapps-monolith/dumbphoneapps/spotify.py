@@ -1,13 +1,7 @@
-import os
 import json
-import urllib
-import re
 import urllib3
 import base64
 from .utils import (
-    sqs,
-    get_user_data,
-    ADMIN_PHONE,
     authenticate,
     create_id,
     format_response,
@@ -15,10 +9,8 @@ from .utils import (
     dynamo,
     TABLE_NAME,
     dynamo_obj_to_python_obj,
-    boto3,
     generate_query_parameters,
 )
-import time
 
 spotify_client_cache = {}
 
@@ -44,7 +36,10 @@ def set_spotify_client_route(event, user_data, body):
         Item=dynamo_data,
     )
 
-    spotify_client_cache[user_data["key2"]] = {"clientId": body["spotifyClientId"], "clientSecret": body["spotifyClientSecret"],}
+    spotify_client_cache[user_data["key2"]] = {
+        "clientId": body["spotifyClientId"],
+        "clientSecret": body["spotifyClientSecret"],
+    }
 
     return format_response(
         event=event,
@@ -55,7 +50,6 @@ def set_spotify_client_route(event, user_data, body):
 
 @authenticate
 def set_spotify_auth_code_route(event, user_data, body):
-
     spotify_data = get_spotify_credentials(user_data)
 
     if not spotify_data:
@@ -86,7 +80,7 @@ def set_spotify_auth_code_route(event, user_data, body):
     )
 
     spotify_client_cache[user_data["key2"]] = {
-        "clientId": spotify_data["clientId"], 
+        "clientId": spotify_data["clientId"],
         "clientSecret": spotify_data["clientSecret"],
         "authCode": body["spotifyAuthCode"],
     }
@@ -100,7 +94,6 @@ def set_spotify_auth_code_route(event, user_data, body):
 
 @authenticate
 def get_spotify_login_url_route(event, user_data, body):
-
     spotify_data = get_spotify_credentials(user_data)
 
     state = create_id(128)
@@ -116,13 +109,15 @@ def get_spotify_login_url_route(event, user_data, body):
         Item=dynamo_data,
     )
 
-    query_params = generate_query_parameters({
-        "response_type": "code",
-        "client_id": spotify_data["clientId"],
-        "scope": "app-remote-control user-read-playback-state user-modify-playback-state user-read-currently-playing",
-        "redirect_uri": "https://aws.dumbphoneapps.com/spotify/",
-        "state": state
-    })
+    query_params = generate_query_parameters(
+        {
+            "response_type": "code",
+            "client_id": spotify_data["clientId"],
+            "scope": "app-remote-control user-read-playback-state user-modify-playback-state user-read-currently-playing",
+            "redirect_uri": "https://aws.dumbphoneapps.com/spotify/",
+            "state": state,
+        }
+    )
 
     return format_response(
         event=event,
@@ -130,17 +125,18 @@ def get_spotify_login_url_route(event, user_data, body):
         body={
             "url": f"https://accounts.spotify.com/authorize{query_params}",
             "state": state,
-            "clientId": spotify_data["clientId"]
+            "clientId": spotify_data["clientId"],
         },
     )
 
 
 @authenticate
 def get_spotify_access_token_route(event, user_data, body):
-
     spotify_data = get_spotify_credentials(user_data)
-    
-    base64_encoded_auth = base64.b64encode(f'{spotify_data["clientId"]}:{spotify_data["clientSecret"]}'.encode('utf-8')).decode('utf-8')
+
+    base64_encoded_auth = base64.b64encode(
+        f'{spotify_data["clientId"]}:{spotify_data["clientSecret"]}'.encode("utf-8")
+    ).decode("utf-8")
 
     http = urllib3.PoolManager()
 
@@ -154,19 +150,19 @@ def get_spotify_access_token_route(event, user_data, body):
         "redirect_uri": "https://aws.dumbphoneapps.com/spotify/",
         "grant_type": "authorization_code",
     }
-    
+
     print(spotify_uri, spotify_headers, spotify_fields)
-    
+
     body_text = generate_query_parameters(spotify_fields)
     body_text = body_text[1:]
-    
+
     response = http.request(
         "POST",
         spotify_uri,
         headers=spotify_headers,
         body=body_text,
     )
-    
+
     response_json = {}
     try:
         print(response)

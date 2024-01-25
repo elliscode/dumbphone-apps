@@ -71,40 +71,32 @@ function displayWeather() {
   json.style.display = "none";
   json.innerText = "";
 
-  let last_updated_time = weatherData.current.last_updated.substring(
-    weatherData.current.last_updated.length - 5
-  );
-
-  locationText.innerText = weatherData.location.name;
-  timeText.innerText = weatherData.current.last_updated;
-  weatherText.innerText = weatherData.current.condition.text;
-  currentTempText.innerText = Math.round(weatherData.current.temp_f);
+  locationText.innerText = "";
+  timeText.innerText = "";
+  weatherText.innerText = "";
+  currentTempText.innerText = Math.round(weatherData.hourly.data[0].coordinates[0].dates[0].value);
   currentHighText.innerText = Math.round(
-    weatherData.forecast.forecastday[0].day.maxtemp_f
+    weatherData.daily.data[1].coordinates[0].dates[0].value
   );
   currentLowText.innerText = Math.round(
-    weatherData.forecast.forecastday[0].day.mintemp_f
+    weatherData.daily.data[0].coordinates[0].dates[0].value
   );
-  currentImage.src = "https:" + weatherData.current.condition.icon;
+  currentImage.src = "img/" + weatherData.hourly.data[1].coordinates[0].dates[0].value + ".png";
 
-  let hourly = weatherData.forecast.forecastday[0].hour;
+  let hour = (new Date()).getHours();
   let hourlyDivs = document.getElementsByClassName("hour");
-  for (let i = 0; i < hourly.length; i++) {
-    let hour = hourly[i];
-    let div = hourlyDivs[i];
-    let time = hour.time.substring(hour.time.length - 5);
-
-    if (
-      parseInt(time.substring(0, 2)) <=
-      parseInt(last_updated_time.substring(0, 2))
-    ) {
-      div.style.display = "none";
-      continue;
+  for (let i = 0; i < 24; i++) {
+    let thisHour = (hour + i) % 24;
+    let thisAmOrPm = thisHour >= 12 ? 'pm' : 'am';
+    let thisDisplayHour = thisHour % 12;
+    if (thisDisplayHour == 0) {
+      thisDisplayHour = 12;
     }
+    let div = hourlyDivs[i];
 
     div.style.display = "flex";
-    div.getElementsByClassName("time")[0].innerText = time;
-    div.getElementsByTagName("img")[0].src = "https:" + hour.condition.icon;
-    div.getElementsByClassName("temp")[0].innerText = Math.round(hour.temp_f);
+    div.getElementsByClassName("time")[0].innerText = thisDisplayHour + ' ' + thisAmOrPm;
+    div.getElementsByTagName("img")[0].src = "img/" + weatherData.hourly.data[1].coordinates[0].dates[i].value + ".png";
+    div.getElementsByClassName("temp")[0].innerText = Math.round(weatherData.hourly.data[0].coordinates[0].dates[i].value);
   }
 }
