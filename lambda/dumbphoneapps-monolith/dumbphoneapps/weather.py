@@ -22,6 +22,7 @@ WEATHER_API_USERNAME = os.environ["WEATHER_API_USERNAME"]
 WEATHER_API_PASSWORD = os.environ["WEATHER_API_PASSWORD"]
 
 weather_token = None
+weather_token_expiration = None
 
 http = urllib3.PoolManager()
 
@@ -59,7 +60,8 @@ def get_forecast_route(event, user_data, body):
 
 def get_token():
     global weather_token
-    if weather_token:
+    global weather_token_expiration
+    if weather_token and time.time() < weather_token_expiration:
         print("weather cache hit")
         return weather_token
 
@@ -101,12 +103,13 @@ def get_token():
         return None
 
     weather_token = response_json["access_token"]
+    weather_token_expiration = int(time.time()) + (2 * 60 * 60)
 
     token_data = {
         "key1": "token",
         "key2": "weather",
         "token": weather_token,  # .      h    m    s
-        "expiration": int(time.time()) + (2 * 60 * 60),
+        "expiration": weather_token_expiration,
     }
     dynamo_data = python_obj_to_dynamo_obj(token_data)
     dynamo.put_item(
