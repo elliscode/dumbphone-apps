@@ -67,13 +67,34 @@ function handleWeatherGet(event) {
   weatherData = responseJson;
   displayWeather();
 }
+// data from here https://www.meteomatics.com/en/api/available-parameters/weather-parameter/general-weather-state/
+const weatherSymbolsNameMap = {
+  0: 'Unknown',
+  1: 'Clear sky',
+  2: 'Light clouds',
+  3: 'Partly cloudy',
+  4: 'Cloudy',
+  5: 'Rain',
+  6: 'Rain and snow / sleet',
+  7: 'Snow',
+  8: 'Rain shower',
+  9: 'Snow shower',
+  10: 'Sleet shower',
+  11: 'Light Fog',
+  12: 'Dense fog',
+  13: 'Freezing rain',
+  14: 'Thunderstorms',
+  15: 'Drizzle',
+  16: 'Sandstorm',
+};
 function displayWeather() {
   json.style.display = "none";
   json.innerText = "";
 
-  locationText.innerText = "";
-  timeText.innerText = "";
-  weatherText.innerText = "";
+  locationText.innerText = `${weatherData.daily.data[0].coordinates[0].lat},${weatherData.daily.data[0].coordinates[0].lon}`;
+  timeText.innerText = new Date(weatherData.daily.dateGenerated).toLocaleString();
+  let nameIndex = weatherData.daily.data[2].coordinates[0].dates[0].value % 100;
+  weatherText.innerText = weatherSymbolsNameMap[nameIndex];
   currentTempText.innerText = Math.round(weatherData.hourly.data[0].coordinates[0].dates[0].value);
   currentHighText.innerText = Math.round(
     weatherData.daily.data[1].coordinates[0].dates[0].value
@@ -81,7 +102,7 @@ function displayWeather() {
   currentLowText.innerText = Math.round(
     weatherData.daily.data[0].coordinates[0].dates[0].value
   );
-  currentImage.src = "img/" + weatherData.hourly.data[1].coordinates[0].dates[0].value + ".png";
+  currentImage.src = "img/" + weatherData.daily.data[2].coordinates[0].dates[0].value + ".png";
 
   let hour = (new Date()).getHours();
   let hourlyDivs = document.getElementsByClassName("hour");
