@@ -32,13 +32,17 @@ def get_forecast_route(event, user_data, body):
     print(body)
     lat = body["lat"]
     lon = body["lon"]
+    today = body["today"]
+    eight_days_from_now = body["eightDaysFromNow"]
     midnight = body["midnight"]
 
     found_token = get_token()
 
+    uri = f"https://api.meteomatics.com/{today}T{midnight}Z--{eight_days_from_now}T{midnight}Z:PT24H/t_min_2m_24h:F,t_max_2m_24h:F,weather_symbol_24h:idx/{lat},{lon}/json"
+    print(uri)
     daily_response = http.request(
         "GET",
-        f"https://api.meteomatics.com/tomorrowT{midnight}Z--tomorrow+8DT{midnight}Z:PT24H/t_min_2m_24h:F,t_max_2m_24h:F,weather_symbol_24h:idx/{lat},{lon}/json",
+        uri,
         headers={"Authorization": f"Bearer {found_token}"},
     )
     daily_response_text = daily_response.data.decode("utf-8")

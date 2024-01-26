@@ -54,10 +54,16 @@ function getWeatherForPosition(position) {
   currentMidnight.setHours(23);
   currentMidnight.setMinutes(59);
   currentMidnight.setSeconds(59);
+  let eightDaysFromNowMidnight = new Date((new Date()).getTime() + (8 * 24 * 60 * 60 * 1000));
+  eightDaysFromNowMidnight.setHours(23);
+  eightDaysFromNowMidnight.setMinutes(59);
+  eightDaysFromNowMidnight.setSeconds(59);
   let payload = {
     csrf: csrfToken,
     lat: lat,
     lon: long,
+    today: currentMidnight.toISOString().substring(0,10),
+    eightDaysFromNow: eightDaysFromNowMidnight.toISOString().substring(0,10),
     midnight: currentMidnight.toISOString().substring(11,19)
   };
   xmlHttp.send(JSON.stringify(payload));
