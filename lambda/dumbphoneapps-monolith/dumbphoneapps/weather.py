@@ -67,10 +67,12 @@ def get_token():
 
     response = dynamo.get_item(
         TableName=TABLE_NAME,
-        Key=python_obj_to_dynamo_obj({
-            "key1": "token",
-            "key2": "weather",
-        }),
+        Key=python_obj_to_dynamo_obj(
+            {
+                "key1": "token",
+                "key2": "weather",
+            }
+        ),
     )
 
     if "Item" in response:
