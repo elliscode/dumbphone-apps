@@ -50,10 +50,15 @@ function getWeatherForPosition(position) {
   xmlHttp.open("POST", url, true); // false for synchronous request
   xmlHttp.withCredentials = true;
   xmlHttp.onload = handleWeatherGet;
+  let currentMidnight = new Date();
+  currentMidnight.setHours(23);
+  currentMidnight.setMinutes(59);
+  currentMidnight.setSeconds(59);
   let payload = {
     csrf: csrfToken,
     lat: lat,
-    lon: long
+    lon: long,
+    midnight: currentMidnight.toISOString().substring(11,19)
   };
   xmlHttp.send(JSON.stringify(payload));
 }
