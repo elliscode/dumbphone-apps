@@ -72,6 +72,7 @@
         }
         previousValues = [];
         info.innerText = "Resuming location...";
+        info.style.display = 'block';
         getCurrentLocation();
       }
 
@@ -142,6 +143,7 @@
             value +
             '">Click here for directions</a>';
           info.innerText = `last updated ${timestamp.toLocaleString()}`;
+          info.style.display = 'none';
           console.log(value);
           if (window.isES6) {
             moveMarker();
@@ -158,6 +160,7 @@
           ) {
             info.innerText =
               "Reported position hasn't changed for the last 60 seconds, assuming the user stopped sharing...";
+            info.style.display = 'block';
             resumeButton.style.display = "block";
             return;
           }
