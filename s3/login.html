@@ -5,18 +5,32 @@
     <title>Dumbphone Apps</title>
     <link rel="stylesheet" href="css/stylesheet.css?v=001" />
     <link rel="icon" type="image/png" href="img/favicon.png?v=001" />
+    <style>
+      body {
+        margin:8px;
+        display:block;
+        max-width:536px;
+      }
+      label {
+        display:block;
+      }
+      .big {
+        width: 100%;
+        box-sizing: border-box;
+      }
+    </style>
   </head>
 
   <body>
-    <h2>Log In</h2>
+    <h2>Log in</h2>
     <form method="post" onsubmit="sendOtp(event)">
       <p>
         <label for="phone">Telephone Number:</label>
-        <input class="big" type="tel" id="phone" name="phone" />
+        <input style="width:calc(100vw - 24px)" class="big" type="tel" id="phone" name="phone" />
       </p>
       <p>
         <label for="otp">OTP:</label>
-        <input class="big" type="number" id="otp" name="otp" />
+        <input style="width:calc(100vw - 24px)" class="big" type="tel" id="otp" name="otp" />
       </p>
       <button type="submit">Log In</button>
     </form>

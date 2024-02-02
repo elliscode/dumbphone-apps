@@ -79,11 +79,21 @@
           element.playsInline = true;
           element.muted = true;
           element.autoplay = true;
+          element.style.display = 'none';
+          element.oncanplay=function() {
+            element.style.maxWidth = `${element.videoWidth}px`;
+            element.style.display = 'block';
+          }
           document.body.appendChild(element);
         } else {
           let element = document.createElement("img");
           element.classList.add("image");
           element.src = responseJson.url;
+          element.style.display = 'none';
+          element.onload=function() {
+            element.style.maxWidth = `${element.naturalWidth}px`;
+            element.style.display = 'block';
+          }
           document.body.appendChild(element);
         }
       }
