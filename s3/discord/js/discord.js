@@ -453,7 +453,13 @@ function buildMessage(parentElement, message) {
         } else {
           embedLink.innerText = embed.url;
         }
-        parentElement.appendChild(embedLink);
+        if (parentElement.innerHTML.includes(embed.url)) {
+          parentElement.innerHTML = parentElement.innerHTML.replace(embed.url, embedLink.outerHTML);
+        } else if (parentElement.innerHTML.includes(embed.url.replace(/\/$/,''))) {
+          parentElement.innerHTML = parentElement.innerHTML.replace(embed.url.replace(/\/$/,''), embedLink.outerHTML);
+        } else {
+          parentElement.appendChild(embedLink);
+        }
       }
       if (embed.hasOwnProperty("image")) {
         let lineBreak = document.createElement("br");
