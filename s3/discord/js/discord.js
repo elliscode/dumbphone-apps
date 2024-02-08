@@ -297,7 +297,7 @@ function handleMessages(event) {
     document.body.appendChild(inputDiv);
   }
 
-  let channelId = undefined;
+  let channelId = event.target.responseURL.replace(/.*\/channels\/(\d+)\/messages/, '$1');
   let lastMessageId = undefined;
   for (let i = 0; i < responseJson.length; i++) {
     let message = responseJson[i];
