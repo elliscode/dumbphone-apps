@@ -1,5 +1,6 @@
 import json
 import urllib3
+import time
 from .utils import (
     authenticate,
     format_response,
@@ -82,6 +83,7 @@ def discord_route(event, user_data, body):
             headers=discord_headers,
             body=bytes(json.dumps(post_body), encoding="utf-8"),
         )
+
     elif body["method"] == "GET":
         get_params = body.copy()
         get_params.pop("csrf")
@@ -99,6 +101,42 @@ def discord_route(event, user_data, body):
         response_json = json.loads(response_text)
     except:
         pass
+
+    # check if this is a call to api/v10/users/@me/channels, and save that channel in
+    # this users list of channels (these are most likely DMs, and we want to be able
+    # to easily get back to DMs) without having to call this endpoint so much
+    if discord_uri.endswith("/api/v10/users/@me/channels") or discord_uri.endswith(
+        "/api/v10/users/@me/channels/"
+    ):
+        recipients_response = response_json["recipients"]
+        recipients_list = []
+        sort_key_list = []
+        for item in recipients_response:
+            recipients_list.append(
+                {
+                    "global_name": item["global_name"],
+                    "id": item["id"],
+                    "avatar": item["avatar"],
+                    "username": item["username"],
+                }
+            )
+            sort_key_list.append(item["id"])
+        channel_data = {
+            "time": f"{int(time.time())}",
+            "recipient_id": body["recipient_id"],
+            "channel_id": response_json["id"],
+            "recipients": recipients_list,
+        }
+        python_data = {
+            "key1": f'discord_channel_{user_data["key2"]}',
+            "key2": "_".join(sort_key_list),
+            "channel": channel_data,
+        }
+        dynamo_data = python_obj_to_dynamo_obj(python_data)
+        dynamo.put_item(
+            TableName=TABLE_NAME,
+            Item=dynamo_data,
+        )
 
     return format_response(
         event=event,
@@ -127,3 +165,31 @@ def get_discord_token(user_data):
     discord_token_cache[user_data["key2"]] = discord_data.get("token")
 
     return discord_data.get("token")
+
+
+@authenticate
+def get_dm_channels(event, user_data, body):
+    discord_channel_key = f'discord_channel_{user_data["key2"]}'
+
+    response = dynamo.query(
+        TableName=TABLE_NAME,
+        KeyConditions={
+            "key1": {
+                "AttributeValueList": [{"S": discord_channel_key}],
+                "ComparisonOperator": "EQ",
+            },
+        },
+        ScanIndexForward=False,
+    )
+    dm_channels = []
+    for item in response["Items"]:
+        python_item = dynamo_obj_to_python_obj(item)
+        print(python_item)
+        channel_data = python_item["channel"]
+        dm_channels.append(channel_data)
+
+    return format_response(
+        event=event,
+        http_code=200,
+        body=dm_channels,
+    )

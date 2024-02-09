@@ -397,7 +397,6 @@ function buildMessage(parentElement, message) {
           a.innerText = mention.username;
         }
         if (mention.id != userId) {
-          a.onclick = openDirectMessage;
           a.setAttribute("discord-id", mention.id);
           a.style.cursor = "pointer";
         }
@@ -453,12 +452,19 @@ function buildMessage(parentElement, message) {
         } else {
           embedLink.innerText = embed.url;
         }
-        if (parentElement.innerHTML.includes(embed.url)) {
-          parentElement.innerHTML = parentElement.innerHTML.replace(embed.url, embedLink.outerHTML);
-        } else if (parentElement.innerHTML.includes(embed.url.replace(/\/$/,''))) {
-          parentElement.innerHTML = parentElement.innerHTML.replace(embed.url.replace(/\/$/,''), embedLink.outerHTML);
-        } else {
-          parentElement.appendChild(embedLink);
+        let children = Array.from(parentElement.children);
+        for (let j = 0; j < children.length; j++) {
+          let child = children[j];
+          if (child.classList.contains('username')) {
+            continue;
+          }
+          if (child.innerHTML.includes(embed.url)) {
+            child.innerHTML = child.innerHTML.replace(embed.url, embedLink.outerHTML);
+          } else if (child.innerHTML.includes(embed.url.replace(/\/$/,''))) {
+            child.innerHTML = child.innerHTML.replace(embed.url.replace(/\/$/,''), embedLink.outerHTML);
+          } else {
+            child.appendChild(embedLink);
+          }
         }
       }
       if (embed.hasOwnProperty("image")) {
