@@ -20,9 +20,12 @@
       <p id="history"></p>
     </div>
 
-    <button class="settings" for="settings-div" onclick="openSettings(event)">
-      Settings
-    </button>
+    <div class="top-right-buttons">
+      <button class="dms" onclick="getDms(event)">DMs</button>
+      <button class="settings" for="settings-div" onclick="openSettings(event)">
+        Settings
+      </button>
+    </div>
     <button class="back" onclick="goBack(event)">&lt; Back</button>
 
     <div style="display: none" id="settings-div" class="modal-bg">

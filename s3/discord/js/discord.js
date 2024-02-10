@@ -642,6 +642,47 @@ function openSettings(event) {
   modalToShow.style.display = "flex";
 }
 
+function getDms(event) {
+  addToHistory("dms", "DMs", "getDms");
+
+  loader.style.display = "block";
+  clearDiscordButtons();
+  let url = `${API_DOMAIN}/get-discord-dm-channels`;
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleDms;
+  let payload = {
+    csrf: csrfToken
+  };
+  xmlHttp.send(JSON.stringify(payload));
+}
+
+function handleDms(event) {
+  let responseJson = defaultHandler(event);
+  for (let i = 0; i < responseJson.length; i++) {
+    let dmChannel = responseJson[i];
+
+    let dmButton = document.createElement("button");
+    dmButton.classList.add("discord");
+    let names = [];
+    for (let j = 0; j < dmChannel.recipients.length; j++) {
+      let recipient = dmChannel.recipients[j];
+      if (recipient.global_name) {
+        names.push(recipient.global_name);
+      } else {
+        names.push(recipient.username);
+      }
+    }
+    dmButton.textContent = names.join(" & ");
+    dmButton.setAttribute("discord-id", dmChannel.channel_id);
+    dmButton.onclick = getMessages;
+    document.body.appendChild(dmButton);
+  }
+  backMethod = getGuilds;
+  loader.style.display = "none";
+}
+
 function addToHistory(id, name, methodName, arg1, arg2) {
   if (history.length != 0) {
     let mostRecentItem = history[history.length - 1];
@@ -675,8 +716,10 @@ function loadMostRecentHistoryItem() {
   }
   let item = JSON.parse(mostRecentItem);
   let derivedMethod = undefined;
-  if (item.methodName == "getGuilds") {
-    derivedMethod = createMethodWithFakeEvent(getGuilds, item.arg1, item.arg2);
+  if (item.methodName == 'getDms') {
+    derivedMethod = createMethodWithFakeEvent(getDms);
+  } else if (item.methodName == "getGuilds") {
+    derivedMethod = createMethodWithFakeEvent(getGuilds);
   } else if (item.methodName == "getChannels") {
     derivedMethod = createMethodWithFakeEvent(
       getChannels,
@@ -690,7 +733,11 @@ function loadMostRecentHistoryItem() {
       item.arg2
     );
   }
-  derivedMethod();
+  if (derivedMethod) {
+    derivedMethod();
+  } else {
+    getGuilds();
+  }
   return true;
 }
 function renderHistory() {
@@ -705,12 +752,12 @@ function renderHistory() {
 
     let span = document.createElement("span");
     let derivedMethod = undefined;
-    if (item.methodName == "getGuilds") {
+    if (item.methodName == 'getDms') {
       derivedMethod = createMethodWithFakeEvent(
-        getGuilds,
-        item.arg1,
-        item.arg2
+        getDms
       );
+    } else if (item.methodName == "getGuilds") {
+      derivedMethod = createMethodWithFakeEvent(getGuilds);
     } else if (item.methodName == "getChannels") {
       derivedMethod = createMethodWithFakeEvent(
         getChannels,

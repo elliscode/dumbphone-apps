@@ -7,14 +7,14 @@ body {
 .add-to-group button {
   height: 20px;
 }
-.settings {
+.top-right-buttons {
   position: absolute;
-  top: 26px;
+  top: 24px;
   right: 8px;
 }
 .back {
   position: absolute;
-  top: 26px;
+  top: 24px;
   left: 8px;
 }
 .history-container {
@@ -74,7 +74,7 @@ a:visited {
   margin-top: 16px;
 }
 .size-constraint {
-  max-width: calc(100vw - 16px);
+  max-width: 100%;
   max-height: calc(100vh - 16px);
 }
 video,
@@ -83,7 +83,7 @@ img {
 }
 .placeholder {
   background-color: rgb(64, 66, 73);
-  width: calc(100vw - 16px);
+  width: 100%;
   height: calc(50vh - 16px);
 }
 .lds-spinner div:after {
@@ -105,4 +105,7 @@ img {
 }
 .modal-bg {
   background-color:rgba(0, 0, 0, 0.1);
+}
+blockquote {
+  margin-inline-end: 0px;
 }
