@@ -48,6 +48,11 @@ from dumbphoneapps.one_offs import (
 )
 from dumbphoneapps.weather import get_forecast_route
 
+from dumbphoneapps.quiz_diary import (
+    get_questions_route,
+    set_questions_route,
+)
+
 
 def lambda_handler(event, context):
     try:
@@ -131,11 +136,15 @@ def route(event):
         return acknowledge_presigned_post_success_route(event)
     if path_equals(event=event, method="POST", path="/one-offs/get-uploaded-items"):
         return gather_uploaded_items_route(event)
-    if path_starts_with(event=event, method="POST", path="/discord/"):
-        return discord_route(event)
     if path_equals(event=event, method="POST", path="/set-discord-token"):
         return set_discord_token_route(event)
     if path_equals(event=event, method="POST", path="/get-discord-dm-channels"):
         return get_dm_channels(event)
+    if path_equals(event=event, method="POST", path="/quiz-diary/get-questions"):
+        return get_questions_route(event)
+    if path_equals(event=event, method="POST", path="/quiz-diary/set-questions"):
+        return set_questions_route(event)
+    if path_starts_with(event=event, method="POST", path="/discord/"):
+        return discord_route(event)
 
     return format_response(event=event, http_code=404, body="No matching route found")

@@ -83,8 +83,8 @@
         </div>
         <button onclick="addQuestionToEdit(event)">+ Add new question</button>
         <hr />
-        <button id="save-settings">Save</button>
-        <button id="cancel-settings" onclick="closeModals(event)">Cancel</button>
+        <button onclick="saveQuestions(event)" id="save-settings">Save</button>
+        <button onclick="closeModals(event)" id="cancel-settings">Cancel</button>
       </div>
     </div>
 
@@ -94,9 +94,10 @@
     <script src="../js/utils.js?v=001"></script>
     <script>
 const RESPONSE_LIST_QUESTIONS = ['radio','check'];
+let questions = undefined;
 
 function getQuizDiary() {
-  let url = API_DOMAIN + "/";
+  let url = API_DOMAIN + "/quiz-diary/get-questions";
   xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", url, true);
   xmlHttp.withCredentials = true;
@@ -109,6 +110,8 @@ function handleQuizDiary(event) {
   let xmlHttp = event.target;
   if (200 <= xmlHttp.status && xmlHttp.status < 404 ) {
     let responseJson = defaultHandler(event);
+    questions = responseJson.questions;
+    renderQuestions();
   } else {
     const loader = document.getElementById("loading");
     loader.style.display = "none";
@@ -133,10 +136,15 @@ function openSettings(event) {
 function showResponseList(event) {
   let questionBlock = findParentWithClass(event.target, 'question-edit');
   let responseList = questionBlock.getElementsByClassName('response-list')[0];
-  responseList.style.display = 'none';
+  let responseListTextBox = questionBlock.getElementsByClassName('response-list-textbox')[0];
   let selectedValue = Array.from(event.target.selectedOptions)[0].value;
+  let newDisplayValue = 'none';
   if (RESPONSE_LIST_QUESTIONS.includes(selectedValue)) {
-    responseList.style.display = 'block';
+    newDisplayValue = 'block';
+  }
+  if (responseList.style.display != newDisplayValue) {
+    responseListTextBox.value = '';
+    responseList.style.display = newDisplayValue;
   }
 }
 
@@ -265,9 +273,29 @@ function generateJsonFromEditWindow(event) {
       let responses = responseList.split(/\s*,\s*/g);
       jsonQuestion['responses'] = responses;
     }
+    if (!jsonQuestion.question) {
+      continue;
+    }
     output.push(jsonQuestion);
   }
   return output;
+}
+
+function saveQuestions(event) {
+  questions = generateJsonFromEditWindow();
+  
+  let url = API_DOMAIN + "/quiz-diary/set-questions";
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleSaveQuestions;
+  xmlHttp.onerror = handleSaveQuestions;
+  xmlHttp.send(JSON.stringify({csrf: csrfToken, questions: questions}));
+}
+
+function handleSaveQuestions(event) {
+  let responseJson = defaultHandler(event);
+  renderQuestions();
 }
 
 // if (!csrfToken) {
