@@ -2,13 +2,27 @@ function logOut(event) {
   localStorage.removeItem("dumbphoneapps-csrf-token");
   window.location.replace("/signup.html");
 }
-function defaultHandler(event) {
+function defaultHandlerV1(event) {
   let xmlHttp = event.target;
   if (xmlHttp.status == 403) {
     logOut(event);
   }
   let result = JSON.parse(xmlHttp.responseText);
   return result;
+}
+function defaultHandler(event) {
+  let xmlHttp = event.target;
+  if (xmlHttp.status == 403) {
+    logOut(event);
+  }
+  let result = {};
+  try {
+    result = JSON.parse(xmlHttp.responseText);
+  } catch(e) {
+    console.log('Response text was invalid JSON, returning text as json')
+    result = {'message': xmlHttp.responseText};
+  }
+  return {statusCode: xmlHttp.status, responseJson: result};
 }
 function getParameterByName(name, url = window.location.href) {
   name = name.replace(new RegExp("[[]]", "g"), "\\$&");

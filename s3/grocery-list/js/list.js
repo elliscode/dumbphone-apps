@@ -41,7 +41,7 @@ function addToList(event) {
   input.value = "";
 }
 function handleAddList(event) {
-  const result = defaultHandler(event);
+  const result = defaultHandlerV1(event);
   if (result.hasOwnProperty("group") && result.hasOwnProperty("item")) {
     addItem(result.group, result.item);
   }
@@ -73,7 +73,7 @@ function deleteFromList(event) {
   );
 }
 function handleDeleteList(event) {
-  const result = defaultHandler(event);
+  const result = defaultHandlerV1(event);
   console.log(JSON.stringify(result));
 }
 function openShareWindow(event) {
@@ -127,7 +127,7 @@ function openInfoWindow(text) {
 }
 function handleShareResponse(event) {
   hidePopups();
-  const result = defaultHandler(event);
+  const result = defaultHandlerV1(event);
   if (result.hasOwnProperty("message")) {
     openInfoWindow(result.message);
     loadList();
@@ -208,7 +208,7 @@ function runOrderCall() {
 }
 
 function handleOrderCall(event) {
-  const result = defaultHandler(event);
+  const result = defaultHandlerV1(event);
   console.log(JSON.stringify(result));
 }
 
@@ -356,7 +356,7 @@ function crossToggle(event) {
 }
 
 function handleToggle(event) {
-  const result = defaultHandler(event);
+  const result = defaultHandlerV1(event);
   console.log(JSON.stringify(result));
 }
 
@@ -403,7 +403,7 @@ const dontDisplayWhileLoading = document.getElementById(
   "dont-display-while-loading"
 );
 function handleGetList(event) {
-  const result = defaultHandler(event);
+  const result = defaultHandlerV1(event);
   let groups = Object.keys(result);
   for (let i = 0; i < groups.length; i++) {
     let group = result[groups[i]];

@@ -64,6 +64,10 @@
       <button onclick="openSettings(event)">Edit</button>
     </div>
 
+    <div style="display: inline">
+      <input onchange="getAnswers(event)" id="date-picker" type="date" />
+    </div>
+
     <div id="explanation" style="display:none;">
       <h3>How does it work?</h3>
       <ol>
@@ -108,16 +112,53 @@ function getQuizDiary() {
 
 function handleQuizDiary(event) {
   let xmlHttp = event.target;
-  if (200 <= xmlHttp.status && xmlHttp.status < 404 ) {
-    let responseJson = defaultHandler(event);
-    questions = responseJson.questions;
-    renderQuestions();
+  let result = defaultHandler(event);
+  let responseJson = result.responseJson;
+  questions = responseJson.questions;
+  if (questions && Array.isArray(questions) && questions.length > 0) {
+    getAnswers(event);
   } else {
-    const loader = document.getElementById("loading");
-    loader.style.display = "none";
     const explanation = document.getElementById("explanation");
     explanation.style.display = "block";
   }
+  const loader = document.getElementById("loading");
+  loader.style.display = "none";
+}
+
+function getAnswers(event) {
+  let url = API_DOMAIN + "/quiz-diary/get-answers";
+  payload = {csrf: csrfToken, questions: questions};
+  if (event && event.target && event.target.value && /^\d{4}-\d{2}-\d{2}$/.exec(event.target.value)) {
+    payload['date'] = event.target.value;
+  } else {
+    payload['date'] = getToday();
+  }
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleGetAnswers;
+  xmlHttp.onerror = handleGetAnswers;
+  xmlHttp.send(JSON.stringify(payload));
+}
+
+function getToday() {
+  let d = new Date();
+  let year = (d.getFullYear()).toString();
+  let month = (d.getMonth() + 1).toString();
+  let day = (d.getDate()).toString();
+  
+  if (month.length < 2) {
+    month = '0' + month;
+  }
+  if (day.length < 2) {
+    day = '0' + day;
+  }
+
+  return `${year}-${month}-${day}`;
+}
+
+function handleGetAnswers(event) {
+  
 }
 
 function closeModals(event) {
@@ -219,6 +260,12 @@ function addQuestionToEdit(event) {
       option.innerText = 'Text';
       input.appendChild(option);
     }
+    {
+      let option = document.createElement('option');
+      option.value = 'list';
+      option.innerText = 'List of text';
+      input.appendChild(option);
+    }
     label.appendChild(input);
     questionDiv.appendChild(label);
   }
@@ -294,8 +341,13 @@ function saveQuestions(event) {
 }
 
 function handleSaveQuestions(event) {
-  let responseJson = defaultHandler(event);
+  let result = defaultHandler(event);
+  let responseJson = result.responseJson;
   renderQuestions();
+}
+
+function renderQuestions(event) {
+  // todo
 }
 
 // if (!csrfToken) {

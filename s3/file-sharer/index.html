@@ -80,7 +80,7 @@
         xmlHttp.send(JSON.stringify({ extension: extension, csrf: csrfToken }));
       }
       function handlePresignedUrl(event) {
-        let responseJson = defaultHandler(event);
+        let responseJson = defaultHandlerV1(event);
         console.log(responseJson);
 
         const fileInput = document.getElementById("file");

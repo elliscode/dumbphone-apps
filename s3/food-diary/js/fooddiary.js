@@ -93,7 +93,7 @@ function search(event) {
   );
 }
 function displaySearch(event) {
-  let items = defaultHandler(event);
+  let items = defaultHandlerV1(event);
   const suggestionBoxes = document.getElementsByClassName("suggestions");
   for (let i = 0; i < suggestionBoxes.length; i++) {
     suggestions = suggestionBoxes[i];
@@ -220,7 +220,7 @@ function closeRecipeServings(event) {
   modalBg.style.display = "none";
 }
 function displayServing(event) {
-  let item = defaultHandler(event);
+  let item = defaultHandlerV1(event);
   let servings = document.getElementById("servings");
   servings.style.display = "block";
   let modalBg = findParentWithClass(servings, "modal-bg");
@@ -271,7 +271,7 @@ function displayServing(event) {
   textBox.select();
 }
 function displayRecipeServing(event) {
-  let item = defaultHandler(event);
+  let item = defaultHandlerV1(event);
   let servings = document.getElementById("recipe-servings");
   servings.style.display = "block";
   let modalBg = findParentWithClass(servings, "modal-bg");
@@ -329,7 +329,7 @@ function editEitherFoodOrRecipe(event) {
 }
 
 function handleFood(event) {
-  currentFood = defaultHandler(event);
+  currentFood = defaultHandlerV1(event);
   if (currentFood.metadata.hasOwnProperty("recipe")) {
     displayRecipe();
   } else {
@@ -651,7 +651,7 @@ function setDate(event) {
   );
 }
 function populateTable(event) {
-  let data = defaultHandler(event);
+  let data = defaultHandlerV1(event);
   const foodOrRecipeEdit = document.getElementById("food-or-recipe-edit");
   closeFood();
   closeServings();
