@@ -31,6 +31,10 @@
   max-width:100vw;
   overflow-y: scroll;
 }
+.question-controls {
+  display: flex;
+  justify-content: flex-end;
+}
     </style>
   </head>
 
@@ -89,6 +93,8 @@
     </div>
     <script src="../js/utils.js?v=001"></script>
     <script>
+const RESPONSE_LIST_QUESTIONS = ['radio','check'];
+
 function getQuizDiary() {
   let url = API_DOMAIN + "/";
   xmlHttp = new XMLHttpRequest();
@@ -129,7 +135,7 @@ function showResponseList(event) {
   let responseList = questionBlock.getElementsByClassName('response-list')[0];
   responseList.style.display = 'none';
   let selectedValue = Array.from(event.target.selectedOptions)[0].value;
-  if (['radio','check'].includes(selectedValue)) {
+  if (RESPONSE_LIST_QUESTIONS.includes(selectedValue)) {
     responseList.style.display = 'block';
   }
 }
@@ -139,10 +145,34 @@ function addQuestionToEdit(event) {
   let questionDiv = document.createElement('div');
   questionDiv.classList.add('question-edit');
   {
+    let div = document.createElement('div');
+    div.classList.add('question-controls');
+    {
+      let button = document.createElement('button');
+      button.innerHTML = '&#8743;';
+      button.onclick = moveQuestionUp;
+      div.appendChild(button);
+    }
+    {
+      let button = document.createElement('button');
+      button.innerHTML = '&#8744;';
+      button.onclick = moveQuestionDown;
+      div.appendChild(button);
+    }
+    {
+      let button = document.createElement('button');
+      button.innerHTML = '&times;';
+      button.onclick = deleteQuestion;
+      div.appendChild(button);
+    }
+    questionDiv.appendChild(div);
+  }
+  {
     let label = document.createElement('label');
     label.innerText = 'Question: ';
     let input = document.createElement('input');
     input.type = 'text';
+    input.classList.add('question-text');
     label.appendChild(input);
     questionDiv.appendChild(label);
   }
@@ -190,11 +220,54 @@ function addQuestionToEdit(event) {
     label.classList.add('response-list');
     let input = document.createElement('input');
     input.type = 'text';
+    input.classList.add('response-list-textbox');
     label.appendChild(input);
     label.style.display = 'none';
     questionDiv.appendChild(label);
   }
   questionContainer.appendChild(questionDiv);
+}
+
+function moveQuestionUp(event) {
+  let questionBlock = findParentWithClass(event.target, 'question-edit');
+  let prev = questionBlock.previousElementSibling;
+  if (prev) {
+    questionBlock.parentElement.insertBefore(questionBlock, prev);
+  }
+}
+
+function moveQuestionDown(event) {
+  let questionBlock = findParentWithClass(event.target, 'question-edit');
+  let next = questionBlock.nextElementSibling;
+  if (next) {
+    questionBlock.parentElement.insertBefore(next, questionBlock);
+  }
+}
+
+function deleteQuestion(event) {
+  let questionBlock = findParentWithClass(event.target, 'question-edit');
+  questionBlock.remove();
+}
+
+function generateJsonFromEditWindow(event) {
+  let questionContainer = document.getElementById('question-container');
+  let questions = Array.from(questionContainer.getElementsByClassName('question-edit'));
+  let output = [];
+  for (let question of questions) {
+    let questionType = question.getElementsByTagName('select')[0].selectedOptions[0].value;
+    let questionText = question.getElementsByClassName('question-text')[0].value;
+    let jsonQuestion = {
+      'question': questionText,
+      'type': questionType
+    }
+    if (RESPONSE_LIST_QUESTIONS.includes(questionType)) {
+      let responseList = question.getElementsByClassName('response-list-textbox')[0].value;
+      let responses = responseList.split(/\s*,\s*/g);
+      jsonQuestion['responses'] = responses;
+    }
+    output.push(jsonQuestion);
+  }
+  return output;
 }
 
 // if (!csrfToken) {
