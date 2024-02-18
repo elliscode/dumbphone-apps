@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Location Viewer</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=001" />
+    <link rel="stylesheet" href="../css/loader.css?v=001" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=001" />
+    <style>
+.controls {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+.modal {
+  background-color:rgb(255, 255, 255);
+  border-color:rgb(53, 53, 53);
+}
+.modal-bg {
+  background-color:rgba(0, 0, 0, 0.1);
+}
+.question-edit {
+  margin: 10px 0px;
+}
+.question-edit label {
+  display:block;
+}
+#question-container {
+  max-height:300px;
+  height:calc(100vh - 80px);
+  max-width:100vw;
+  overflow-y: scroll;
+}
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>quiz-diary</b>
+    </div>
+
+    <div id="loading">
+      <div class="lds-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button onclick="openSettings(event)">Edit</button>
+    </div>
+
+    <div id="explanation" style="display:none;">
+      <h3>How does it work?</h3>
+      <ol>
+        <li>Come up with a list of daily questions</li>
+        <li>Build them in the app and save</li>
+        <li>Answer them every day to stay on track</li>
+      </ol>
+      <p>Examples:</p>
+      <blockquote>Did you take your medicine today? <button>Yes</button> / <button>No</button></blockquote>
+      <blockquote>How long did you exercise today? <input type="tel" /> min</blockquote>
+      <p>Press the "Edit" button at the top-right to begin.</p>
+    </div>
+
+    <div style="display: none" id="edit-div" class="modal-bg">
+      <div class="modal">
+        <div id="question-container">
+        </div>
+        <button onclick="addQuestionToEdit(event)">+ Add new question</button>
+        <hr />
+        <button id="save-settings">Save</button>
+        <button id="cancel-settings" onclick="closeModals(event)">Cancel</button>
+      </div>
+    </div>
+
+    <div style="display: none" class="logout">
+      <button onclick="logOut(event)">Log out</button>
+    </div>
+    <script src="../js/utils.js?v=001"></script>
+    <script>
+function getQuizDiary() {
+  let url = API_DOMAIN + "/";
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleQuizDiary;
+  xmlHttp.onerror = handleQuizDiary;
+  xmlHttp.send(JSON.stringify({csrf: csrfToken}));
+}
+
+function handleQuizDiary(event) {
+  let xmlHttp = event.target;
+  if (200 <= xmlHttp.status && xmlHttp.status < 404 ) {
+    let responseJson = defaultHandler(event);
+  } else {
+    const loader = document.getElementById("loading");
+    loader.style.display = "none";
+    const explanation = document.getElementById("explanation");
+    explanation.style.display = "block";
+  }
+}
+
+function closeModals(event) {
+  let items = Array.from(document.getElementsByClassName('modal-bg'));
+  for (let item of items) {
+    item.style.display = 'none';
+  }
+}
+
+function openSettings(event) {
+  closeModals();
+  let modalToShow = document.getElementById('edit-div');
+  modalToShow.style.display = "flex";
+}
+
+function showResponseList(event) {
+  let questionBlock = findParentWithClass(event.target, 'question-edit');
+  let responseList = questionBlock.getElementsByClassName('response-list')[0];
+  responseList.style.display = 'none';
+  let selectedValue = Array.from(event.target.selectedOptions)[0].value;
+  if (['radio','check'].includes(selectedValue)) {
+    responseList.style.display = 'block';
+  }
+}
+
+function addQuestionToEdit(event) {
+  let questionContainer = document.getElementById('question-container');
+  let questionDiv = document.createElement('div');
+  questionDiv.classList.add('question-edit');
+  {
+    let label = document.createElement('label');
+    label.innerText = 'Question: ';
+    let input = document.createElement('input');
+    input.type = 'text';
+    label.appendChild(input);
+    questionDiv.appendChild(label);
+  }
+  {
+    let label = document.createElement('label');
+    label.innerText = 'Response type: ';
+    let input = document.createElement('select');
+    input.onchange = showResponseList;
+    {
+      let option = document.createElement('option');
+      option.value = 'yn';
+      option.innerText = 'Yes / No';
+      input.appendChild(option);
+    }
+    {
+      let option = document.createElement('option');
+      option.value = 'radio';
+      option.innerText = 'Radio buttons';
+      input.appendChild(option);
+    }
+    {
+      let option = document.createElement('option');
+      option.value = 'check';
+      option.innerText = 'Checkboxes';
+      input.appendChild(option);
+    }
+    {
+      let option = document.createElement('option');
+      option.value = 'quantity';
+      option.innerText = 'Numerical quantity';
+      input.appendChild(option);
+    }
+    {
+      let option = document.createElement('option');
+      option.value = 'text';
+      option.innerText = 'Text';
+      input.appendChild(option);
+    }
+    label.appendChild(input);
+    questionDiv.appendChild(label);
+  }
+  {
+    let label = document.createElement('label');
+    label.innerText = 'Response list: ';
+    label.classList.add('response-list');
+    let input = document.createElement('input');
+    input.type = 'text';
+    label.appendChild(input);
+    label.style.display = 'none';
+    questionDiv.appendChild(label);
+  }
+  questionContainer.appendChild(questionDiv);
+}
+
+// if (!csrfToken) {
+//   window.location.replace("../signup.html");
+// }
+// if (
+//   !navigator.userAgent.includes("Chrome") &&
+//   navigator.userAgent.includes("Safari")
+// ) {
+//   iosCookieRefresh();
+// }
+
+getQuizDiary();
+    </script>
+  </body>
+</html>

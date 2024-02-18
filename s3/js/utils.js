@@ -43,6 +43,16 @@ function handleIosCookieRefresh(event) {
   let timeInt = new Date().getTime() + 86400000;
   localStorage.setItem("dumbphoneapps-cookie-refresh-time", timeInt.toString());
 }
+function findParentWithClass(element, className) {
+  let current = element;
+  while (!!current) {
+    if (current.classList.contains(className)) {
+      return current;
+    }
+    current = current.parentElement;
+  }
+  return current;
+}
 const csrfToken = localStorage.getItem("dumbphoneapps-csrf-token");
 const API_DOMAIN = "https://api.dumbphoneapps.com";
 const UI_DOMAIN = "https://www.dumbphoneapps.com";

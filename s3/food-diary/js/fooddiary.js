@@ -1,13 +1,3 @@
-function findParentWithClass(element, className) {
-  let current = element;
-  while (!!current) {
-    if (current.classList.contains(className)) {
-      return current;
-    }
-    current = current.parentElement;
-  }
-  return current;
-}
 function addToList(event) {
   const caller = event.target;
   const input = caller.parentElement.getElementsByTagName("input")[0];
