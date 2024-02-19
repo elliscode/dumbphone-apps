@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Location Viewer</title>
+    <title>Quiz Diary</title>
     <link rel="stylesheet" href="../css/stylesheet.css?v=001" />
     <link rel="stylesheet" href="../css/loader.css?v=001" />
     <link rel="icon" type="image/png" href="../img/favicon.png?v=001" />
@@ -34,6 +34,12 @@
 .question-controls {
   display: flex;
   justify-content: flex-end;
+}
+.question-p span {
+  padding-right:5px;
+}
+body {
+  padding-bottom: calc(100vh - 100px);
 }
     </style>
   </head>
@@ -81,6 +87,10 @@
       <p>Press the "Edit" button at the top-right to begin.</p>
     </div>
 
+    <div id="questions-div" style="display:none">
+
+    </div>
+
     <div style="display: none" id="edit-div" class="modal-bg">
       <div class="modal">
         <div id="question-container">
@@ -98,6 +108,7 @@
     <script src="../js/utils.js?v=001"></script>
     <script>
 const RESPONSE_LIST_QUESTIONS = ['radio','check'];
+const datePicker = document.getElementById('date-picker');
 let questions = undefined;
 
 function getQuizDiary() {
@@ -116,6 +127,7 @@ function handleQuizDiary(event) {
   let responseJson = result.responseJson;
   questions = responseJson.questions;
   if (questions && Array.isArray(questions) && questions.length > 0) {
+    renderQuestions(event);
     getAnswers(event);
   } else {
     const explanation = document.getElementById("explanation");
@@ -127,12 +139,7 @@ function handleQuizDiary(event) {
 
 function getAnswers(event) {
   let url = API_DOMAIN + "/quiz-diary/get-answers";
-  payload = {csrf: csrfToken, questions: questions};
-  if (event && event.target && event.target.value && /^\d{4}-\d{2}-\d{2}$/.exec(event.target.value)) {
-    payload['date'] = event.target.value;
-  } else {
-    payload['date'] = getToday();
-  }
+  payload = {csrf: csrfToken, questions: questions, date: datePicker.value};
   xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", url, true);
   xmlHttp.withCredentials = true;
@@ -158,7 +165,40 @@ function getToday() {
 }
 
 function handleGetAnswers(event) {
-  
+  let result = defaultHandler(event);
+  populateQuestions(result.responseJson);
+}
+
+function populateQuestions(answersJson) {
+  let questionPs = Array.from(document.getElementsByClassName('question-p'));
+  for (let i = 0; i < questions.length; i++) {
+    let questionP = questionPs[i];
+    let answer = answersJson.answers[i];
+    let question = questions[i];
+
+    if ('yn' == question.type) {
+      let checkBox = questionP.getElementsByTagName('input')[0];
+      checkBox.checked = answer['value'];
+    } else if ('text' == question.type) {
+      let textBox = questionP.getElementsByTagName('input')[0];
+      textBox.value = answer['value'];
+    } else if ('list' == question.type) {
+      let allBoxes = Array.from(questionP.getElementsByTagName('input'));
+      while (allBoxes.length > 0) {
+        let box = allBoxes.pop();
+        let listEntry = findParentWithClass(box, 'list-entry');
+        listEntry.remove();
+      }
+      let allValues = answer['value'];
+      if (allValues) {
+        for (let i = 0; i < allValues.length; i++) {
+          let value = allValues[i];
+          let textBox = addListText({target: questionP.getElementsByClassName('add-list-button')[0]});
+          textBox.value = value;
+        }
+      }
+    }
+  }
 }
 
 function closeModals(event) {
@@ -170,6 +210,7 @@ function closeModals(event) {
 
 function openSettings(event) {
   closeModals();
+  renderEditModal();
   let modalToShow = document.getElementById('edit-div');
   modalToShow.style.display = "flex";
 }
@@ -191,6 +232,10 @@ function showResponseList(event) {
 
 function addQuestionToEdit(event) {
   let questionContainer = document.getElementById('question-container');
+  buildQuestionToEdit(questionContainer);
+}
+
+function buildQuestionToEdit(parentElement) {
   let questionDiv = document.createElement('div');
   questionDiv.classList.add('question-edit');
   {
@@ -280,7 +325,8 @@ function addQuestionToEdit(event) {
     label.style.display = 'none';
     questionDiv.appendChild(label);
   }
-  questionContainer.appendChild(questionDiv);
+  parentElement.appendChild(questionDiv);
+  return questionDiv;
 }
 
 function moveQuestionUp(event) {
@@ -306,9 +352,9 @@ function deleteQuestion(event) {
 
 function generateJsonFromEditWindow(event) {
   let questionContainer = document.getElementById('question-container');
-  let questions = Array.from(questionContainer.getElementsByClassName('question-edit'));
+  let questionsArray = Array.from(questionContainer.getElementsByClassName('question-edit'));
   let output = [];
-  for (let question of questions) {
+  for (let question of questionsArray) {
     let questionType = question.getElementsByTagName('select')[0].selectedOptions[0].value;
     let questionText = question.getElementsByClassName('question-text')[0].value;
     let jsonQuestion = {
@@ -344,10 +390,124 @@ function handleSaveQuestions(event) {
   let result = defaultHandler(event);
   let responseJson = result.responseJson;
   renderQuestions();
+  closeModals();
+}
+
+function renderEditModal(event) {
+  let questionContainer = document.getElementById('question-container');
+  while (questionContainer.firstElementChild) {
+    questionContainer.firstElementChild.remove();
+  }
+  for (let question of questions) {
+    let questionBlock = buildQuestionToEdit(questionContainer);
+    let questionTextInput = questionBlock.getElementsByClassName('question-text')[0];
+    questionTextInput.value = question.question;
+    let questionSelect = questionBlock.getElementsByTagName('select')[0];
+    questionSelect.value = question.type;
+    if (RESPONSE_LIST_QUESTIONS.includes(question.type)) {
+      let questionResponseList = questionBlock.getElementsByClassName('response-list-textbox')[0];
+      questionResponseList.value = question.responses.join(',');
+    }
+  }
 }
 
 function renderQuestions(event) {
-  // todo
+  let questionsDiv = document.getElementById('questions-div');
+  while (questionsDiv.firstElementChild) {
+    questionsDiv.firstElementChild.remove();
+  }
+  for (let questionIndex = 0; questionIndex < questions.length; questionIndex++) {
+    let question = questions[questionIndex];
+    let hr = document.createElement('hr');
+    questionsDiv.appendChild(hr);
+    let qp = document.createElement('p')
+    qp.classList.add('question-p');
+    let span = document.createElement('span');
+    span.innerText = question.question;
+    qp.appendChild(span);
+    if ('yn' == question.type) {
+      let input = document.createElement('input');
+      input.type = 'checkbox';
+      qp.appendChild(input);
+    } else if ('text' == question.type) {
+      let input = document.createElement('input');
+      input.type = 'text';
+      qp.appendChild(input);
+    } else if ('list' == question.type) {
+      let button = document.createElement('button');
+      button.innerText = '+ Add new answer';
+      button.classList.add('add-list-button')
+      button.onclick = addListText;
+      qp.appendChild(button);
+    }
+    // save button, remove this
+    {
+      let button = document.createElement('button');
+      button.innerText = 'Save';
+      button.onclick = saveAnswer;
+      button.setAttribute('question-index', questionIndex)
+      qp.appendChild(button);
+    }
+    questionsDiv.appendChild(qp);
+  }
+  let hr = document.createElement('hr');
+  questionsDiv.appendChild(hr);
+  questionsDiv.style.display = 'block';
+}
+
+function saveAnswer(event) {
+  let questionP = findParentWithClass(event.target, 'question-p');
+  let questionIndex = event.target.getAttribute('question-index');
+  let question = questions[questionIndex];
+  let answer = {};
+  if ('yn' == question.type) {
+    let checkBox = questionP.getElementsByTagName('input')[0];
+    answer['value'] = checkBox.checked;
+  } else if ('text' == question.type) {
+    let textBox = questionP.getElementsByTagName('input')[0];
+    answer['value'] = textBox.value;
+  } else if ('list' == question.type) {
+    let allBoxes = Array.from(questionP.getElementsByTagName('input'));
+    let value = [];
+    for (let i = 0; i < allBoxes.length; i++) {
+      let textBox = allBoxes[i];
+      value.push(textBox.value);
+    }
+    answer['value'] = value;
+  }
+  let url = API_DOMAIN + "/quiz-diary/set-answer";
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleSetAnswer;
+  xmlHttp.onerror = handleSetAnswer;
+  xmlHttp.send(JSON.stringify({csrf:csrfToken,question:question,answer:answer,date:datePicker.value}));
+}
+
+function handleSetAnswer(event) {
+  let result = defaultHandler(event);
+  console.log(result.responseJson);
+}
+
+function addListText(event) {
+  let questionP = findParentWithClass(event.target, 'question-p');
+  let addButton = event.target
+  let textWithButton = document.createElement('div');
+  textWithButton.classList.add('list-entry');
+  let input = document.createElement('input');
+  input.type = 'text';
+  textWithButton.appendChild(input);
+  let button = document.createElement('button');
+  button.innerHTML = '&times;';
+  button.onclick = deleteAnswer;
+  textWithButton.appendChild(button);
+  questionP.insertBefore(textWithButton, event.target);
+  return input;
+}
+
+function deleteAnswer(event) {
+  let answerDiv = findParentWithClass(event.target, 'list-entry');
+  answerDiv.remove();
 }
 
 // if (!csrfToken) {
@@ -359,6 +519,8 @@ function renderQuestions(event) {
 // ) {
 //   iosCookieRefresh();
 // }
+
+datePicker.value = getToday();
 
 getQuizDiary();
     </script>

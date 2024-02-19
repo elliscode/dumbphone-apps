@@ -6,6 +6,7 @@ from .utils import (
     TABLE_NAME,
     dynamo_obj_to_python_obj,
 )
+from hashlib import md5
 import time
 import datetime
 
@@ -78,7 +79,7 @@ def get_answers_route(event, user_data, body):
         question = questions[i]
         hash_value = get_question_hash(question)
         questions[i]['hash'] = hash_value
-        sort_keys.append({"S": hash_value})
+        sort_keys.append(hash_value)
 
     if 'date' not in body:
         date = datetime.date.today()
@@ -92,29 +93,35 @@ def get_answers_route(event, user_data, body):
                 "AttributeValueList": [{"S": f"answers_{phone}_{date}"}],
                 "ComparisonOperator": "EQ",
             },
-            "key2": {
-                "AttributeValueList": sort_keys,
-                "ComparisonOperator": "EQ",
-            }
         },
     )
 
-    answers = []
+    answers = {}
     if "Items" in response:
         for item in response["Items"]:
             python_item = dynamo_obj_to_python_obj(item)
             print(python_item)
-            answers.append(python_item["answer"])
+            answers[python_item["key2"]] = python_item["answer"]
+
+    print(answers)
+    ordered_answers = []
+    for question_hash in sort_keys:
+        print(question_hash)
+        answer = answers.get(question_hash)
+        if not answer:
+            answer = {"value": None}
+        ordered_answers.append(answer)
+
 
     return format_response(
         event=event,
         http_code=200,
-        body={"questions": questions, "answers": answers},
+        body={"questions": questions, "answers": ordered_answers},
     )
 
 
 @authenticate
-def add_answer_route(event, user_data, body):
+def set_answer_route(event, user_data, body):
     phone = user_data["key2"]
 
     if 'question' not in body or not body['question']:
@@ -143,6 +150,7 @@ def add_answer_route(event, user_data, body):
     python_data = {
         "key1": f"answers_{phone}_{date}",
         "key2": hash_value,
+        "question": question,
         "answer": answer,
     }
     dynamo_data = python_obj_to_dynamo_obj(python_data)
@@ -159,4 +167,4 @@ def add_answer_route(event, user_data, body):
 
 
 def get_question_hash(question):
-    return str(hash(question['question'].lower()))
+    return md5(question['question'].encode()).hexdigest()

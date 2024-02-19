@@ -51,6 +51,8 @@ from dumbphoneapps.weather import get_forecast_route
 from dumbphoneapps.quiz_diary import (
     get_questions_route,
     set_questions_route,
+    set_answer_route,
+    get_answers_route,
 )
 
 
@@ -144,6 +146,10 @@ def route(event):
         return get_questions_route(event)
     if path_equals(event=event, method="POST", path="/quiz-diary/set-questions"):
         return set_questions_route(event)
+    if path_equals(event=event, method="POST", path="/quiz-diary/get-answers"):
+        return get_answers_route(event)
+    if path_equals(event=event, method="POST", path="/quiz-diary/set-answer"):
+        return set_answer_route(event)
     if path_starts_with(event=event, method="POST", path="/discord/"):
         return discord_route(event)
 
