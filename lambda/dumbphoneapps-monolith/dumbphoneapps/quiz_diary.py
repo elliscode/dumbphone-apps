@@ -6,7 +6,6 @@ from .utils import (
     TABLE_NAME,
     dynamo_obj_to_python_obj,
 )
-from hashlib import md5
 import time
 import datetime
 
@@ -66,81 +65,51 @@ def get_questions_route(event, user_data, body):
 def get_answers_route(event, user_data, body):
     phone = user_data["key2"]
 
-    if 'questions' not in body or not body['questions']:
-        return format_response(
-            event=event,
-            http_code=400,
-            body="You need to provide a list of questions to get the answers to",
-        )
-
-    questions = body['questions']
-    sort_keys = []
-    for i in range (0, len(questions)):
-        question = questions[i]
-        hash_value = get_question_hash(question)
-        questions[i]['hash'] = hash_value
-        sort_keys.append(hash_value)
-
     if 'date' not in body:
         date = datetime.date.today()
     else:
         date = body['date']
 
-    response = dynamo.query(
+    response = dynamo.get_item(
         TableName=TABLE_NAME,
-        KeyConditions={
-            "key1": {
-                "AttributeValueList": [{"S": f"answers_{phone}_{date}"}],
-                "ComparisonOperator": "EQ",
-            },
-        },
+        Key=python_obj_to_dynamo_obj({"key1": f"answers_{phone}", "key2": date}),
     )
 
-    answers = {}
-    if "Items" in response:
-        for item in response["Items"]:
-            python_item = dynamo_obj_to_python_obj(item)
-            print(python_item)
-            answers[python_item["key2"]] = python_item["answer"]
+    if "Item" not in response:
+        return format_response(
+            event=event,
+            http_code=200,
+            body={"answers": {}},
+        )
 
-    print(answers)
-    ordered_answers = []
-    for question_hash in sort_keys:
-        print(question_hash)
-        answer = answers.get(question_hash)
-        if not answer:
-            answer = {"value": None}
-        ordered_answers.append(answer)
+    answers = dynamo_obj_to_python_obj(response["Item"])
 
+    if "answers" not in answers:
+        return format_response(
+            event=event,
+            http_code=200,
+            body={"answers": {}},
+        )
 
     return format_response(
         event=event,
         http_code=200,
-        body={"questions": questions, "answers": ordered_answers},
+        body={"answers": answers["answers"]},
     )
 
 
 @authenticate
-def set_answer_route(event, user_data, body):
+def set_answers_route(event, user_data, body):
     phone = user_data["key2"]
 
-    if 'question' not in body or not body['question']:
+    if 'answers' not in body or not body['answers']:
         return format_response(
             event=event,
             http_code=400,
-            body="You need to provide a question that you are answering",
+            body="You need to provide a list of answers",
         )
 
-    if 'answer' not in body or not body['answer']:
-        return format_response(
-            event=event,
-            http_code=400,
-            body="You need to provide an answer to the question",
-        )
-
-    question = body['question']
-    answer = body['answer']
-    hash_value = get_question_hash(question)
+    answers = body['answers']
 
     if 'date' not in body:
         date = datetime.date.today()
@@ -148,10 +117,9 @@ def set_answer_route(event, user_data, body):
         date = body['date']
 
     python_data = {
-        "key1": f"answers_{phone}_{date}",
-        "key2": hash_value,
-        "question": question,
-        "answer": answer,
+        "key1": f"answers_{phone}",
+        "key2": date,
+        "answers": answers,
     }
     dynamo_data = python_obj_to_dynamo_obj(python_data)
     dynamo.put_item(
@@ -162,9 +130,5 @@ def set_answer_route(event, user_data, body):
     return format_response(
         event=event,
         http_code=201,
-        body={"hash": hash_value, "message": f"Successfully added question with id {hash_value}"},
+        body="Successfully wrote all answers to the database",
     )
-
-
-def get_question_hash(question):
-    return md5(question['question'].encode()).hexdigest()

@@ -109,8 +109,51 @@ body {
     <script>
 const RESPONSE_LIST_QUESTIONS = ['radio','check'];
 const datePicker = document.getElementById('date-picker');
+const explanation = document.getElementById("explanation");
+const questionsDiv = document.getElementById("questions-div");
+const loader = document.getElementById("loading");
 let questions = undefined;
-
+let saveTimeout = undefined;
+function triggerSave(event) {
+  if (saveTimeout) {
+    clearTimeout(saveTimeout);
+    saveTimeout = undefined;
+  }
+  saveTimeout = setTimeout(save, 1000);
+}
+function save(event) {
+  let questionPs = Array.from(document.getElementsByClassName('question-p'));
+  let answers = {};
+  for (let i = 0; i < questionPs.length; i++) {
+    let questionP = questionPs[i];
+    let question = questions[i];
+    let questionHash = questionP.getAttribute('question-hash');
+    let answer = {hash: questionHash};
+    if ('yn' == question.type) {
+      let checkBox = questionP.getElementsByTagName('input')[0];
+      answer['value'] = checkBox.checked;
+    } else if ('text' == question.type) {
+      let textBox = questionP.getElementsByTagName('input')[0];
+      answer['value'] = textBox.value;
+    } else if ('list' == question.type) {
+      let allBoxes = Array.from(questionP.getElementsByTagName('input'));
+      let value = [];
+      for (let i = 0; i < allBoxes.length; i++) {
+        let textBox = allBoxes[i];
+        value.push(textBox.value);
+      }
+      answer['value'] = value;
+    }
+    answers[questionHash] = answer;
+  }
+  let url = API_DOMAIN + "/quiz-diary/set-answers";
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleSetAnswer;
+  xmlHttp.onerror = handleSetAnswer;
+  xmlHttp.send(JSON.stringify({csrf:csrfToken,answers:answers,date:datePicker.value}));
+}
 function getQuizDiary() {
   let url = API_DOMAIN + "/quiz-diary/get-questions";
   xmlHttp = new XMLHttpRequest();
@@ -130,16 +173,15 @@ function handleQuizDiary(event) {
     renderQuestions(event);
     getAnswers(event);
   } else {
-    const explanation = document.getElementById("explanation");
     explanation.style.display = "block";
+    questionsDiv.style.display = "none";
+    loader.style.display = "none";
   }
-  const loader = document.getElementById("loading");
-  loader.style.display = "none";
 }
 
 function getAnswers(event) {
   let url = API_DOMAIN + "/quiz-diary/get-answers";
-  payload = {csrf: csrfToken, questions: questions, date: datePicker.value};
+  payload = {csrf: csrfToken, date: datePicker.value};
   xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", url, true);
   xmlHttp.withCredentials = true;
@@ -170,35 +212,46 @@ function handleGetAnswers(event) {
 }
 
 function populateQuestions(answersJson) {
-  let questionPs = Array.from(document.getElementsByClassName('question-p'));
   for (let i = 0; i < questions.length; i++) {
-    let questionP = questionPs[i];
-    let answer = answersJson.answers[i];
-    let question = questions[i];
+    try {
+      let question = questions[i];
+      let questionHash = question.hash;
+      let answer = answersJson.answers[questionHash]; 
+      let questionP = document.querySelector(`p[question-hash="${questionHash}"]`);
 
-    if ('yn' == question.type) {
-      let checkBox = questionP.getElementsByTagName('input')[0];
-      checkBox.checked = answer['value'];
-    } else if ('text' == question.type) {
-      let textBox = questionP.getElementsByTagName('input')[0];
-      textBox.value = answer['value'];
-    } else if ('list' == question.type) {
-      let allBoxes = Array.from(questionP.getElementsByTagName('input'));
-      while (allBoxes.length > 0) {
-        let box = allBoxes.pop();
-        let listEntry = findParentWithClass(box, 'list-entry');
-        listEntry.remove();
+      if (!questionP) {
+        continue;
       }
-      let allValues = answer['value'];
-      if (allValues) {
-        for (let i = 0; i < allValues.length; i++) {
-          let value = allValues[i];
-          let textBox = addListText({target: questionP.getElementsByClassName('add-list-button')[0]});
-          textBox.value = value;
+
+      if ('yn' == question.type) {
+        let checkBox = questionP.getElementsByTagName('input')[0];
+        checkBox.checked = answer ? answer['value'] : false;
+      } else if ('text' == question.type) {
+        let textBox = questionP.getElementsByTagName('input')[0];
+        textBox.value = answer ? answer['value'] : '';
+      } else if ('list' == question.type) {
+        let allBoxes = Array.from(questionP.getElementsByTagName('input'));
+        while (allBoxes.length > 0) {
+          let box = allBoxes.pop();
+          let listEntry = findParentWithClass(box, 'list-entry');
+          listEntry.remove();
+        }
+        let allValues = answer ? answer['value'] : [];
+        if (allValues) {
+          for (let i = 0; i < allValues.length; i++) {
+            let value = allValues[i];
+            let textBox = addListText({target: questionP.getElementsByClassName('add-list-button')[0]});
+            textBox.value = value;
+          }
         }
       }
+    } catch (e) {
+      console.log(e);
     }
   }
+  explanation.style.display = "none";
+  questionsDiv.style.display = "block";
+  loader.style.display = "none";
 }
 
 function closeModals(event) {
@@ -365,6 +418,9 @@ function generateJsonFromEditWindow(event) {
       let responseList = question.getElementsByClassName('response-list-textbox')[0].value;
       let responses = responseList.split(/\s*,\s*/g);
       jsonQuestion['responses'] = responses;
+      jsonQuestion['hash'] = hashCode([questionText, questionType, responses].join(String.fromCharCode(1)));
+    } else {
+      jsonQuestion['hash'] = hashCode([questionText, questionType].join(String.fromCharCode(1)));
     }
     if (!jsonQuestion.question) {
       continue;
@@ -390,6 +446,7 @@ function handleSaveQuestions(event) {
   let result = defaultHandler(event);
   let responseJson = result.responseJson;
   renderQuestions();
+  getAnswers(event);
   closeModals();
 }
 
@@ -398,26 +455,33 @@ function renderEditModal(event) {
   while (questionContainer.firstElementChild) {
     questionContainer.firstElementChild.remove();
   }
-  for (let question of questions) {
-    let questionBlock = buildQuestionToEdit(questionContainer);
-    let questionTextInput = questionBlock.getElementsByClassName('question-text')[0];
-    questionTextInput.value = question.question;
-    let questionSelect = questionBlock.getElementsByTagName('select')[0];
-    questionSelect.value = question.type;
-    if (RESPONSE_LIST_QUESTIONS.includes(question.type)) {
-      let questionResponseList = questionBlock.getElementsByClassName('response-list-textbox')[0];
-      questionResponseList.value = question.responses.join(',');
+  try {
+    for (let i = 0; i < questions.length; i++) {
+      let question = questions[i];
+      let questionHash = question.hash;
+      let questionBlock = buildQuestionToEdit(questionContainer);
+      let questionTextInput = questionBlock.getElementsByClassName('question-text')[0];
+      questionTextInput.value = question.question;
+      let questionSelect = questionBlock.getElementsByTagName('select')[0];
+      questionSelect.value = question.type;
+      if (RESPONSE_LIST_QUESTIONS.includes(question.type)) {
+        let questionResponseList = questionBlock.getElementsByClassName('response-list-textbox')[0];
+        questionResponseList.value = question.responses.join(',');
+      }
     }
+  } catch (e) {
+    console.log(e);
   }
 }
 
 function renderQuestions(event) {
-  let questionsDiv = document.getElementById('questions-div');
+  questionsDiv.style.display = 'none';
   while (questionsDiv.firstElementChild) {
     questionsDiv.firstElementChild.remove();
   }
-  for (let questionIndex = 0; questionIndex < questions.length; questionIndex++) {
-    let question = questions[questionIndex];
+  for (let i = 0; i < questions.length; i++) {
+    let question = questions[i];
+    let questionHash = question.hash;
     let hr = document.createElement('hr');
     questionsDiv.appendChild(hr);
     let qp = document.createElement('p')
@@ -428,10 +492,31 @@ function renderQuestions(event) {
     if ('yn' == question.type) {
       let input = document.createElement('input');
       input.type = 'checkbox';
+      input.onchange = triggerSave;
       qp.appendChild(input);
+    } else if ('radio' == question.type) {
+      // let fieldSet = document.createElement('fieldset');
+      // let legend = document.createElement('legend');
+      // legend.innerText = 'Select one:';
+      // fieldSet.appendChild(legend);
+      // for (let j = 0; j < question.responses.length; j++) {
+      //   let response = question.responses[j];
+      //   let label = document.createElement('label');
+      //   let input2 = document.createElement('input');
+      //   input2.type = 'radio';
+      //   input2.name = questionHash;
+      //   input2.onchange = triggerSave;
+      //   label.appendChild(input2);
+      //   let span = document.createElement('span');
+      //   span.innerText = response;
+      //   label.appendChild(span);
+      //   fieldSet.appendChild(label);
+      // }
+      // qp.appendChild(fieldSet);
     } else if ('text' == question.type) {
       let input = document.createElement('input');
       input.type = 'text';
+      input.onkeyup = triggerSave;
       qp.appendChild(input);
     } else if ('list' == question.type) {
       let button = document.createElement('button');
@@ -440,50 +525,15 @@ function renderQuestions(event) {
       button.onclick = addListText;
       qp.appendChild(button);
     }
-    // save button, remove this
-    {
-      let button = document.createElement('button');
-      button.innerText = 'Save';
-      button.onclick = saveAnswer;
-      button.setAttribute('question-index', questionIndex)
-      qp.appendChild(button);
-    }
+    // set index for reference later
+    qp.setAttribute('question-index', i);
+    // set ID for reference later
+    qp.setAttribute('question-hash', question.hash);
     questionsDiv.appendChild(qp);
   }
   let hr = document.createElement('hr');
   questionsDiv.appendChild(hr);
-  questionsDiv.style.display = 'block';
 }
-
-function saveAnswer(event) {
-  let questionP = findParentWithClass(event.target, 'question-p');
-  let questionIndex = event.target.getAttribute('question-index');
-  let question = questions[questionIndex];
-  let answer = {};
-  if ('yn' == question.type) {
-    let checkBox = questionP.getElementsByTagName('input')[0];
-    answer['value'] = checkBox.checked;
-  } else if ('text' == question.type) {
-    let textBox = questionP.getElementsByTagName('input')[0];
-    answer['value'] = textBox.value;
-  } else if ('list' == question.type) {
-    let allBoxes = Array.from(questionP.getElementsByTagName('input'));
-    let value = [];
-    for (let i = 0; i < allBoxes.length; i++) {
-      let textBox = allBoxes[i];
-      value.push(textBox.value);
-    }
-    answer['value'] = value;
-  }
-  let url = API_DOMAIN + "/quiz-diary/set-answer";
-  xmlHttp = new XMLHttpRequest();
-  xmlHttp.open("POST", url, true);
-  xmlHttp.withCredentials = true;
-  xmlHttp.onload = handleSetAnswer;
-  xmlHttp.onerror = handleSetAnswer;
-  xmlHttp.send(JSON.stringify({csrf:csrfToken,question:question,answer:answer,date:datePicker.value}));
-}
-
 function handleSetAnswer(event) {
   let result = defaultHandler(event);
   console.log(result.responseJson);
@@ -496,6 +546,7 @@ function addListText(event) {
   textWithButton.classList.add('list-entry');
   let input = document.createElement('input');
   input.type = 'text';
+  input.onkeyup = triggerSave;
   textWithButton.appendChild(input);
   let button = document.createElement('button');
   button.innerHTML = '&times;';

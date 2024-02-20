@@ -67,6 +67,17 @@ function findParentWithClass(element, className) {
   }
   return current;
 }
+// https://stackoverflow.com/a/7616484/9313980
+function hashCode(input) {
+  var hash = 0, i, chr;
+  if (input.length === 0) return hash.toString();
+  for (i = 0; i < input.length; i++) {
+      chr = input.charCodeAt(i);
+      hash = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+  }
+  return hash.toString();
+};
 const csrfToken = localStorage.getItem("dumbphoneapps-csrf-token");
 const API_DOMAIN = "https://api.dumbphoneapps.com";
 const UI_DOMAIN = "https://www.dumbphoneapps.com";
