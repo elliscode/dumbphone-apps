@@ -180,6 +180,9 @@ function handleQuizDiary(event) {
 }
 
 function getAnswers(event) {
+  explanation.style.display = "none";
+  questionsDiv.style.display = "none";
+  loader.style.display = "block";
   let url = API_DOMAIN + "/quiz-diary/get-answers";
   payload = {csrf: csrfToken, date: datePicker.value};
   xmlHttp = new XMLHttpRequest();
@@ -334,24 +337,24 @@ function buildQuestionToEdit(parentElement) {
       option.innerText = 'Yes / No';
       input.appendChild(option);
     }
-    {
-      let option = document.createElement('option');
-      option.value = 'radio';
-      option.innerText = 'Radio buttons';
-      input.appendChild(option);
-    }
-    {
-      let option = document.createElement('option');
-      option.value = 'check';
-      option.innerText = 'Checkboxes';
-      input.appendChild(option);
-    }
-    {
-      let option = document.createElement('option');
-      option.value = 'quantity';
-      option.innerText = 'Numerical quantity';
-      input.appendChild(option);
-    }
+    // {
+    //   let option = document.createElement('option');
+    //   option.value = 'radio';
+    //   option.innerText = 'Radio buttons';
+    //   input.appendChild(option);
+    // }
+    // {
+    //   let option = document.createElement('option');
+    //   option.value = 'check';
+    //   option.innerText = 'Checkboxes';
+    //   input.appendChild(option);
+    // }
+    // {
+    //   let option = document.createElement('option');
+    //   option.value = 'quantity';
+    //   option.innerText = 'Numerical quantity';
+    //   input.appendChild(option);
+    // }
     {
       let option = document.createElement('option');
       option.value = 'text';
