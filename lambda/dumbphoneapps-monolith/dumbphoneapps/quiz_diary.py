@@ -99,6 +99,42 @@ def get_answers_route(event, user_data, body):
 
 
 @authenticate
+def get_report_data_route(event, user_data, body):
+    phone = user_data["key2"]
+
+    if 'date' not in body:
+        return format_response(
+            event=event,
+            http_code=400,
+            body="You need to supploy a date in your POST body",
+        )
+    date_obj = datetime.datetime.strptime(body['date'], '%Y-%m-%d')
+    keys = []
+    for i in range(-6, 1):
+        new_date_obj = date_obj + datetime.timedelta(days=i)
+        keys.append(python_obj_to_dynamo_obj({
+            'key1': f'answers_{phone}',
+            'key2': new_date_obj.strftime('%Y-%m-%d')
+        }))
+    response = dynamo.batch_get_item(
+        RequestItems={
+            TABLE_NAME: {
+                "Keys": keys,
+            }
+        }
+    )
+    responses = response["Responses"][TABLE_NAME]
+    output = []
+    for response_item in responses:
+        python_item = dynamo_obj_to_python_obj(response_item)
+        output.append({'date': python_item['key2'], 'answers': python_item['answers']})
+    return format_response(
+        event=event,
+        http_code=200,
+        body=output,
+    )
+
+@authenticate
 def set_answers_route(event, user_data, body):
     phone = user_data["key2"]
 

@@ -53,6 +53,7 @@ from dumbphoneapps.quiz_diary import (
     set_questions_route,
     set_answers_route,
     get_answers_route,
+    get_report_data_route,
 )
 
 
@@ -150,6 +151,8 @@ def route(event):
         return get_answers_route(event)
     if path_equals(event=event, method="POST", path="/quiz-diary/set-answers"):
         return set_answers_route(event)
+    if path_equals(event=event, method="POST", path="/quiz-diary/get-report-data"):
+        return get_report_data_route(event)
     if path_starts_with(event=event, method="POST", path="/discord/"):
         return discord_route(event)
 

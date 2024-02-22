@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quiz Diary Weekly Report</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=001" />
+    <link rel="stylesheet" href="../css/loader.css?v=001" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=001" />
+    <style>
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b><a href="index.html">quiz-diary</a></b> &gt; <b>quiz-diary-report</b>
+    </div>
+
+    <div id="loading">
+      <div class="lds-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+
+    <div style="display: inline">
+      <input onchange="getReportData(event)" id="date-picker" type="date" />
+    </div>
+
+    <pre id="json-pre"></pre>
+
+    <div style="display: none" class="logout">
+      <button onclick="logOut(event)">Log out</button>
+    </div>
+    <script src="../js/utils.js?v=001"></script>
+    <script>
+const datePicker = document.getElementById('date-picker');
+const loader = document.getElementById("loading");
+const pre = document.getElementById("json-pre");
+let questions = undefined;
+let reportData = undefined;
+
+function getToday() {
+  let d = new Date();
+  let year = (d.getFullYear()).toString();
+  let month = (d.getMonth() + 1).toString();
+  let day = (d.getDate()).toString();
+  
+  if (month.length < 2) {
+    month = '0' + month;
+  }
+  if (day.length < 2) {
+    day = '0' + day;
+  }
+
+  return `${year}-${month}-${day}`;
+}
+
+function getQuestions() {
+  let url = API_DOMAIN + "/quiz-diary/get-questions";
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleGetQuestions;
+  xmlHttp.onerror = handleGetQuestions;
+  xmlHttp.send(JSON.stringify({csrf: csrfToken}));
+}
+
+function handleGetQuestions(event) {
+  let xmlHttp = event.target;
+  let result = defaultHandler(event);
+  let responseJson = result.responseJson;
+  questions = responseJson.questions;
+  if (questions && Array.isArray(questions) && questions.length > 0) {
+    getReportData(event);
+  } else {
+    pre.innerText = 'No data';
+    loader.style.display = "none";
+  }
+}
+
+function getReportData(event) {
+  loader.style.display = "block";
+  let url = API_DOMAIN + "/quiz-diary/get-report-data";
+  payload = {csrf: csrfToken, date: datePicker.value};
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleGetReportData;
+  xmlHttp.onerror = handleGetReportData;
+  xmlHttp.send(JSON.stringify(payload));
+}
+
+function handleGetReportData(event) {
+  let result = defaultHandler(event);
+  reportData = result.responseJson;
+  pre.innerText = JSON.stringify(reportData, undefined, 2);
+  loader.style.display = "none";
+}
+
+document.addEventListener("keydown", function(e) {
+  if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+    e.preventDefault();
+    save();
+  }
+}, false);
+
+datePicker.value = getToday();
+
+getQuestions();
+    </script>
+  </body>
+</html>

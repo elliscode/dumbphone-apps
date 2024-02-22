@@ -170,3 +170,5 @@ logfile
 .vscode/
 
 Pipfile.lock
+
+*.test.py

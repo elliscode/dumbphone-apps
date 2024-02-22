@@ -41,6 +41,25 @@
 body {
   padding-bottom: calc(100vh - 100px);
 }
+#status-indicator {
+  position: fixed;
+  top: 0px;
+  right: 0px;
+}
+#status-indicator span {
+  line-height:20px;
+}
+#saving-icon {
+    animation: rotation 1.5s infinite linear;
+}
+@keyframes rotation {
+    from {
+        transform: rotate(360deg);
+    }
+    to {
+        transform: rotate(0deg);
+    }
+}
     </style>
   </head>
 
@@ -66,7 +85,12 @@ body {
       </div>
     </div>
 
+    <div id="status-indicator">
+      <span style="display:none;" id="saved-icon">&#9989;</span><span style="display:none;" id="saving-icon">&#x1F504;</span><span style="display:none;" id="error-icon">&#9940;</span>
+    </div>
+
     <div class="controls">
+      <button onclick="openReport(event)">Report</button>
       <button onclick="openSettings(event)">Edit</button>
     </div>
 
@@ -111,10 +135,19 @@ const RESPONSE_LIST_QUESTIONS = ['radio','check'];
 const datePicker = document.getElementById('date-picker');
 const explanation = document.getElementById("explanation");
 const questionsDiv = document.getElementById("questions-div");
+const saving = document.getElementById('saving-icon');
+const saved = document.getElementById('saved-icon');
+const error = document.getElementById('error-icon');
 const loader = document.getElementById("loading");
+const controlsDiv = document.getElementsByClassName('controls')[0];
 let questions = undefined;
 let saveTimeout = undefined;
 function triggerSave(event) {
+  saving.style.display = 'inline-block';
+  saved.style.display = 'none';
+  error.style.display = 'none';
+  error.style.display = 'none';
+  controlsDiv.style.right = '24px';
   if (saveTimeout) {
     clearTimeout(saveTimeout);
     saveTimeout = undefined;
@@ -122,6 +155,10 @@ function triggerSave(event) {
   saveTimeout = setTimeout(save, 1000);
 }
 function save(event) {
+  if (saveTimeout) {
+    clearTimeout(saveTimeout);
+    saveTimeout = undefined;
+  }
   let questionPs = Array.from(document.getElementsByClassName('question-p'));
   let answers = {};
   for (let i = 0; i < questionPs.length; i++) {
@@ -151,7 +188,7 @@ function save(event) {
   xmlHttp.open("POST", url, true);
   xmlHttp.withCredentials = true;
   xmlHttp.onload = handleSetAnswer;
-  xmlHttp.onerror = handleSetAnswer;
+  xmlHttp.onerror = handleSetAnswerError;
   xmlHttp.send(JSON.stringify({csrf:csrfToken,answers:answers,date:datePicker.value}));
 }
 function getQuizDiary() {
@@ -262,6 +299,10 @@ function closeModals(event) {
   for (let item of items) {
     item.style.display = 'none';
   }
+}
+
+function openReport(event) {
+  window.location.assign("report.html");
 }
 
 function openSettings(event) {
@@ -539,9 +580,26 @@ function renderQuestions(event) {
 }
 function handleSetAnswer(event) {
   let result = defaultHandler(event);
-  console.log(result.responseJson);
+  if (200 <= result.statusCode && result.statusCode <= 201) {
+    handleSetAnswerSuccess(result);
+  } else {
+    handleSetAnswerError(result);
+  }
 }
-
+function handleSetAnswerSuccess(result) {
+  console.log(result.responseJson);
+  saving.style.display = 'none';
+  saved.style.display = 'inline-block';
+  error.style.display = 'none';
+  controlsDiv.style.right = '24px';
+}
+function handleSetAnswerError(result) {
+  console.log("failed");
+  saving.style.display = 'none';
+  saved.style.display = 'none';
+  error.style.display = 'inline-block';
+  controlsDiv.style.right = '24px';
+}
 function addListText(event) {
   let questionP = findParentWithClass(event.target, 'question-p');
   let addButton = event.target
@@ -573,6 +631,13 @@ function deleteAnswer(event) {
 // ) {
 //   iosCookieRefresh();
 // }
+
+document.addEventListener("keydown", function(e) {
+  if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+    e.preventDefault();
+    save();
+  }
+}, false);
 
 datePicker.value = getToday();
 
