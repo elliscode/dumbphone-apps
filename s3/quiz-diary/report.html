@@ -7,6 +7,13 @@
     <link rel="stylesheet" href="../css/loader.css?v=001" />
     <link rel="icon" type="image/png" href="../img/favicon.png?v=001" />
     <style>
+.rotated td span {
+  -ms-writing-mode: tb-rl;
+  -webkit-writing-mode: vertical-rl;
+  writing-mode: vertical-rl;
+  transform: rotate(0deg);
+  white-space: nowrap;
+}
     </style>
   </head>
 
@@ -102,9 +109,9 @@ function getReportData(event) {
 
 function handleGetReportData(event) {
   let result = defaultHandler(event);
-  reportData = result.responseJson;
-  pre.innerText = JSON.stringify(reportData, undefined, 2);
-  loader.style.display = "none";
+  reportData = result.responseJson.sort((r1,r2)=>r1.date.localeCompare(r2.date));
+  // pre.innerText = JSON.stringify(reportData, undefined, 2);
+  drawTrueOrFalseTable();
 }
 
 document.addEventListener("keydown", function(e) {
@@ -115,8 +122,49 @@ document.addEventListener("keydown", function(e) {
 }, false);
 
 datePicker.value = getToday();
-
+// reportData = reportData.sort((r1,r2)=>r1.date.localeCompare(r2.date))
 getQuestions();
+
+function drawTrueOrFalseTable() {
+  let ynQuestions = questions.filter(q=>q.type==="yn");
+  let table = document.createElement('table');
+  {
+    let row = document.createElement('tr');
+    row.classList.add('rotated');
+    {
+      let td = document.createElement('td');
+      row.appendChild(td);
+    }
+    for (let item of reportData) {
+      let td = document.createElement('td');
+      let span = document.createElement('span');
+      span.innerText = item.date;
+      td.appendChild(span);
+      row.appendChild(td);
+    }
+    table.appendChild(row);
+  }
+  for (let question of ynQuestions) {
+    let row = document.createElement('tr');
+    {
+      let td = document.createElement('td');
+      td.innerText = question.question;
+      row.appendChild(td);
+    }
+    for (let item of reportData) {
+      let td = document.createElement('td');
+      if (item.answers.hasOwnProperty(question.hash) && item.answers[question.hash].value) {
+        td.innerHTML = '&#9989;';
+      } else {
+        td.innerHTML = '&#9940;';
+      }
+      row.appendChild(td);
+    }
+    table.append(row);
+  }
+  document.body.appendChild(table);
+  loader.style.display = "none";
+}
     </script>
   </body>
 </html>
