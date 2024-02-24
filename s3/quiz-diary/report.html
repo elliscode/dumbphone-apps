@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Quiz Diary Weekly Report</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=001" />
-    <link rel="stylesheet" href="../css/loader.css?v=001" />
-    <link rel="icon" type="image/png" href="../img/favicon.png?v=001" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=003" />
+    <link rel="stylesheet" href="../css/loader.css?v=003" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=003" />
     <style>
 .rotated td span {
   -ms-writing-mode: tb-rl;
@@ -64,13 +64,14 @@ table {
     </div>
 
     <div id="content"></div>
-    <script src="../js/utils.js?v=001"></script>
+    <script src="../js/utils.js?v=003"></script>
     <script>
 const datePicker = document.getElementById('date-picker');
 const loader = document.getElementById("loading");
 const pre = document.getElementById("json-pre");
 let questions = undefined;
 let reportData = undefined;
+let foodData = undefined;
 
 function getToday() {
   let d = new Date();
@@ -129,7 +130,8 @@ function getReportData(event) {
 
 function handleGetReportData(event) {
   let result = defaultHandler(event);
-  reportData = result.responseJson.sort((r1,r2)=>r1.date.localeCompare(r2.date));
+  reportData = result.responseJson.answers.sort((r1,r2)=>r1.date.localeCompare(r2.date));
+  foodData = result.responseJson.foodDiary.sort((r1,r2)=>r1.date.localeCompare(r2.date));
   // pre.innerText = JSON.stringify(reportData, undefined, 2);
   drawTrueOrFalseTable();
   drawTextsWithSort();
@@ -258,10 +260,11 @@ function sortColumn(event) {
   let headerCell = event.target;
   let index = parseInt(headerCell.getAttribute('index'));
   let table = findParentWithClass(headerCell, 'table');
+  let previousIndex = parseInt(table.getAttribute('index'));
   let previousOrder = table.getAttribute('order');
   let rows = Array.from(table.getElementsByClassName('data'));
   let order = 'asc';
-  if (previousOrder == 'asc') {
+  if (previousIndex == index && previousOrder == 'asc') {
     order = 'desc';
   }
   let sortedRows = [];

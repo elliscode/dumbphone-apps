@@ -17,7 +17,7 @@ def set_questions_route(event, user_data, body):
     questions_entry = {
         "key1": f"questions_{phone}",
         "key2": f"{int(time.time())}",
-        "questions": body['questions'],
+        "questions": body["questions"],
     }
 
     dynamo.put_item(
@@ -65,10 +65,10 @@ def get_questions_route(event, user_data, body):
 def get_answers_route(event, user_data, body):
     phone = user_data["key2"]
 
-    if 'date' not in body:
+    if "date" not in body:
         date = datetime.date.today()
     else:
-        date = body['date']
+        date = body["date"]
 
     response = dynamo.get_item(
         TableName=TABLE_NAME,
@@ -102,20 +102,26 @@ def get_answers_route(event, user_data, body):
 def get_report_data_route(event, user_data, body):
     phone = user_data["key2"]
 
-    if 'date' not in body:
+    if "date" not in body:
         return format_response(
             event=event,
             http_code=400,
-            body="You need to supploy a date in your POST body",
+            body="You need to supply a date in your POST body",
         )
-    date_obj = datetime.datetime.strptime(body['date'], '%Y-%m-%d')
+    date_obj = datetime.datetime.strptime(body["date"], "%Y-%m-%d")
     keys = []
-    for i in range(-6, 1):
+    for i in range(-7, 1):
         new_date_obj = date_obj + datetime.timedelta(days=i)
-        keys.append(python_obj_to_dynamo_obj({
-            'key1': f'answers_{phone}',
-            'key2': new_date_obj.strftime('%Y-%m-%d')
-        }))
+        keys.append(
+            python_obj_to_dynamo_obj(
+                {"key1": f"answers_{phone}", "key2": new_date_obj.strftime("%Y-%m-%d")}
+            )
+        )
+        keys.append(
+            python_obj_to_dynamo_obj(
+                {"key1": f"diary_{user_data['key2']}", "key2": new_date_obj.strftime("%Y-%m-%d")}
+            )
+        )
     response = dynamo.batch_get_item(
         RequestItems={
             TABLE_NAME: {
@@ -124,33 +130,38 @@ def get_report_data_route(event, user_data, body):
         }
     )
     responses = response["Responses"][TABLE_NAME]
-    output = []
+    output_answers = []
+    output_diary = []
     for response_item in responses:
         python_item = dynamo_obj_to_python_obj(response_item)
-        output.append({'date': python_item['key2'], 'answers': python_item['answers']})
+        if "answers" in python_item:
+            output_answers.append({"date": python_item["key2"], "answers": python_item["answers"]})
+        elif "entries" in python_item:
+            output_diary.append({"date": python_item["key2"], "entries": python_item["entries"]})
     return format_response(
         event=event,
         http_code=200,
-        body=output,
+        body={'answers': output_answers, 'foodDiary': output_diary},
     )
+
 
 @authenticate
 def set_answers_route(event, user_data, body):
     phone = user_data["key2"]
 
-    if 'answers' not in body or not body['answers']:
+    if "answers" not in body or not body["answers"]:
         return format_response(
             event=event,
             http_code=400,
             body="You need to provide a list of answers",
         )
 
-    answers = body['answers']
+    answers = body["answers"]
 
-    if 'date' not in body:
+    if "date" not in body:
         date = datetime.date.today()
     else:
-        date = body['date']
+        date = body["date"]
 
     python_data = {
         "key1": f"answers_{phone}",

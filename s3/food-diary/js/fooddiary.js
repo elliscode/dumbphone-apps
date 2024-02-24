@@ -166,6 +166,7 @@ function deleteEntry(event) {
   const caller = event.target;
   const timestamp = caller.getAttribute("timestamp");
   const key = caller.getAttribute("key");
+  const date = caller.getAttribute("date");
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/food-diary/delete", true);
   xmlHttp.withCredentials = true;
@@ -174,6 +175,7 @@ function deleteEntry(event) {
     JSON.stringify({
       timestamp: timestamp,
       key: key,
+      date: date,
       csrf: csrfToken
     })
   );
@@ -183,15 +185,18 @@ function changeQuantity(event) {
   const caller = event.target;
   let servings = document.getElementById("servings");
   const key = caller.getAttribute("key");
+  const date = caller.getAttribute("date");
   const timestamp = caller.getAttribute("timestamp");
   const foodHash = caller.getAttribute("food-hash");
   let save = document.getElementById("servings-save");
   save.setAttribute("timestamp", timestamp);
   save.setAttribute("key", key);
+  save.setAttribute("date", date);
   save.setAttribute("hash", foodHash);
   let servingsCreate = document.getElementById("servings-create");
   servingsCreate.setAttribute("food-hash", foodHash);
   servingsCreate.setAttribute("key", key);
+  servingsCreate.setAttribute("date", date);
   servingsCreate.setAttribute("hash", foodHash);
 
   calculatedValues = JSON.parse(caller.getAttribute("calculated-values"));
@@ -306,10 +311,12 @@ function editEitherFoodOrRecipe(event) {
   const caller = event.target;
   const hash = caller.getAttribute("food-hash");
   const key = caller.getAttribute("key");
+  const date = caller.getAttribute("date");
   const timestamp = caller.getAttribute("timestamp");
   const foodEditSave = document.getElementById("food-edit-save");
   foodEditSave.setAttribute("food-hash", hash);
   foodEditSave.setAttribute("key", key);
+  foodEditSave.setAttribute("date", date);
   foodEditSave.setAttribute("timestamp", timestamp);
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/food-diary/get_food", true);
@@ -453,7 +460,7 @@ function createTableRow(ingredient) {
     let td = document.createElement("td");
     let button = document.createElement("button");
     button.innerText = "#";
-    button.setAttribute("food-hash", entry.food.hash);
+    button.setAttribute("food-hash", entry.food_id);
     button.addEventListener("click", changeQuantityRow);
     td.appendChild(button);
     tr.appendChild(td);
@@ -472,7 +479,7 @@ function createTableRow(ingredient) {
   {
     let td = document.createElement("td");
     let button = document.createElement("button");
-    button.setAttribute("food-hash", entry.food.hash);
+    button.setAttribute("food-hash", entry.food_id);
     button.addEventListener("click", deleteRow);
     button.innerHTML = "&times;";
     td.appendChild(button);
@@ -490,6 +497,7 @@ function saveFood(event) {
   const name = select.value;
   const quantity = textBox.value;
   const key = event.target.getAttribute("key");
+  const date = event.target.getAttribute("date");
   const timestamp = event.target.getAttribute("timestamp");
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/food-diary/set_food", true);
@@ -500,6 +508,7 @@ function saveFood(event) {
       hash: hash,
       key: key,
       timestamp: timestamp,
+      date: date,
       name: document.getElementById("food-edit-name").value,
       calories: document.getElementById("food-edit-calories").value,
       fat: document.getElementById("food-edit-fat").value,
@@ -555,6 +564,7 @@ function saveServing(event) {
   const caller = event.target;
   const hash = caller.getAttribute("hash");
   const key = caller.getAttribute("key");
+  const date = caller.getAttribute("date");
   const timestamp = caller.getAttribute("timestamp");
   let textBox = document.getElementById("servings-amount");
   let select = document.getElementById("servings-name");
@@ -568,6 +578,7 @@ function saveServing(event) {
     JSON.stringify({
       hash: hash,
       key: key,
+      date: date,
       timestamp: timestamp,
       name: name,
       amount: quantity,
@@ -685,8 +696,10 @@ function populateTable(event) {
     table.appendChild(tr);
   }
 
-  for (let index = 0; index < data.entries.length; index++) {
-    entry = data.entries[index];
+  let keys = Object.keys(data.entries).sort((a,b)=>a.localeCompare(b));
+  for (let index = 0; index < keys.length; index++) {
+    let timestamp = keys[index];
+    let entry = data.entries[timestamp];
     const tr = document.createElement("tr");
     tr.style.position = "relative";
     {
@@ -694,13 +707,14 @@ function populateTable(event) {
       td.style.position = "relative";
       const button = document.createElement("button");
       button.innerText = "#";
-      button.setAttribute("food-hash", entry.food.hash);
-      button.setAttribute("timestamp", entry.timestamp);
+      button.setAttribute("food-hash", entry.food_id);
+      button.setAttribute("timestamp", timestamp);
       button.setAttribute(
         "calculated-values",
         JSON.stringify(entry.calculated_values)
       );
-      button.setAttribute("key", data.key);
+      button.setAttribute("key", data.diary_key);
+      button.setAttribute("date", data.date);
       button.addEventListener("click", changeQuantity);
       td.appendChild(button);
       tr.appendChild(td);
@@ -710,10 +724,11 @@ function populateTable(event) {
       td.style.position = "relative";
       const span = document.createElement("span");
       span.classList.add("food");
-      span.innerText = entry.food.name;
-      span.setAttribute("food-hash", entry.food.hash);
-      span.setAttribute("timestamp", entry.timestamp);
-      span.setAttribute("key", data.key);
+      span.innerText = entry.name;
+      span.setAttribute("food-hash", entry.food_id);
+      span.setAttribute("timestamp", timestamp);
+      span.setAttribute("key", data.diary_key);
+      span.setAttribute("date", data.date);
       span.addEventListener("click", editEitherFoodOrRecipe);
       td.appendChild(span);
       tr.appendChild(td);
@@ -728,8 +743,9 @@ function populateTable(event) {
       const td = document.createElement("td");
       const button = document.createElement("button");
       button.innerHTML = "&times;";
-      button.setAttribute("timestamp", entry.timestamp);
-      button.setAttribute("key", data.key);
+      button.setAttribute("timestamp", timestamp);
+      button.setAttribute("key", data.diary_key);
+      button.setAttribute("date", data.date);
       button.addEventListener("click", deleteEntry);
       td.appendChild(button);
       tr.appendChild(td);
