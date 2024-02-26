@@ -69,6 +69,7 @@ table {
 const datePicker = document.getElementById('date-picker');
 const loader = document.getElementById("loading");
 const pre = document.getElementById("json-pre");
+const content = document.getElementById("content");
 let questions = undefined;
 let reportData = undefined;
 let foodData = undefined;
@@ -136,6 +137,7 @@ function handleGetReportData(event) {
   buildCaffeineChart();
   drawTrueOrFalseTable();
   drawTextsWithSort();
+  loader.style.display = "none";
 }
 
 document.addEventListener("keydown", function(e) {
@@ -147,10 +149,6 @@ document.addEventListener("keydown", function(e) {
 
 datePicker.value = getToday();
 getQuestions();
-// buildCalorieChart();
-// buildCaffeineChart();
-// drawTrueOrFalseTable();
-// drawTextsWithSort();
 
 function drawTrueOrFalseTable() {
   let ynQuestions = questions.filter(q=>q.type==="yn");
@@ -191,7 +189,6 @@ function drawTrueOrFalseTable() {
     table.append(row);
   }
   content.appendChild(table);
-  loader.style.display = "none";
 }
 
 function drawTextsWithSort() {
@@ -257,7 +254,6 @@ function drawTextsWithSort() {
         }
       }
     content.appendChild(table);
-    loader.style.display = "none";
   }
 }
 
