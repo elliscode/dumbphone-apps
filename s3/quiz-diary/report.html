@@ -284,15 +284,15 @@ function buildCalorieChart() {
   let dates = foodData.map(x=>x.date);
   let calorieValues = foodData.map(x=>Math.round(Object.values(x.entries).reduce((t,y)=>t+parseFloat(y.calculated_values.calories),0)));
 
-  let context = drawChart(dates, calorieValues, 6000, [{'name': 'Minimum', 'value': 1600}, {'name': 'Maximum', 'value': 2400}]);
+  let context = drawChart(dates, calorieValues, 'Calories', 'kcal', 6000, [{'name': 'Minimum', 'value': 1600}, {'name': 'Maximum', 'value': 2400}]);
 }
 function buildCaffeineChart() {
   let dates = foodData.map(x=>x.date);
-  let caffieneValues = foodData.map(x=>Math.round(Object.values(x.entries).reduce((t,y)=>t+parseFloat(y.calculated_values.caffeine),0)));
+  let caffeineValues = foodData.map(x=>Math.round(Object.values(x.entries).reduce((t,y)=>t+parseFloat(y.calculated_values.caffeine),0)));
 
-  let context = drawChart(dates, caffieneValues, 600, [{'name': 'Minimum', 'value': 200}]);
+  let context = drawChart(dates, caffeineValues, 'Caffeine', 'mg', 600, [{'name': 'Minimum', 'value': 200}]);
 }
-function drawChart(x, y, yMax, lines) {
+function drawChart(x, y, title, unit, yMax, lines) {
   let div = document.createElement('div');
   div.classList.add('chart-container');
   content.appendChild(div);
@@ -302,32 +302,44 @@ function drawChart(x, y, yMax, lines) {
   div.appendChild(canvas);
 
   let ctx = canvas.getContext('2d');
+  // draw the title
+  ctx.font = "24px serif";
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(title, canvas.width / 2, canvas.height * 0.1);
+
   // draw the axes
+  let start = 0.05;
+  let end = 0.95;
   ctx.beginPath();
-  ctx.moveTo(canvas.width * 0.05, canvas.height * 0.1);
-  ctx.lineTo(canvas.width * 0.05, canvas.height * 0.9);
-  ctx.lineTo(canvas.width * 0.95, canvas.height * 0.9);
+  ctx.moveTo(canvas.width * start, canvas.height * 0.1);
+  ctx.lineTo(canvas.width * start, canvas.height * 0.9);
+  ctx.lineTo(canvas.width * end, canvas.height * 0.9);
   ctx.stroke();
 
   // draw the days
-  ctx.font = "12px serif";
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  let start = 0.1;
-  let end = 0.9;
-  for (let i = 0; i < x.length; i++) {
-    let mult = start+(i*((end-start)/(x.length-1)));
-    ctx.fillText(x[i], canvas.width * mult, canvas.height * 0.91);
-  }
 
   // draw the bars
   let min = 0.1;
   let max = 0.9;
-  let width = ((end-start)/(x.length-1))*0.8;
+  let width = ((end-start)/(x.length))*0.8;
   for (let i = 0; i < y.length; i++) {
-    let mult = start+(i*((end-start)/(x.length-1)));
-    ctx.fillStyle = "green";
+    let mult = start+((i+0.5)*((end-start)/(x.length)));
+
+    ctx.font = "12px serif";
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = "black";
+    ctx.fillText(x[i], canvas.width * mult, canvas.height * 0.91);
+
+    ctx.fillStyle = "grey";
     ctx.fillRect(canvas.width*(mult-width/2), canvas.height*max, canvas.width*width, -canvas.height*(min+((max-min)*(y[i]/yMax))));
+
+    ctx.font = "12px serif";
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillStyle = "black";
+    ctx.fillText(`${y[i]} ${unit}`, canvas.width * mult, canvas.height*(max-(min+((max-min)*(y[i]/yMax)))));
   }
   
   // draw the lines
