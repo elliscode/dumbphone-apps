@@ -265,15 +265,42 @@ function buildCalorieChart() {
   let dates = foodData.map(x=>x.date);
   let calorieValues = foodData.map(x=>Math.round(Object.values(x.entries).reduce((t,y)=>t+parseFloat(y.calculated_values.calories),0)));
 
-  let context = drawChart(dates, calorieValues, 'Calories', 'kcal', 6000, [{'name': 'Minimum', 'value': 1600}, {'name': 'Maximum', 'value': 2400}]);
+  let context = drawBarChart({
+    xLabels: dates, 
+    yValues: calorieValues, 
+    chartName: 'Calories', 
+    yUnit: 'kcal', 
+    yMax: 6000, 
+    lines: [
+      {name: 'Minimum', value: 1600},
+      {name: 'Maximum', value: 2400}
+    ]
+  });
 }
 function buildCaffeineChart() {
   let dates = foodData.map(x=>x.date);
   let caffeineValues = foodData.map(x=>Math.round(Object.values(x.entries).reduce((t,y)=>t+parseFloat(y.calculated_values.caffeine),0)));
 
-  let context = drawChart(dates, caffeineValues, 'Caffeine', 'mg', 600, [{'name': 'Minimum', 'value': 200}]);
+  let context = drawBarChart({
+    xLabels: dates, 
+    yValues: caffeineValues, 
+    chartName: 'Caffeine', 
+    yUnit: 'mg', 
+    yMax: 600, 
+    lines: [
+      {name: 'Minimum', value: 200}
+    ]
+  });
 }
-function drawChart(x, y, title, unit, yMax, lines) {
+function drawBarChart(params) {
+  params = params || {};
+  let x = params.xLabels || [];
+  let y = params.yValues || [];
+  let title = params.chartName || "Chart";
+  let unit = params.yUnit || "";
+  let yMax = params.yMax || 1;
+  let lines = params.lines || [];
+
   let div = document.createElement('div');
   div.classList.add('chart-container');
   content.appendChild(div);
