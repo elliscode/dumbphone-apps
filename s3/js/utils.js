@@ -77,7 +77,43 @@ function hashCode(input) {
       hash |= 0; // Convert to 32bit integer
   }
   return hash.toString();
-};
+}
+const dateRegex = /^(\d{4})-(\d{2})-(\d{2})$/;
+function getTodayOrUrlParam() {
+  let year = 0;
+  let month = 0;
+  let day = 0;
+
+  let youStillNeedToFigureOutTodaysDate = true;
+
+  // first check if you have a URL param
+  let urlParam = getParameterByName("date");
+  if (urlParam) {
+    // if so, check if its valid
+    if (dateRegex.test(urlParam)) {
+      let regexResult = dateRegex.exec(urlParam);
+      year = regexResult[1];
+      month = regexResult[2];
+      day = regexResult[3];
+      youStillNeedToFigureOutTodaysDate = false;
+    }
+  }
+  if (youStillNeedToFigureOutTodaysDate) {
+    let d = new Date();
+    year = (d.getFullYear()).toString();
+    month = (d.getMonth() + 1).toString();
+    day = (d.getDate()).toString();
+    
+    if (month.length < 2) {
+      month = '0' + month;
+    }
+    if (day.length < 2) {
+      day = '0' + day;
+    }
+  }
+
+  return `${year}-${month}-${day}`;
+}
 const csrfToken = localStorage.getItem("dumbphoneapps-csrf-token");
 const API_DOMAIN = "https://api.dumbphoneapps.com";
 const UI_DOMAIN = "https://www.dumbphoneapps.com";

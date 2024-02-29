@@ -230,22 +230,6 @@ function getAnswers(event) {
   xmlHttp.send(JSON.stringify(payload));
 }
 
-function getToday() {
-  let d = new Date();
-  let year = (d.getFullYear()).toString();
-  let month = (d.getMonth() + 1).toString();
-  let day = (d.getDate()).toString();
-  
-  if (month.length < 2) {
-    month = '0' + month;
-  }
-  if (day.length < 2) {
-    day = '0' + day;
-  }
-
-  return `${year}-${month}-${day}`;
-}
-
 function handleGetAnswers(event) {
   let result = defaultHandler(event);
   populateQuestions(result.responseJson);
@@ -639,7 +623,7 @@ document.addEventListener("keydown", function(e) {
   }
 }, false);
 
-datePicker.value = getToday();
+datePicker.value = getTodayOrUrlParam();
 
 getQuizDiary();
     </script>
