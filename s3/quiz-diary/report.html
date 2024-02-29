@@ -333,19 +333,20 @@ function drawChart(x, y, title, unit, yMax, lines) {
     ctx.fillText(x[i], canvas.width * mult, canvas.height * 0.91);
 
     ctx.fillStyle = "grey";
-    ctx.fillRect(canvas.width*(mult-width/2), canvas.height*max, canvas.width*width, -canvas.height*(min+((max-min)*(y[i]/yMax))));
+    ctx.fillRect(canvas.width*(mult-width/2), canvas.height*max, canvas.width*width, -canvas.height*((max-min)*(y[i]/yMax)));
 
     ctx.font = "12px serif";
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
     ctx.fillStyle = "black";
-    ctx.fillText(`${y[i]} ${unit}`, canvas.width * mult, canvas.height*(max-(min+((max-min)*(y[i]/yMax)))));
+    ctx.fillText(`${y[i]} ${unit}`, canvas.width * mult, canvas.height*(max - ((max-min)*y[i]/yMax)));
   }
   
   // draw the lines
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i];
-    let height = canvas.height*(max-(min+((max-min)*(line.value/yMax))));
+    // let height = canvas.height*(max - (line.value/yMax));
+    let height = canvas.height*(max - ((max-min)*line.value/yMax));
     ctx.beginPath();
     ctx.moveTo(canvas.width * 0.05, height);
     ctx.lineTo(canvas.width * 0.95, height);
