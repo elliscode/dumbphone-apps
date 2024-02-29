@@ -177,6 +177,7 @@ function moveUp(event) {
   if (otherGroup) {
     swapGroups(groupId, otherGroup.id);
     runOrderCall();
+    window.scrollBy({ top: groupElement.getBoundingClientRect().top, behavior: "smooth" });
   }
 }
 function moveDown(event) {
@@ -188,6 +189,7 @@ function moveDown(event) {
   if (otherGroup) {
     swapGroups(otherGroup.id, groupId);
     runOrderCall();
+    window.scrollBy({ top: groupElement.getBoundingClientRect().top, behavior: "smooth" });
   }
 }
 
