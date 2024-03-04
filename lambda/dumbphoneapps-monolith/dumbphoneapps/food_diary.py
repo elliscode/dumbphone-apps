@@ -256,9 +256,8 @@ def set_serving_route(event, user_data, body):
     print(determined_multiplier)
     if "calculated_values" not in serving_item:
         serving_item["calculated_values"] = {}
-    serving_item["calculated_values"][
-        "calories"
-    ] = f"{determined_multiplier * float(food['metadata']['calories'])}"
+    for value_key in ALL_VALUE_KEYS:
+        serving_item["calculated_values"][value_key] = f"{determined_multiplier * float(food['metadata'][value_key])}"
     serving_item["calculated_values"]["serving_amount"] = f"{body_amount}"
     serving_item["calculated_values"]["serving_name"] = f"{found_food_serving['name']}"
     serving_item["multiplier"] = f"{determined_multiplier}"
@@ -405,14 +404,7 @@ def add_route(event, user_data, body):
         serving_entry["expiration"] = int(time.time()) + (30 * 24 * 60 * 60)
 
         calculated_values = {}
-        for value_key in [
-            "alcohol",
-            "caffeine",
-            "calories",
-            "carbs",
-            "fat",
-            "protein",
-        ]:
+        for value_key in ALL_VALUE_KEYS:
             calculated_values[
                 value_key
             ] = f"{float(food_item['metadata'][value_key]) * float(serving_entry['multiplier'])}"
