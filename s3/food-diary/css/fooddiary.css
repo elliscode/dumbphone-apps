@@ -69,7 +69,14 @@ button:active {
   padding: 1px 6px;
   margin: 0px;
 }
-
 #current-values p {
   margin: 0px;
+}
+#totals-modal p {
+  margin: 3px;
+  display: flex;
+  justify-content: space-between;
+}
+#totals-modal {
+  min-width: 150px;
 }

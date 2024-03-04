@@ -635,14 +635,11 @@ function addToRecipe(event) {
   currentFood.metadata.recipe.ingredients.push(newJson);
   redrawRows();
 }
-function showHideCallback(event) {
-  let button = event.target;
-  let total = button.getAttribute("total");
-  if ("#" == button.innerText) {
-    button.innerText = total;
-  } else {
-    button.innerText = "#";
-  }
+function showTotalsModal(event) {
+  let totalsModal = document.getElementById('totals-modal');
+  totalsModal.style.display = 'block';
+  let modalBg = findParentWithClass(totalsModal, "modal-bg");
+  modalBg.style.display = "flex";
 }
 function setDate(event) {
   const textBoxParent = document.getElementById("input");
@@ -772,7 +769,7 @@ function populateTable(event) {
       const button = document.createElement("button");
       button.innerHTML = "#";
       button.setAttribute("total", data.total);
-      button.addEventListener("click", showHideCallback);
+      button.addEventListener("click", showTotalsModal);
       td.appendChild(button);
       tr.appendChild(td);
     }
@@ -782,6 +779,17 @@ function populateTable(event) {
       tr.appendChild(td);
     }
     table.appendChild(tr);
+  }
+  // perform totals display
+  let totalKeys = Object.keys(data.totals);
+  for (let index = 0; index < totalKeys.length; index++) {
+    let key = totalKeys[index];
+    let span = document.getElementById(`total-${key}`);
+    if (!span) {
+      // in the future, just add a span
+      continue;
+    }
+    span.innerText = Math.round(data.totals[key]);
   }
   loader.style.display = "none";
 }

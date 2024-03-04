@@ -11,6 +11,7 @@ from .utils import (
     create_id,
 )
 
+ALL_VALUE_KEYS = ["alcohol","caffeine","calories","carbs","fat","protein"]
 
 def determine_tokens(food_id, food_name):
     food_tokens = {}
@@ -472,14 +473,7 @@ def add_route(event, user_data, body):
         }
 
         calculated_values = {}
-        for value_key in [
-            "alcohol",
-            "caffeine",
-            "calories",
-            "carbs",
-            "fat",
-            "protein",
-        ]:
+        for value_key in ALL_VALUE_KEYS:
             calculated_values[value_key] = new_food["metadata"][value_key]
 
         new_diary_entry = {
@@ -551,14 +545,15 @@ def get_day_route(event, user_data, body):
         python_item = dynamo_obj_to_python_obj(response["Item"])
         food_diary_entries = python_item['entries']
 
-    total = 0
+    totals = {}
     for timestamp, food_diary_entry in food_diary_entries.items():
-        total = total + float(food_diary_entry['calculated_values']['calories'])
+        for vk in ALL_VALUE_KEYS:
+            totals[vk] = totals.get(vk,0) + float(food_diary_entry['calculated_values'][vk])
     
     return format_response(
         event=event,
         http_code=200,
-        body={"entries": food_diary_entries, 'diary_key': partition_key, 'date': sort_key, 'total': int(total)},
+        body={"entries": food_diary_entries, 'diary_key': partition_key, 'date': sort_key, 'totals': totals},
     )
 
 
