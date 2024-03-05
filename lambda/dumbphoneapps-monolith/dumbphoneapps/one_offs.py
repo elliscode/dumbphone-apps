@@ -17,6 +17,7 @@ from .utils import (
     TABLE_NAME,
     dynamo_obj_to_python_obj,
     boto3,
+    SMS_SQS_QUEUE_URL,
 )
 import time
 
@@ -181,7 +182,7 @@ def twilio_route(event):
         }
         print(message)
         sqs.send_message(
-            QueueUrl="https://sqs.us-east-1.amazonaws.com/646933935516/smsQueue",
+            QueueUrl=SMS_SQS_QUEUE_URL,
             MessageBody=json.dumps(message),
         )
         return {
@@ -222,7 +223,7 @@ def twilio_route(event):
     message = {"phone": from_number, "message": f"Successfully added {count} items"}
     print(message)
     sqs.send_message(
-        QueueUrl="https://sqs.us-east-1.amazonaws.com/646933935516/smsQueue",
+        QueueUrl=SMS_SQS_QUEUE_URL,
         MessageBody=json.dumps(message),
     )
 

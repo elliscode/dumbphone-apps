@@ -10,6 +10,7 @@ from .utils import (
     TABLE_NAME,
     dynamo_obj_to_python_obj,
     create_id,
+    SMS_SQS_QUEUE_URL,
 )
 
 
@@ -37,7 +38,7 @@ def sendsharelist_route(event, user_data, body):
     }
     print(message)
     sqs.send_message(
-        QueueUrl="https://sqs.us-east-1.amazonaws.com/646933935516/smsQueue",
+        QueueUrl=SMS_SQS_QUEUE_URL,
         MessageBody=json.dumps(message),
     )
     return format_response(

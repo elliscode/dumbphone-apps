@@ -11,6 +11,7 @@ ADMIN_PHONE = os.environ["ADMIN_PHONE"]
 DOMAIN_NAME = os.environ["DOMAIN_NAME"]
 DOMAIN_NAME_WWW = os.environ["DOMAIN_NAME_WWW"]
 TABLE_NAME = os.environ["DYNAMODB_TABLE_NAME"]
+SMS_SQS_QUEUE_URL = os.environ["SMS_SQS_QUEUE_URL"]
 
 digits = "0123456789"
 lowercase_letters = "abcdefghijklmnopqrstuvwxyz"
@@ -265,7 +266,7 @@ def otp_route(event):
         }
         print(message)
         sqs.send_message(
-            QueueUrl="https://sqs.us-east-1.amazonaws.com/646933935516/smsQueue",
+            QueueUrl=SMS_SQS_QUEUE_URL,
             MessageBody=json.dumps(message),
         )
         body_value = {"username": phone}
@@ -282,7 +283,7 @@ def alert_admin_of_new_user(phone):
     }
     print(message)
     sqs.send_message(
-        QueueUrl="https://sqs.us-east-1.amazonaws.com/646933935516/smsQueue",
+        QueueUrl=SMS_SQS_QUEUE_URL,
         MessageBody=json.dumps(message),
     )
 
