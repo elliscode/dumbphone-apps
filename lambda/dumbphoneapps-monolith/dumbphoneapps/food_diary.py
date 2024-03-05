@@ -249,7 +249,6 @@ def set_serving_route(event, user_data, body):
         * float(body_amount)
         / float(found_food_serving["amount"])
     )
-    print(determined_multiplier)
     if "calculated_values" not in serving_item:
         serving_item["calculated_values"] = {}
     for value_key in ALL_VALUE_KEYS:
