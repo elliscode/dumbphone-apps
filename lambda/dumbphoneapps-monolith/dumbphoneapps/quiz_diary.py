@@ -119,7 +119,10 @@ def get_report_data_route(event, user_data, body):
         )
         keys.append(
             python_obj_to_dynamo_obj(
-                {"key1": f"diary_{user_data['key2']}", "key2": new_date_obj.strftime("%Y-%m-%d")}
+                {
+                    "key1": f"diary_{user_data['key2']}",
+                    "key2": new_date_obj.strftime("%Y-%m-%d"),
+                }
             )
         )
     response = dynamo.batch_get_item(
@@ -135,13 +138,17 @@ def get_report_data_route(event, user_data, body):
     for response_item in responses:
         python_item = dynamo_obj_to_python_obj(response_item)
         if "answers" in python_item:
-            output_answers.append({"date": python_item["key2"], "answers": python_item["answers"]})
+            output_answers.append(
+                {"date": python_item["key2"], "answers": python_item["answers"]}
+            )
         elif "entries" in python_item:
-            output_diary.append({"date": python_item["key2"], "entries": python_item["entries"]})
+            output_diary.append(
+                {"date": python_item["key2"], "entries": python_item["entries"]}
+            )
     return format_response(
         event=event,
         http_code=200,
-        body={'answers': output_answers, 'foodDiary': output_diary},
+        body={"answers": output_answers, "foodDiary": output_diary},
     )
 
 

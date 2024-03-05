@@ -11,7 +11,8 @@ from .utils import (
     create_id,
 )
 
-ALL_VALUE_KEYS = ["alcohol","caffeine","calories","carbs","fat","protein"]
+ALL_VALUE_KEYS = ["alcohol", "caffeine", "calories", "carbs", "fat", "protein"]
+
 
 def determine_tokens(food_id, food_name):
     food_tokens = {}
@@ -104,7 +105,9 @@ def add_all_tokens(food_id, food_name):
 def set_food_route(event, user_data, body):
     diary_response = dynamo.get_item(
         TableName=TABLE_NAME,
-        Key=python_obj_to_dynamo_obj({"key1": f"diary_{user_data["key2"]}", "key2": body["date"]}),
+        Key=python_obj_to_dynamo_obj(
+            {"key1": f"diary_{user_data['key2']}", "key2": body["date"]}
+        ),
     )
     diary_entry = dynamo_obj_to_python_obj(diary_response["Item"])
     food_response = dynamo.get_item(
@@ -118,18 +121,9 @@ def set_food_route(event, user_data, body):
         food["name"] = body["name"]
         add_all_tokens(food["key2"], food["name"])
         diary_entry["name"] = food["name"]
-    if body["alcohol"]:
-        food["metadata"]["alcohol"] = body["alcohol"]
-    if body["caffeine"]:
-        food["metadata"]["caffeine"] = body["caffeine"]
-    if body["calories"]:
-        food["metadata"]["calories"] = body["calories"]
-    if body["carbs"]:
-        food["metadata"]["carbs"] = body["carbs"]
-    if body["fat"]:
-        food["metadata"]["fat"] = body["fat"]
-    if body["protein"]:
-        food["metadata"]["protein"] = body["protein"]
+    for value_key in ALL_VALUE_KEYS:
+        if body[value_key]:
+            food["metadata"][value_key] = body[value_key]
     dynamo.put_item(
         TableName=TABLE_NAME,
         Item=python_obj_to_dynamo_obj(food),
@@ -219,10 +213,12 @@ def create_serving_route(event, user_data, body):
 def set_serving_route(event, user_data, body):
     diary_response = dynamo.get_item(
         TableName=TABLE_NAME,
-        Key=python_obj_to_dynamo_obj({"key1": f"diary_{user_data["key2"]}", "key2": body["date"]}),
+        Key=python_obj_to_dynamo_obj(
+            {"key1": f"diary_{user_data['key2']}", "key2": body["date"]}
+        ),
     )
     diary_entry = dynamo_obj_to_python_obj(diary_response["Item"])
-    serving_item = diary_entry['entries'][body["timestamp"]]
+    serving_item = diary_entry["entries"][body["timestamp"]]
     food_response = dynamo.get_item(
         TableName=TABLE_NAME,
         Key=python_obj_to_dynamo_obj({"key1": "food", "key2": body["hash"]}),
@@ -257,12 +253,14 @@ def set_serving_route(event, user_data, body):
     if "calculated_values" not in serving_item:
         serving_item["calculated_values"] = {}
     for value_key in ALL_VALUE_KEYS:
-        serving_item["calculated_values"][value_key] = f"{determined_multiplier * float(food['metadata'][value_key])}"
+        serving_item["calculated_values"][
+            value_key
+        ] = f"{determined_multiplier * float(food['metadata'][value_key])}"
     serving_item["calculated_values"]["serving_amount"] = f"{body_amount}"
     serving_item["calculated_values"]["serving_name"] = f"{found_food_serving['name']}"
     serving_item["multiplier"] = f"{determined_multiplier}"
     serving_item["unit"] = body_unit
-    diary_entry['entries'][body["timestamp"]] = serving_item
+    diary_entry["entries"][body["timestamp"]] = serving_item
 
     serving_entry = {
         "key1": f"serving_{user_data['key2']}",
@@ -305,7 +303,7 @@ def get_serving_route(event, user_data, body):
 
 @authenticate
 def delete_route(event, user_data, body):
-    partition_key = f"diary_{user_data["key2"]}"
+    partition_key = f"diary_{user_data['key2']}"
     sort_key = body["date"]
     response = dynamo.get_item(
         TableName=TABLE_NAME,
@@ -318,7 +316,7 @@ def delete_route(event, user_data, body):
             body="Item not found",
         )
     diary_entry = dynamo_obj_to_python_obj(response["Item"])
-    deleted_item = diary_entry['entries'].pop(body['timestamp'])
+    deleted_item = diary_entry["entries"].pop(body["timestamp"])
     dynamo.put_item(
         TableName=TABLE_NAME,
         Item=python_obj_to_dynamo_obj(diary_entry),
@@ -443,25 +441,22 @@ def add_route(event, user_data, body):
         re_match = re.search(r"^(\d+\.*\d*)(.*)$", body["serving"])
         serving_amount = re_match.group(1)
         serving_name = re_match.group(2).strip()
+        metadata = {
+            "servings": [
+                {
+                    "amount": f"{serving_amount}",
+                    "multiplier": f"{1}",
+                    "name": serving_name,
+                },
+            ],
+        }
+        for value_key in ALL_VALUE_KEYS:
+            metadata[value_key] = f"{body.get(value_key, 0)}"
         new_food = {
             "key1": "food",
             "key2": create_id(32),
             "name": body["foodName"],
-            "metadata": {
-                "alcohol": f"{body['alcohol']}",
-                "caffeine": f"{body['caffeine']}",
-                "calories": f"{body['calories']}",
-                "carbs": f"{body['carbs']}",
-                "fat": f"{body['fat']}",
-                "protein": f"{body['protein']}",
-                "servings": [
-                    {
-                        "amount": f"{serving_amount}",
-                        "multiplier": f"{1}",
-                        "name": serving_name,
-                    },
-                ],
-            },
+            "metadata": metadata,
         }
 
         calculated_values = {}
@@ -504,48 +499,26 @@ def get_day_route(event, user_data, body):
     )
 
     food_diary_entries = {}
-    if "Item" not in response:
-        # check if there's any old style food items
-        response = dynamo.query(
-            TableName=TABLE_NAME,
-            KeyConditions={
-                "key1": {
-                    "AttributeValueList": [{"S": f'diary_{user_data["key2"]}_{sort_key}'}],
-                    "ComparisonOperator": "EQ"
-                },
-            },
-        )
-        if "Items" in response and len(response["Items"]) > 0:
-            food_diary_entries = convert_to_new_style_food_diary(response["Items"])
-            new_entry = {
-                "key1": partition_key,
-                "key2": sort_key,
-                "entries": food_diary_entries,
-            }
-            items = [
-                {"PutRequest": {"Item": python_obj_to_dynamo_obj(new_entry)}},
-            ]
-            for old_item in response["Items"]:
-                if len(items) >= 25:
-                    dynamo.batch_write_item(RequestItems={TABLE_NAME: items})
-                    items = []
-                old_item_python = dynamo_obj_to_python_obj(old_item)
-                old_key = {'key1': old_item_python['key1'], 'key2': old_item_python['key2']}
-                items.append({'DeleteRequest': {'Key': python_obj_to_dynamo_obj(old_key)}})
-            dynamo.batch_write_item(RequestItems={TABLE_NAME: items})
-    else:
+    if "Item" in response:
         python_item = dynamo_obj_to_python_obj(response["Item"])
-        food_diary_entries = python_item['entries']
+        food_diary_entries = python_item["entries"]
 
     totals = {}
     for timestamp, food_diary_entry in food_diary_entries.items():
         for vk in ALL_VALUE_KEYS:
-            totals[vk] = totals.get(vk,0) + float(food_diary_entry['calculated_values'][vk])
-    
+            totals[vk] = totals.get(vk, 0) + float(
+                food_diary_entry.get("calculated_values", {}).get(vk, 0)
+            )
+
     return format_response(
         event=event,
         http_code=200,
-        body={"entries": food_diary_entries, 'diary_key': partition_key, 'date': sort_key, 'totals': totals},
+        body={
+            "entries": food_diary_entries,
+            "diary_key": partition_key,
+            "date": sort_key,
+            "totals": totals,
+        },
     )
 
 
@@ -553,8 +526,8 @@ def convert_to_new_style_food_diary(old_diary_items):
     new_diary_entries = {}
     for old_diary_item in old_diary_items:
         python_item = dynamo_obj_to_python_obj(old_diary_item)
-        python_item.pop('key1')
-        timestamp = python_item.pop('key2')
+        python_item.pop("key1")
+        timestamp = python_item.pop("key2")
         new_diary_entries[timestamp] = python_item
     return new_diary_entries
 
