@@ -119,7 +119,7 @@ def set_food_route(event, user_data, body):
         remove_all_tokens(food["key2"], food["name"])
         food["name"] = body["name"]
         add_all_tokens(food["key2"], food["name"])
-        diary_entry["name"] = food["name"]
+        diary_entry["entries"][body["timestamp"]]["name"] = food["name"]
     for value_key in ALL_VALUE_KEYS:
         if body[value_key]:
             food["metadata"][value_key] = body[value_key]
