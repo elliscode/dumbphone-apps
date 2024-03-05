@@ -34,43 +34,42 @@ def remove_all_tokens(food_id, food_name):
     items = []
     token_map = determine_tokens(food_id, food_name)
     for token, value in token_map.items():
-        for token_value in value:
-            response = dynamo.get_item(
-                TableName=TABLE_NAME,
-                Key=python_obj_to_dynamo_obj({"key1": "food_token", "key2": token}),
+        response = dynamo.get_item(
+            TableName=TABLE_NAME,
+            Key=python_obj_to_dynamo_obj({"key1": "food_token", "key2": token}),
+        )
+        if "Item" not in response:
+            continue
+        json_data = dynamo_obj_to_python_obj(response["Item"])
+        found_index = 0
+        while found_index < len(json_data["food_ids"]):
+            current_data = json_data["food_ids"][found_index]
+            print(current_data)
+            print(food_id)
+            print(food_name)
+            if (
+                current_data["hash"] == food_id
+                and current_data["name"] == food_name
+            ):
+                print("matches!")
+                break
+            found_index = found_index + 1
+        if found_index < len(json_data["food_ids"]):
+            json_data["food_ids"].pop(found_index)
+        if len(json_data["food_ids"]) == 0:
+            json_data.pop("food_ids")
+            items.append(
+                {"DeleteRequest": {"Key": python_obj_to_dynamo_obj(json_data)}}
             )
-            if "Item" not in response:
-                continue
-            json_data = dynamo_obj_to_python_obj(response["Item"])
-            found_index = 0
-            while found_index < len(json_data["food_ids"]):
-                current_data = json_data["food_ids"][found_index]
-                print(current_data)
-                print(food_id)
-                print(food_name)
-                if (
-                    current_data["hash"] == food_id
-                    and current_data["name"] == food_name
-                ):
-                    print("matches!")
-                    break
-                found_index = found_index + 1
-            if found_index < len(json_data["food_ids"]):
-                json_data["food_ids"].pop(found_index)
-            if len(json_data["food_ids"]) == 0:
-                json_data.pop("food_ids")
-                items.append(
-                    {"DeleteRequest": {"Key": python_obj_to_dynamo_obj(json_data)}}
-                )
-            else:
-                items.append(
-                    {"PutRequest": {"Item": python_obj_to_dynamo_obj(json_data)}}
-                )
-            if len(items) >= 25:
-                print(items)
-                response = dynamo.batch_write_item(RequestItems={TABLE_NAME: items})
-                items = []
-                print(response)
+        else:
+            items.append(
+                {"PutRequest": {"Item": python_obj_to_dynamo_obj(json_data)}}
+            )
+        if len(items) >= 25:
+            print(items)
+            response = dynamo.batch_write_item(RequestItems={TABLE_NAME: items})
+            items = []
+            print(response)
     if len(items) > 0:
         print(items)
         response = dynamo.batch_write_item(RequestItems={TABLE_NAME: items})
