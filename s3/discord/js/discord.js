@@ -367,7 +367,8 @@ function buildMessage(parentElement, message) {
   if (
     !message.content &&
     message.embeds.length == 0 &&
-    message.attachments.length == 0
+    message.attachments.length == 0 &&
+    message.sticker_items.length == 0
   ) {
     let span = document.createElement("span");
     span.innerText = messageTypes[message.type].replace(
@@ -491,16 +492,63 @@ function buildMessage(parentElement, message) {
           loadVideo(event.target, attachment.url, attachment.content_type);
         };
         parentElement.appendChild(placeholder);
-      } else {
+      } else if (attachment.content_type.startsWith("image/")) {
         let placeholder = document.createElement("div");
         placeholder.classList.add("placeholder");
         placeholder.onclick = function (event) {
           loadImage(event.target, attachment.url);
         };
         parentElement.appendChild(placeholder);
-      }
+      } else {
+        let link = document.createElement('a');
+        let placeholder = document.createElement("div");
+        placeholder.classList.add("download-link");
+        link.href = attachment.url;
+        link.download = true;
+        link.appendChild(placeholder);
+        parentElement.appendChild(link);
+      } 
     }
   }
+  if (message.sticker_items) {
+    for (let i = 0; i < message.sticker_items.length; i++) {
+      let stickerItem = message.sticker_items[i];
+      // create placeholder div that you will load later
+      let stickerDiv = document.createElement('div');
+      stickerDiv.classList.add('to-be-loaded-sticker');
+      stickerDiv.setAttribute('sticker-id', stickerItem.id);
+      stickerDiv.innerText = 'Sticker description:';
+      parentElement.appendChild(stickerDiv);
+    }
+    setTimeout(loadStickers, 100);
+  }
+}
+function loadStickers(event) {
+  let stickersToLoad = Array.from(document.getElementsByClassName('to-be-loaded-sticker'));
+  if (stickersToLoad.length > 0) {
+    let stickerToLoad = stickersToLoad[0];
+    let stickerId = stickerToLoad.getAttribute('sticker-id');
+    stickerToLoad.classList.remove('to-be-loaded-sticker');
+    stickerToLoad.classList.add('to-be-set-sticker');
+
+    let url = `${API_DOMAIN}/discord/api/v10/stickers/${stickerId}`;
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true);
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleStickers;
+    let payload = {
+      csrf: csrfToken,
+      method: "GET"
+    };
+    xmlHttp.send(JSON.stringify(payload));
+  }
+}
+function handleStickers(event) {
+  let result = defaultHandler(event);
+  let stickerToLoad = document.getElementsByClassName('to-be-set-sticker')[0];
+  stickerToLoad.classList.remove('to-be-set-sticker');
+  stickerToLoad.innerText = `Sticker description: ${result.responseJson.description}`;
+  loadStickers();
 }
 function loadImage(element, url) {
   let imageElement = document.createElement("img");

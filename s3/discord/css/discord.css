@@ -81,7 +81,7 @@ video,
 img {
   background-color: rgb(64, 66, 73);
 }
-.placeholder {
+.placeholder, .download-link {
   background-color: rgb(64, 66, 73);
   width: 100%;
   height: calc(50vh - 16px);
@@ -91,6 +91,16 @@ img {
 }
 .placeholder:before {
   content: "Click to load media";
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-content: center;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.download-link:before {
+  content: "Click to download file";
   width: 100%;
   height: 100%;
   display: flex;

@@ -3,6 +3,7 @@ const button = document.getElementById("share-button");
 const linkDiv = document.getElementById("link-div");
 const link = document.getElementById("link");
 const smsLink = document.getElementById("sms-link");
+const smsDirectionsLink = document.getElementById("sms-directions-link");
 function getCurrentLocation() {
   locationTimeout = undefined;
   json.style.display = "block";
@@ -17,14 +18,15 @@ function getCurrentLocation() {
 
 let locationToken = localStorage.getItem("locationToken");
 let locationTimeout = undefined;
-
+let lat = 0;
+let long = 0;
 function showPosition(position) {
   if (locationTimeout) {
     return;
   }
 
-  let lat = position.coords.latitude;
-  let long = position.coords.longitude;
+  lat = position.coords.latitude;
+  long = position.coords.longitude;
   json.innerHTML =
     "Sending current location latitude=" +
     lat +
@@ -70,6 +72,11 @@ function handleShare(event) {
         "/lv/?id=" +
         locationToken
     );
+  smsDirectionsLink.style.display = 'block';
+
+  let coordsString = `${lat},${long}`;
+  let googleUrl = "https://www.google.com/maps/search/?api=1&query=" + coordsString;
+  smsDirectionsLink.href = "sms://?&body=" + encodeURIComponent(googleUrl);
 
   locationTimeout = setTimeout(getCurrentLocation, 5000);
 }
