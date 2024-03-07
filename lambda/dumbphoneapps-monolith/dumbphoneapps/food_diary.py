@@ -330,23 +330,40 @@ def delete_route(event, user_data, body):
 def add_route(event, user_data, body):
     sort_key = body["date"]
     partition_key = f'diary_{user_data["key2"]}'
-    response = dynamo.get_item(
+    # get todays diary, if none exists, create it
+    diary_response = dynamo.get_item(
         TableName=TABLE_NAME,
         Key=python_obj_to_dynamo_obj({"key1": partition_key, "key2": sort_key}),
     )
-    if "Item" not in response:
+    if "Item" not in diary_response:
         current_entry = {
             "key1": partition_key,
             "key2": sort_key,
             "entries": {},
         }
     else:
-        current_entry = dynamo_obj_to_python_obj(response["Item"])
-    if "hash" in body:
-        food_key = {"key1": "food", "key2": body["hash"]}
+        current_entry = dynamo_obj_to_python_obj(diary_response["Item"])
+    # if no food hash, lets check if this token exists, case-insensitive,
+    # then check if the full food name exists in that token, this prevents
+    # duplocate values that I have seen in the past, when the user presses
+    # the "Add" button instead of clicking on the relevant food
+    food_hash = body.get('hash')
+    if not food_hash:
+        full_food_token = body.get("foodName").lower().strip()
+        food_token_response = dynamo.get_item(
+            TableName=TABLE_NAME,
+            Key=python_obj_to_dynamo_obj({"key1": "food_token", "key2": full_food_token}),
+        )
+        if "Item" in food_token_response:
+            food_token_result = dynamo_obj_to_python_obj(food_token_response["Item"])
+            for food_id_token in food_token_result['food_ids']:
+                if food_id_token['name'].lower().strip() == full_food_token:
+                    food_hash = food_id_token['hash']
+    if food_hash:
+        food_key = {"key1": "food", "key2": food_hash}
         previous_serving_key = {
             "key1": f"serving_{user_data['key2']}",
-            "key2": body["hash"],
+            "key2": food_hash,
         }
         response = dynamo.batch_get_item(
             RequestItems={
@@ -371,7 +388,7 @@ def add_route(event, user_data, body):
         if not serving_entry:
             serving_entry = {
                 "key1": f"serving_{user_data['key2']}",
-                "key2": body["hash"],
+                "key2": food_hash,
                 "multiplier": f"{1}",
                 "unit": "kcal",
             }
@@ -392,7 +409,7 @@ def add_route(event, user_data, body):
             }
             serving_entry = {
                 "key1": f"serving_{user_data['key2']}",
-                "key2": body["hash"],
+                "key2": food_hash,
                 "multiplier": f"{1}",
                 "unit": "kcal",
             }
@@ -415,7 +432,7 @@ def add_route(event, user_data, body):
         new_diary_entry = {
             "name": f'{food_item["name"]}',
             "calculated_values": calculated_values,
-            "food_id": f'{body["hash"]}',
+            "food_id": f'{food_hash}',
             "multiplier": f"{serving_entry['multiplier']}",
             "unit": f"{serving_entry['unit']}",
         }
