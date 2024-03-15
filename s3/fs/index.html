@@ -46,7 +46,6 @@
       function handlePresignedUrl(event) {
         let xmlHttp = event.target;
         let responseJson = JSON.parse(xmlHttp.responseText);
-        console.log(responseJson);
 
         const link = document.createElement("a");
         link.href = responseJson.download_url;

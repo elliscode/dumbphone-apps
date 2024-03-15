@@ -1,60 +1,20 @@
 function addToList(event) {
   const caller = event.target;
-  const input = caller.parentElement.getElementsByTagName("input")[0];
 
   const hash = caller.getAttribute("hash");
   const date = document.getElementById("date-picker").value;
 
-  let payload = undefined;
-  if (!!hash) {
-    payload = {
-      hash: hash,
-      date: date,
-      csrf: csrfToken
-    };
-  } else {
-    let text = input.value;
-    const fieldValues = {
-      calories: 0,
-      fat: 0,
-      carbs: 0,
-      protein: 0,
-      alcohol: 0,
-      caffeine: 0
-    };
-    let keys = Object.keys(fieldValues);
-    for (let i = 0; i < keys.length; i++) {
-      field = keys[i];
-      let result = new RegExp(field + ":\\s*([0-9]+[\\.]*[0-9]*)").exec(text);
-      if (result) {
-        fieldValues[field] = result[1];
-        text =
-          text.substring(0, result.index) +
-          text.substring(result.index + result[0].length, text.length);
-      }
-    }
-    const servingPrefix = "serving:";
-    const indexFound = text.indexOf(servingPrefix);
-    let serving = "1 serving";
-    if (-1 < indexFound) {
-      serving = text.substring(indexFound + servingPrefix.length).trim();
-      text = text.substring(0, indexFound);
-    }
-    const foodName = text.trim();
-
-    payload = {
-      foodName: foodName,
-      calories: fieldValues.calories,
-      fat: fieldValues.fat,
-      carbs: fieldValues.carbs,
-      protein: fieldValues.protein,
-      alcohol: fieldValues.alcohol,
-      caffeine: fieldValues.caffeine,
-      serving: serving,
-      date: date,
-      csrf: csrfToken
-    };
+  if (!hash) {
+    // print something like "hey you need to pick a food" or 
+    // something, idk how you'd ever get here anyway
+    return;
   }
+
+  let payload = {
+    hash: hash,
+    date: date,
+    csrf: csrfToken
+  };
 
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/food-diary/add", true);
@@ -68,19 +28,10 @@ function queueSearch(event) {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(search, 400, event);
 }
-let currentSuggestionBox = undefined;
-let currentSuggestionMethod = undefined;
 function search(event) {
   const caller = event.target;
   const input = caller.parentElement.getElementsByTagName("input")[0];
   const query = input.value;
-  currentSuggestionBox =
-    caller.parentElement.parentElement.getElementsByClassName("suggestions")[0];
-  if ("recipe-search" == caller.id) {
-    currentSuggestionMethod = addToRecipe;
-  } else {
-    currentSuggestionMethod = setTextAndAdd;
-  }
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/food-diary/search", true);
   xmlHttp.withCredentials = true;
@@ -94,44 +45,33 @@ function search(event) {
 }
 function displaySearch(event) {
   let items = defaultHandlerV1(event);
-  const suggestionBoxes = document.getElementsByClassName("suggestions");
-  for (let i = 0; i < suggestionBoxes.length; i++) {
-    suggestions = suggestionBoxes[i];
-    while (suggestions.firstChild) {
-      suggestions.removeChild(suggestions.firstChild);
-    }
+  const suggestions = document.getElementById("search-list");
+  while (suggestions.firstChild) {
+    suggestions.removeChild(suggestions.firstChild);
   }
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
+    if (itemsToIgnore.includes(item.hash)) {
+      continue;
+    }
     const li = document.createElement("li");
     li.addEventListener("click", currentSuggestionMethod);
     li.style.cursor = "pointer";
     li.style.display = "relative";
     li.setAttribute("hash", item.hash);
     li.setAttribute("food-name", item.name);
+    li.setAttribute("calories", item.calories);
     const span = document.createElement("span");
     span.innerText = item.name;
     li.appendChild(span);
-    // you can try this, but its disabled server side anyway
-    if (DEBUG) {
-      const button = document.createElement("button");
-      button.innerText = "x";
-      button.setAttribute("hash", item.hash);
-      button.onclick = deleteFood;
-      button.style.position = "absolute";
-      button.style.top = "0px";
-      button.style.right = "0px";
-      li.appendChild(button);
-    }
-    currentSuggestionBox.appendChild(li);
+    suggestions.appendChild(li);
   }
-  currentSuggestionBox.style.display = "block";
 }
 function deleteFood(event) {
   let caller = event.target;
   const hash = caller.getAttribute("hash");
   let xmlHttp = new XMLHttpRequest();
-  xmlHttp.open("POST", API_DOMAIN + "/food-diary/delete_food", true);
+  xmlHttp.open("POST", API_DOMAIN + "/food-diary/delete-food", true);
   xmlHttp.withCredentials = true;
   xmlHttp.send(
     JSON.stringify({
@@ -144,6 +84,10 @@ function deleteFood(event) {
 }
 function setTextAndAdd(event) {
   let caller = event.target;
+  let ownerDiv = findParentWithClass(caller, 'search-blob');
+  ownerDiv.style.display = 'none';
+  let content = document.getElementById('content');
+  content.style.display = 'block';
   while ("LI" != caller.tagName) {
     caller = caller.parentElement;
   }
@@ -159,7 +103,6 @@ function setTextAndAdd(event) {
   while (suggestions.firstChild) {
     suggestions.removeChild(suggestions.firstChild);
   }
-  suggestions.style.display = "none";
   addToList({ target: textBox });
 }
 function deleteEntry(event) {
@@ -202,7 +145,7 @@ function changeQuantity(event) {
   calculatedValues = JSON.parse(caller.getAttribute("calculated-values"));
 
   let xmlHttp = new XMLHttpRequest();
-  xmlHttp.open("POST", API_DOMAIN + "/food-diary/get_serving", true);
+  xmlHttp.open("POST", API_DOMAIN + "/food-diary/get-serving", true);
   xmlHttp.withCredentials = true;
   xmlHttp.onload = displayServing;
   xmlHttp.send(
@@ -275,8 +218,9 @@ function displayServing(event) {
   textBox.focus();
   textBox.select();
 }
+let recipeFood = undefined;
 function displayRecipeServing(event) {
-  let item = defaultHandlerV1(event);
+  recipeFood = defaultHandlerV1(event);
   let servings = document.getElementById("recipe-servings");
   servings.style.display = "block";
   let modalBg = findParentWithClass(servings, "modal-bg");
@@ -291,12 +235,12 @@ function displayRecipeServing(event) {
   {
     let option = document.createElement("option");
     option.innerText = "kcal";
-    option.setAttribute("amount", item.metadata.calories);
+    option.setAttribute("amount", recipeFood.metadata.calories);
     select.appendChild(option);
-    textBox.value = item.metadata.calories;
+    textBox.value = recipeFood.metadata.calories;
   }
-  for (let i = 0; i < item.metadata.servings.length; i++) {
-    let serving = item.metadata.servings[i];
+  for (let i = 0; i < recipeFood.metadata.servings.length; i++) {
+    let serving = recipeFood.metadata.servings[i];
     let option = document.createElement("option");
     option.innerText = serving.name;
     option.setAttribute("amount", serving.amount);
@@ -319,11 +263,9 @@ function editEitherFoodOrRecipe(event) {
   foodEditSave.setAttribute("date", date);
   foodEditSave.setAttribute("timestamp", timestamp);
   let xmlHttp = new XMLHttpRequest();
-  xmlHttp.open("POST", API_DOMAIN + "/food-diary/get_food", true);
+  xmlHttp.open("POST", API_DOMAIN + "/food-diary/get-food", true);
   xmlHttp.withCredentials = true;
   xmlHttp.onload = handleFood;
-
-  let foodOrRecipeEdit = document.getElementById("food-or-recipe-edit");
 
   xmlHttp.send(
     JSON.stringify({
@@ -337,30 +279,51 @@ function editEitherFoodOrRecipe(event) {
 
 function handleFood(event) {
   currentFood = defaultHandlerV1(event);
-  if (currentFood.metadata.hasOwnProperty("recipe")) {
+  if (!currentFood) {
+    currentFood = createBlankFood();
+  }
+  if (currentFood.metadata.hasOwnProperty("ingredients")) {
     displayRecipe();
   } else {
     displayFood();
   }
-  let foodOrRecipeEdit = document.getElementById("food-or-recipe-edit");
-  foodOrRecipeEdit.style.display = "block";
-  let modalBg = findParentWithClass(foodOrRecipeEdit, "modal-bg");
-  modalBg.style.display = "flex";
+}
+
+function createBlankFood() {
+  return {
+    name: '',
+    metadata: {
+      alcohol: '',
+      caffeine: '',
+      calories: '',
+      carbs: '',
+      fat: '',
+      protein: ''
+    }
+  };
 }
 
 function closeFood(event) {
-  let foodOrRecipeEdit = document.getElementById("food-or-recipe-edit");
-  foodOrRecipeEdit.style.display = "none";
-  let modalBg = findParentWithClass(foodOrRecipeEdit, "modal-bg");
-  modalBg.style.display = "none";
+  let foodEdit = document.getElementById("food-edit");
+  let recipeEdit = document.getElementById("recipe-edit");
+  foodEdit.style.display = "none";
+  recipeEdit.style.display = "none";
+  let content = document.getElementById('content');
+  content.style.display = 'block';
 }
-function displayFood(event) {
+function displayFood() {
+  let item = currentFood;
+  if (!item || !item.hasOwnProperty('name') || !item.hasOwnProperty('metadata')) {
+    item = undefined;
+  }
+
   let foodEdit = document.getElementById("food-edit");
   let recipeEdit = document.getElementById("recipe-edit");
   foodEdit.style.display = "none";
   recipeEdit.style.display = "none";
 
-  let item = currentFood;
+  let content = document.getElementById('content');
+  content.style.display = 'none';
 
   document.getElementById("food-edit-name").value = "";
   document.getElementById("food-edit-calories").value = "";
@@ -369,17 +332,13 @@ function displayFood(event) {
   document.getElementById("food-edit-carbs").value = "";
   document.getElementById("food-edit-alcohol").value = "";
   document.getElementById("food-edit-caffeine").value = "";
-  document.getElementById("food-edit-name").placeholder = item.name;
-  document.getElementById("food-edit-calories").placeholder =
-    item.metadata.calories;
-  document.getElementById("food-edit-protein").placeholder =
-    item.metadata.protein;
-  document.getElementById("food-edit-fat").placeholder = item.metadata.fat;
-  document.getElementById("food-edit-carbs").placeholder = item.metadata.carbs;
-  document.getElementById("food-edit-alcohol").placeholder =
-    item.metadata.alcohol;
-  document.getElementById("food-edit-caffeine").placeholder =
-    item.metadata.caffeine;
+  document.getElementById("food-edit-name").placeholder = item ? item.name : "";
+  document.getElementById("food-edit-calories").placeholder = item ? item.metadata.calories : "";
+  document.getElementById("food-edit-protein").placeholder = item ? item.metadata.protein : "";
+  document.getElementById("food-edit-fat").placeholder = item ? item.metadata.fat : "";
+  document.getElementById("food-edit-carbs").placeholder = item ? item.metadata.carbs : "";
+  document.getElementById("food-edit-alcohol").placeholder = item ? item.metadata.alcohol : "";
+  document.getElementById("food-edit-caffeine").placeholder = item ? item.metadata.caffeine : "";
   foodEdit.style.display = "block";
 }
 function displayRecipe(event) {
@@ -388,16 +347,26 @@ function displayRecipe(event) {
   foodEdit.style.display = "none";
   recipeEdit.style.display = "none";
 
-  if (
-    !currentFood.metadata.hasOwnProperty("recipe") ||
-    !currentFood.metadata.recipe.hasOwnProperty("ingredients")
-  ) {
-    currentFood.metadata.recipe = { ingredients: [] };
+  let content = document.getElementById('content');
+  content.style.display = 'none';
+
+  if (!currentFood.metadata.hasOwnProperty("ingredients")) {
+    currentFood.metadata = { ingredients: [] };
   }
 
   redrawRows();
 
   recipeEdit.style.display = "block";
+}
+function alterRecipeServing(event) {
+  let amount = parseFloat(document.getElementById('recipe-servings-amount').value);
+  let unit = document.getElementById('recipe-servings-name').value;
+  let serving = recipeFood.metadata.servings.find(x=>x.name==unit);
+  currentFood.metadata.ingredients[recipeIndex].serving = serving;
+  currentFood.metadata.ingredients[recipeIndex].multiplier = `${amount / serving.amount}`;
+  currentFood.metadata.ingredients[recipeIndex].calories = recipeFood.metadata.calories;
+  redrawRows();
+  closeRecipeServings();
 }
 function redrawRows() {
   const ingredientsTable = document.getElementById("ingredients");
@@ -406,10 +375,14 @@ function redrawRows() {
   }
   let tableHeader = createTableHeader();
   ingredientsTable.appendChild(tableHeader);
-  for (let i = 0; i < currentFood.metadata.recipe.ingredients.length; i++) {
-    let ingredient = currentFood.metadata.recipe.ingredients[i];
-    let row = createTableRow(ingredient);
+  for (let i = 0; i < currentFood.metadata.ingredients.length; i++) {
+    let ingredient = currentFood.metadata.ingredients[i];
+    let row = createTableRow(ingredient, i);
     ingredientsTable.appendChild(row);
+  }
+  if (currentFood.metadata.ingredients.length > 0) {
+    let tableFooter = createTotalsRow();
+    ingredientsTable.appendChild(tableFooter);
   }
 }
 function createTableHeader() {
@@ -426,6 +399,11 @@ function createTableHeader() {
   }
   {
     let th = document.createElement("th");
+    th.innerText = "Amount";
+    tr.appendChild(th);
+  }
+  {
+    let th = document.createElement("th");
     th.innerText = "kcal";
     tr.appendChild(th);
   }
@@ -436,15 +414,43 @@ function createTableHeader() {
   }
   return tr;
 }
+function createTotalsRow() {
+  let tr = document.createElement("tr");
+  {
+    let td = document.createElement("td");
+    tr.appendChild(td);
+  }
+  {
+    let td = document.createElement("td");
+    td.innerText = 'Total kcal';
+    tr.appendChild(td);
+  }
+  {
+    let td = document.createElement("td");
+    tr.appendChild(td);
+  }
+  {
+    let td = document.createElement("td");
+    td.innerText = Math.round(currentFood.metadata.ingredients.reduce((a,b)=>a+(b.serving?b.calories*b.multiplier*b.serving.multiplier:NaN),0));
+    td.style.textAlign = "right";
+    tr.appendChild(td);
+  }
+  {
+    let td = document.createElement("td");
+    td.innerText = "";
+    tr.appendChild(td);
+  }
+  return tr;
+}
+let recipeIndex = 0;
 function changeQuantityRow(event) {
   const caller = event.target;
   let servings = document.getElementById("recipe-servings");
-  const hash = caller.getAttribute("hash");
   const foodHash = caller.getAttribute("food-hash");
+  recipeIndex = parseInt(caller.getAttribute("index"));
   let save = document.getElementById("servings-save");
-  save.setAttribute("hash", hash);
   let xmlHttp = new XMLHttpRequest();
-  xmlHttp.open("POST", API_DOMAIN + "/food-diary/get_serving", true);
+  xmlHttp.open("POST", API_DOMAIN + "/food-diary/get-serving", true);
   xmlHttp.withCredentials = true;
   xmlHttp.onload = displayRecipeServing;
   xmlHttp.send(
@@ -454,14 +460,15 @@ function changeQuantityRow(event) {
     })
   );
 }
-function createTableRow(ingredient) {
+function createTableRow(ingredient, index) {
   let tr = document.createElement("tr");
   {
     let td = document.createElement("td");
     let button = document.createElement("button");
     button.innerText = "#";
-    button.setAttribute("food-hash", entry.food_id);
+    button.setAttribute("food-hash", ingredient.hash);
     button.addEventListener("click", changeQuantityRow);
+    button.setAttribute("index", index);
     td.appendChild(button);
     tr.appendChild(td);
   }
@@ -473,13 +480,36 @@ function createTableRow(ingredient) {
   {
     const td = document.createElement("td");
     td.style.textAlign = "right";
-    td.innerText = Math.round(ingredient.serving);
+    if (ingredient.hasOwnProperty('serving')) {
+      let serving = ingredient.serving;
+      let value = ingredient.multiplier * serving.amount;
+      let trimmedServingName = serving.name;
+      if(trimmedServingName.startsWith('1 ')) {
+        trimmedServingName = trimmedServingName.substring(2);
+      }
+      let displayString = `${value.toLocaleString()} ${trimmedServingName}`;
+      td.innerText = displayString;
+    } else {
+      td.innerText = '';
+    }
+    tr.appendChild(td);
+  }
+  {
+    const td = document.createElement("td");
+    td.style.textAlign = "right";
+    if (ingredient.hasOwnProperty('serving')) {
+      let value = Math.round(ingredient.multiplier * ingredient.serving.multiplier * ingredient.calories);
+      let displayString = value;
+      td.innerText = displayString;
+    } else {
+      td.innerText = '';
+    }
     tr.appendChild(td);
   }
   {
     let td = document.createElement("td");
     let button = document.createElement("button");
-    button.setAttribute("food-hash", entry.food_id);
+    button.setAttribute("food-hash", ingredient.hash);
     button.addEventListener("click", deleteRow);
     button.innerHTML = "&times;";
     td.appendChild(button);
@@ -491,34 +521,34 @@ function deleteRow(event) {
   event.parentElement.parentElement.remove();
 }
 function saveFood(event) {
-  const hash = currentFood.hash;
-  let textBox = document.getElementById("servings-amount");
-  let select = document.getElementById("servings-name");
-  const name = select.value;
-  const quantity = textBox.value;
   const key = event.target.getAttribute("key");
-  const date = event.target.getAttribute("date");
+  const date = document.getElementById("date-picker").value;
   const timestamp = event.target.getAttribute("timestamp");
+  let payload = {
+    key: key,
+    timestamp: timestamp,
+    date: date,
+    name: document.getElementById("food-edit-name").value,
+    calories: document.getElementById("food-edit-calories").value,
+    fat: document.getElementById("food-edit-fat").value,
+    carbs: document.getElementById("food-edit-carbs").value,
+    protein: document.getElementById("food-edit-protein").value,
+    alcohol: document.getElementById("food-edit-alcohol").value,
+    caffeine: document.getElementById("food-edit-caffeine").value,
+    csrf: csrfToken
+  }
+  let url = undefined;
+  if (currentFood.hash) {
+    url = API_DOMAIN + "/food-diary/set-food";
+    payload.hash = currentFood.hash;
+  } else {
+    url = API_DOMAIN + "/food-diary/create-food";
+  }
   let xmlHttp = new XMLHttpRequest();
-  xmlHttp.open("POST", API_DOMAIN + "/food-diary/set_food", true);
+  xmlHttp.open("POST", url, true);
   xmlHttp.withCredentials = true;
   xmlHttp.onload = setDate;
-  xmlHttp.send(
-    JSON.stringify({
-      hash: hash,
-      key: key,
-      timestamp: timestamp,
-      date: date,
-      name: document.getElementById("food-edit-name").value,
-      calories: document.getElementById("food-edit-calories").value,
-      fat: document.getElementById("food-edit-fat").value,
-      carbs: document.getElementById("food-edit-carbs").value,
-      protein: document.getElementById("food-edit-protein").value,
-      alcohol: document.getElementById("food-edit-alcohol").value,
-      caffeine: document.getElementById("food-edit-caffeine").value,
-      csrf: csrfToken
-    })
-  );
+  xmlHttp.send(JSON.stringify(payload));
 }
 function servingRecipeChange(event) {
   let select = event.target;
@@ -571,7 +601,7 @@ function saveServing(event) {
   const name = select.value;
   const quantity = textBox.value;
   let xmlHttp = new XMLHttpRequest();
-  xmlHttp.open("POST", API_DOMAIN + "/food-diary/set_serving", true);
+  xmlHttp.open("POST", API_DOMAIN + "/food-diary/set-serving", true);
   xmlHttp.withCredentials = true;
   xmlHttp.onload = setDate;
   xmlHttp.send(
@@ -601,7 +631,7 @@ function createServing(event) {
   const servingName = servingsText.value;
   const calories = caloriesText.value;
   let xmlHttp = new XMLHttpRequest();
-  xmlHttp.open("POST", API_DOMAIN + "/food-diary/create_serving", true);
+  xmlHttp.open("POST", API_DOMAIN + "/food-diary/create-serving", true);
   xmlHttp.withCredentials = true;
   xmlHttp.onload = setDate;
   xmlHttp.send(
@@ -615,16 +645,34 @@ function createServing(event) {
   );
 }
 function saveRecipe(event) {
-  console.log(event);
-  console.log("Not implemented :)");
+  const timestamp = undefined;
+  const hash = currentFood.hash;
+  const date = document.getElementById("date-picker").value;
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/food-diary/set-food", true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = setDate;
+  xmlHttp.send(
+    JSON.stringify({
+      hash: hash,
+      date: date,
+      ingredients: currentFood.metadata.ingredients,
+      csrf: csrfToken
+    })
+  );
 }
 function addToRecipe(event) {
-  const suggestions = document.getElementsByClassName("suggestions");
-  for (let i = 0; i < suggestions.length; i++) {
-    suggestions[i].style.display = "none";
-  }
-  const textBox = document.getElementById("recipe-search");
+  const textBoxParent = document.getElementsByClassName("search-bar")[0];
+  const textBox = textBoxParent.firstElementChild;
   textBox.value = "";
+  let foodEdit = document.getElementById("food-edit");
+  let recipeEdit = document.getElementById("recipe-edit");
+  foodEdit.style.display = "none";
+  recipeEdit.style.display = "block";
+  let content = document.getElementById('content');
+  content.style.display = 'none';
+  let searchBlob = findParentWithClass(textBox, 'search-blob');
+  searchBlob.style.display = 'none';
   let caller = event.target;
   while ("LI" != caller.tagName) {
     caller = caller.parentElement;
@@ -632,7 +680,7 @@ function addToRecipe(event) {
   let hash = caller.getAttribute("hash");
   let name = caller.getAttribute("food-name");
   let newJson = { multiplier: 1, hash: hash, name: name };
-  currentFood.metadata.recipe.ingredients.push(newJson);
+  currentFood.metadata.ingredients.push(newJson);
   redrawRows();
 }
 function showTotalsModal(event) {
@@ -642,7 +690,7 @@ function showTotalsModal(event) {
   modalBg.style.display = "flex";
 }
 function setDate(event) {
-  const textBoxParent = document.getElementById("input");
+  const textBoxParent = document.getElementsByClassName("search-bar")[0];
   const textBox = textBoxParent.firstElementChild;
   textBox.value = "";
 
@@ -660,7 +708,6 @@ function setDate(event) {
 }
 function populateTable(event) {
   let data = defaultHandlerV1(event);
-  const foodOrRecipeEdit = document.getElementById("food-or-recipe-edit");
   closeFood();
   closeServings();
   const table = document.getElementById("diary");
@@ -860,6 +907,57 @@ function closeModalIfApplicable(event) {
     event.target.getElementsByClassName("modal")[0].style.display = "none";
     event.target.style.display = "none";
   }
+}
+
+let currentSuggestionMethod = undefined;
+let itemsToIgnore = [];
+function showSearch(event) {
+  let caller = event.target;
+  let destinationId = caller.getAttribute('destination-id');
+  if ("ingredients" === destinationId) {
+    currentSuggestionMethod = addToRecipe;
+    itemsToIgnore = [currentFood.hash];
+  } else {
+    currentSuggestionMethod = setTextAndAdd;
+    itemsToIgnore = [];
+  }
+  let searchId = caller.getAttribute('search-id');
+  let searchDiv = document.getElementById(searchId);
+  searchDiv.style.display = 'block';
+  searchDiv.getElementsByClassName('big')[0].focus();
+
+  showPanel('food-search');
+}
+
+function showPanel(id) {
+  let modals = Array.from(document.getElementsByClassName('modal-bg'));
+  let panels = Array.from(document.getElementsByClassName('panel'));
+  let searchBlobs = Array.from(document.getElementsByClassName('search-blob'));
+  let both = modals.concat(panels, searchBlobs);
+  for(let i = 0; i < both.length; i++) {
+    both[i].style.display = 'none';
+  }
+  if (!id) {
+    return;
+  }
+  let selected = document.getElementById(id);
+  if (!selected) {
+    return;
+  }
+  if (selected.classList.contains('panel') || selected.classList.contains('search-blob')) {
+    selected.style.display = 'block';
+  } else if (selected.classList.contains('modal')) {
+    let modalBg = findParentWithClass(selected, 'modal-bg');
+    modalBg.style.display = 'flex';
+  }
+}
+
+function closeSearch(event) {
+  let caller = event.target;
+  let searchBlob = findParentWithClass(caller, 'search-blob');
+  searchBlob.style.display = 'none';
+  let content = document.getElementById('content');
+  content.style.display = 'block';
 }
 
 let modalBackgrounds = document.getElementsByClassName("modal-bg");

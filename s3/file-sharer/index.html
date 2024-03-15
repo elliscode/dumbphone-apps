@@ -81,7 +81,6 @@
       }
       function handlePresignedUrl(event) {
         let responseJson = defaultHandlerV1(event);
-        console.log(responseJson);
 
         const fileInput = document.getElementById("file");
         const file = fileInput.files[0];
@@ -105,7 +104,6 @@
       }
       function handleUpload(event) {
         let xmlHttp = event.target;
-        console.log(xmlHttp.status);
 
         const fileInput = document.getElementById("file");
         fileInput.disabled = false;
@@ -150,7 +148,6 @@
       }
       function handleAcknowledgement(event) {
         let xmlHttp = event.target;
-        console.log(xmlHttp.status);
       }
       function getFiles(event) {
         let url = API_DOMAIN + "/one-offs/get-uploaded-items";
@@ -162,7 +159,6 @@
       }
       function handleGetFiles(event) {
         let xmlHttp = event.target;
-        console.log(xmlHttp.status);
         if (xmlHttp.status >= 200 && xmlHttp.status < 300) {
           results = {};
           let responseJson = JSON.parse(xmlHttp.responseText);

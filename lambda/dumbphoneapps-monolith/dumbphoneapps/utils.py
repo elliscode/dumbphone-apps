@@ -67,7 +67,7 @@ def parse_body(body):
     elif body.startswith("{"):
         return json.loads(body)
     else:
-        return dict(parse_qsl(body))
+        return dict(urllib.parse.parse_qsl(body))
 
 
 def dynamo_obj_to_python_obj(dynamo_obj: dict) -> dict:
@@ -142,6 +142,13 @@ def authenticate(func):
                 http_code=403,
                 body="Your session has expired, please log in",
             )
+        active_tokens = get_active_tokens(token_data['user'])
+        if token_data['key2'] not in active_tokens['tokens'].keys():
+            return format_response(
+                event=event,
+                http_code=403,
+                body="Your session has expired, please log in",
+            )
         if csrf_token is None or token_data["csrf"] != csrf_token:
             delete_token(token_data["key1"])
             return format_response(
@@ -153,6 +160,21 @@ def authenticate(func):
         return func(event, user_data, body)
 
     return wrapper_func
+
+
+@authenticate
+def clear_all_tokens_route(event, user_data, body):
+    active_tokens = get_active_tokens(user_data['key2'])
+    active_tokens['tokens'] = {}
+    dynamo.put_item(
+        TableName=TABLE_NAME,
+        Item=python_obj_to_dynamo_obj(active_tokens),
+    )
+    return format_response(
+        event=event,
+        http_code=200,
+        body=f"Successfully logged out {user_data['key2']} of all devices",
+    )
 
 
 @authenticate
@@ -214,6 +236,8 @@ def login_route(event):
     delete_otp(phone)
     # log in the user and send them the data
     token_data = create_token(phone)
+    # store this token in the list of sessions we track, for clearing sessions manually by the user
+    track_token(token_data)
 
     # generate the date_string
     date_string = time.strftime(
@@ -239,7 +263,7 @@ def otp_route(event):
         return format_response(
             event=event,
             http_code=500,
-            body="Invalid phone supplied, must be 10 digits USA phone number",
+            body="Invalid phone supplied, must be a 10 digit USA phone number",
         )
 
     # get or create user data
@@ -302,6 +326,29 @@ def create_token(phone):
         Item=dynamo_data,
     )
     return python_data
+
+
+def track_token(token_data):
+    active_tokens = get_active_tokens(token_data["user"])
+    token_id = token_data['key2']
+    active_tokens["tokens"][token_id] = token_data["expiration"]
+    dynamo.put_item(
+        TableName=TABLE_NAME,
+        Item=python_obj_to_dynamo_obj(active_tokens),
+    )
+
+
+def get_active_tokens(username):
+    active_tokens_boto = dynamo.get_item(
+        Key=python_obj_to_dynamo_obj({"key1": "active_tokens", "key2": username}),
+        TableName=TABLE_NAME,
+    )
+    if "Item" in active_tokens_boto:
+        active_tokens = dynamo_obj_to_python_obj(active_tokens_boto["Item"])
+        active_tokens["tokens"] = {k: v for k, v in active_tokens["tokens"].items() if v > int(time.time())}
+    else:
+        active_tokens = {"key1": "active_tokens", "key2": username, "tokens": {}}
+    return active_tokens
 
 
 def set_otp(phone, python_data):

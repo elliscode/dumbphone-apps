@@ -9,6 +9,7 @@ from .utils import (
     TABLE_NAME,
     dynamo_obj_to_python_obj,
     create_id,
+    ADMIN_PHONE,
 )
 
 ALL_VALUE_KEYS = ["alcohol", "caffeine", "calories", "carbs", "fat", "protein"]
@@ -102,6 +103,12 @@ def add_all_tokens(food_id, food_name):
 
 @authenticate
 def set_food_route(event, user_data, body):
+    if user_data["key2"] != ADMIN_PHONE:
+        return format_response(
+            event=event,
+            http_code=401,
+            body="You are not authorized to modify foods in the database",
+        )
     diary_response = dynamo.get_item(
         TableName=TABLE_NAME,
         Key=python_obj_to_dynamo_obj(
@@ -114,19 +121,75 @@ def set_food_route(event, user_data, body):
         Key=python_obj_to_dynamo_obj({"key1": "food", "key2": body["hash"]}),
     )
     food = dynamo_obj_to_python_obj(food_response["Item"])
-    if body["name"]:
+    if body.get("name"):
         print(f'modifying {food["name"]} to {body["name"]}')
         remove_all_tokens(food["key2"], food["name"])
         food["name"] = body["name"]
         add_all_tokens(food["key2"], food["name"])
         diary_entry["entries"][body["timestamp"]]["name"] = food["name"]
-    for value_key in ALL_VALUE_KEYS:
-        if body[value_key]:
-            food["metadata"][value_key] = body[value_key]
+    if body["ingredients"]:
+        print(f"Setting {food['name']} to a recipe!")
+        food_keys = []
+        for ingredient in body['ingredients']:
+            key = python_obj_to_dynamo_obj({
+                'key1': 'food',
+                'key2': ingredient['hash'],
+            })
+            if key not in food_keys:
+                food_keys.append(key)
+        response = dynamo.batch_get_item(
+            RequestItems={
+                TABLE_NAME: {
+                    "Keys": food_keys,
+                }
+            }
+        )
+        food_map = {}
+        responses = response["Responses"][TABLE_NAME]
+        for food_item_dynamo in responses:
+            food_item = dynamo_obj_to_python_obj(food_item_dynamo)
+            food_map[food_item['key2']] = food_item
+
+        totals = {}
+        for ingredient in body['ingredients']:
+            food_hash = ingredient['hash']
+            food_item = food_map[food_hash]
+            for value_key in ALL_VALUE_KEYS:
+                if food_item['metadata'][value_key]:
+                    totals[value_key] = totals.get(value_key, 0) + (float(ingredient['multiplier']) * float(ingredient['serving']['multiplier']) * float(food_item['metadata'][value_key]))
+
+        food['metadata']['ingredients'] = body['ingredients']
+        for value_key in ALL_VALUE_KEYS:
+            this_value = totals[value_key]
+            string_value = f"{totals[value_key]:.3g}"
+            if this_value > 100:
+                string_value = f"{round(totals[value_key])}"
+            food['metadata'][value_key] = string_value
+
+
+
+        food['metadata']['servings'] = [
+            {
+                "amount": f"1",
+                "multiplier": f"{1}",
+                "name": "recipe",
+            },
+            {
+                "amount": f"1",
+                "multiplier": f"{1}",
+                "name": "serving",
+            },
+        ]
+    else:
+        for value_key in ALL_VALUE_KEYS:
+            if body[value_key]:
+                food["metadata"][value_key] = body[value_key]
+    print(food)
     dynamo.put_item(
         TableName=TABLE_NAME,
         Item=python_obj_to_dynamo_obj(food),
     )
+    print(diary_entry)
     dynamo.put_item(
         TableName=TABLE_NAME,
         Item=python_obj_to_dynamo_obj(diary_entry),
@@ -158,6 +221,12 @@ def get_food_route(event, user_data, body):
 
 @authenticate
 def create_serving_route(event, user_data, body):
+    if user_data["key2"] != ADMIN_PHONE:
+        return format_response(
+            event=event,
+            http_code=401,
+            body="You are not authorized to add servings to the database",
+        )
     food_response = dynamo.get_item(
         TableName=TABLE_NAME,
         Key=python_obj_to_dynamo_obj({"key1": "food", "key2": body["hash"]}),
@@ -301,6 +370,12 @@ def get_serving_route(event, user_data, body):
 
 @authenticate
 def delete_route(event, user_data, body):
+    if user_data["key2"] != ADMIN_PHONE:
+        return format_response(
+            event=event,
+            http_code=401,
+            body="You are not authorized to delete foods from the database",
+        )
     partition_key = f"diary_{user_data['key2']}"
     sort_key = body["date"]
     response = dynamo.get_item(
@@ -349,16 +424,11 @@ def add_route(event, user_data, body):
     # the "Add" button instead of clicking on the relevant food
     food_hash = body.get('hash')
     if not food_hash:
-        full_food_token = body.get("foodName").lower().strip()
-        food_token_response = dynamo.get_item(
-            TableName=TABLE_NAME,
-            Key=python_obj_to_dynamo_obj({"key1": "food_token", "key2": full_food_token}),
+        return format_response(
+            event=event,
+            http_code=400,
+            body="Missing food hash",
         )
-        if "Item" in food_token_response:
-            food_token_result = dynamo_obj_to_python_obj(food_token_response["Item"])
-            for food_id_token in food_token_result['food_ids']:
-                if food_id_token['name'].lower().strip() == full_food_token:
-                    food_hash = food_id_token['hash']
     if food_hash:
         food_key = {"key1": "food", "key2": food_hash}
         previous_serving_key = {
@@ -452,16 +522,60 @@ def add_route(event, user_data, body):
             http_code=200,
             body="Saved a diary entry",
         )
+
+
+@authenticate
+def create_food_route(event, user_data, body):
+    sort_key = body["date"]
+    partition_key = f'diary_{user_data["key2"]}'
+    # get todays diary, if none exists, create it
+    diary_response = dynamo.get_item(
+        TableName=TABLE_NAME,
+        Key=python_obj_to_dynamo_obj({"key1": partition_key, "key2": sort_key}),
+    )
+    if "Item" not in diary_response:
+        current_entry = {
+            "key1": partition_key,
+            "key2": sort_key,
+            "entries": {},
+        }
     else:
-        re_match = re.search(r"^(\d+\.*\d*)(.*)$", body["serving"])
-        serving_amount = re_match.group(1)
-        serving_name = re_match.group(2).strip()
+        current_entry = dynamo_obj_to_python_obj(diary_response["Item"])
+    # if no food hash, lets check if this token exists, case-insensitive,
+    # then check if the full food name exists in that token, this prevents
+    # duplocate values that I have seen in the past, when the user presses
+    # the "Add" button instead of clicking on the relevant food
+    food_hash = body.get('hash')
+    if not food_hash:
+        full_food_token = body.get("name").lower().strip()
+        food_token_response = dynamo.get_item(
+            TableName=TABLE_NAME,
+            Key=python_obj_to_dynamo_obj({"key1": "food_token", "key2": full_food_token}),
+        )
+        if "Item" in food_token_response:
+            food_token_result = dynamo_obj_to_python_obj(food_token_response["Item"])
+            for food_id_token in food_token_result['food_ids']:
+                if food_id_token['name'].lower().strip() == full_food_token:
+                    food_hash = food_id_token['hash']
+    if food_hash:
+        return format_response(
+            event=event,
+            http_code=400,
+            body="This food already exists in the database",
+        )
+    else:
+        if user_data["key2"] != ADMIN_PHONE:
+            return format_response(
+                event=event,
+                http_code=401,
+                body="You are not authorized to add foods to the database",
+            )
         metadata = {
             "servings": [
                 {
-                    "amount": f"{serving_amount}",
+                    "amount": f"{1}",
                     "multiplier": f"{1}",
-                    "name": serving_name,
+                    "name": "serving",
                 },
             ],
         }
@@ -470,20 +584,27 @@ def add_route(event, user_data, body):
         new_food = {
             "key1": "food",
             "key2": create_id(32),
-            "name": body["foodName"],
+            "name": body["name"],
             "metadata": metadata,
         }
 
         calculated_values = {}
         for value_key in ALL_VALUE_KEYS:
-            calculated_values[value_key] = new_food["metadata"][value_key]
+            food_value_string = new_food["metadata"][value_key]
+            if not food_value_string:
+                food_value_string = '0.0'
+            try:
+                float(food_value_string)
+            except:
+                food_value_string = '0.0'
+            calculated_values[value_key] = food_value_string
 
         new_diary_entry = {
             "calculated_values": calculated_values,
             "food_id": new_food["key2"],
             "multiplier": f"{1}",
             "name": new_food["name"],
-            "unit": serving_name,
+            "unit": "serving",
         }
         print(current_entry)
         current_entry["entries"][f"{time.mktime(time.gmtime())}"] = new_diary_entry
@@ -535,16 +656,6 @@ def get_day_route(event, user_data, body):
             "totals": totals,
         },
     )
-
-
-def convert_to_new_style_food_diary(old_diary_items):
-    new_diary_entries = {}
-    for old_diary_item in old_diary_items:
-        python_item = dynamo_obj_to_python_obj(old_diary_item)
-        python_item.pop("key1")
-        timestamp = python_item.pop("key2")
-        new_diary_entries[timestamp] = python_item
-    return new_diary_entries
 
 
 @authenticate
