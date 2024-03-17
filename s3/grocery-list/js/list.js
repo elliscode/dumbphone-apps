@@ -74,7 +74,6 @@ function deleteFromList(event) {
 }
 function handleDeleteList(event) {
   const result = defaultHandlerV1(event);
-  console.log(JSON.stringify(result));
 }
 function openShareWindow(event) {
   hidePopups();
@@ -96,7 +95,6 @@ function hidePopups(event) {
   modalBg.style.display = "none";
 }
 function sendShareRequest(event) {
-  console.log(event);
   let userToShareWithBox = document.getElementById("user-to-share-with");
   let user = userToShareWithBox.value;
   let listName = document.getElementById("list-name");
@@ -211,7 +209,6 @@ function runOrderCall() {
 
 function handleOrderCall(event) {
   const result = defaultHandlerV1(event);
-  console.log(JSON.stringify(result));
 }
 
 function swapGroups(groupOneId, groupTwoId) {
@@ -359,7 +356,6 @@ function crossToggle(event) {
 
 function handleToggle(event) {
   const result = defaultHandlerV1(event);
-  console.log(JSON.stringify(result));
 }
 
 function askToDeleteGroup(event) {
@@ -395,10 +391,10 @@ if (
   navigator.userAgent.includes("Safari")
 ) {
   iosCookieRefresh();
-  setStylesheet("css/grocery-list-new.css?v=003");
+  setStylesheet("css/grocery-list-new.css?v=006");
   document.getElementById("item-text-box").addEventListener("blur", startHide);
 } else {
-  setStylesheet("css/grocery-list-old.css?v=003");
+  setStylesheet("css/grocery-list-old.css?v=006");
 }
 const loader = document.getElementById("loading");
 const dontDisplayWhileLoading = document.getElementById(

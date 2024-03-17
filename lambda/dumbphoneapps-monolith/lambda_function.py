@@ -7,6 +7,7 @@ from dumbphoneapps.utils import (
     format_response,
     ios_cookie_refresh_route,
     path_starts_with,
+    clear_all_tokens_route,
 )
 from dumbphoneapps.grocery_list import (
     getlist_route,
@@ -28,6 +29,7 @@ from dumbphoneapps.food_diary import (
     get_day_route,
     search_route,
     add_route,
+    create_food_route,
     delete_route,
     get_serving_route,
     set_serving_route,
@@ -79,6 +81,8 @@ def route(event):
         return otp_route(event)
     if path_equals(event=event, method="POST", path="/login"):
         return login_route(event)
+    if path_equals(event=event, method="POST", path="/logout-all"):
+        return clear_all_tokens_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/get-list"):
         return getlist_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/add-item"):
@@ -103,17 +107,19 @@ def route(event):
         return search_route(event)
     if path_equals(event=event, method="POST", path="/food-diary/add"):
         return add_route(event)
+    if path_equals(event=event, method="POST", path="/food-diary/create-food"):
+        return create_food_route(event)
     if path_equals(event=event, method="POST", path="/food-diary/delete"):
         return delete_route(event)
-    if path_equals(event=event, method="POST", path="/food-diary/get_serving"):
+    if path_equals(event=event, method="POST", path="/food-diary/get-serving"):
         return get_serving_route(event)
-    if path_equals(event=event, method="POST", path="/food-diary/set_serving"):
+    if path_equals(event=event, method="POST", path="/food-diary/set-serving"):
         return set_serving_route(event)
-    if path_equals(event=event, method="POST", path="/food-diary/create_serving"):
+    if path_equals(event=event, method="POST", path="/food-diary/create-serving"):
         return create_serving_route(event)
-    if path_equals(event=event, method="POST", path="/food-diary/get_food"):
+    if path_equals(event=event, method="POST", path="/food-diary/get-food"):
         return get_food_route(event)
-    if path_equals(event=event, method="POST", path="/food-diary/set_food"):
+    if path_equals(event=event, method="POST", path="/food-diary/set-food"):
         return set_food_route(event)
     if path_equals(event=event, method="POST", path="/ios-cookie-refresh"):
         return ios_cookie_refresh_route(event)

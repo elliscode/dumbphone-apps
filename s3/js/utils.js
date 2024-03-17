@@ -3,14 +3,25 @@ function logOut(event) {
   window.location.replace("/signup.html");
 }
 function defaultHandlerV1(event) {
+  if (!event || !event.target) {
+    return undefined;
+  }
   let xmlHttp = event.target;
   if (xmlHttp.status == 403) {
     logOut(event);
   }
-  let result = JSON.parse(xmlHttp.responseText);
+  let result = undefined;
+  try {
+    result = JSON.parse(xmlHttp.responseText);
+  } catch (e) {
+    result = undefined;
+  }
   return result;
 }
 function defaultHandler(event) {
+  if (!event || !event.target) {
+    return undefined;
+  }
   let xmlHttp = event.target;
   if (xmlHttp.status == 403) {
     logOut(event);
@@ -19,8 +30,11 @@ function defaultHandler(event) {
   try {
     result = JSON.parse(xmlHttp.responseText);
   } catch(e) {
-    console.log('Response text was invalid JSON, returning text as json')
-    result = {'message': xmlHttp.responseText};
+    try {
+      result = {'message': xmlHttp.responseText};
+    } catch (e2) {
+      result = undefined;
+    }
   }
   return {statusCode: xmlHttp.status, responseJson: result};
 }
@@ -114,6 +128,23 @@ function getTodayOrUrlParam() {
 
   return `${year}-${month}-${day}`;
 }
+function closeModalIfApplicable(event) {
+  if (event.target.classList.contains("modal-bg")) {
+    event.target.getElementsByClassName("modal")[0].style.display = "none";
+    event.target.style.display = "none";
+  }
+}
+let modalBackgrounds = document.getElementsByClassName("modal-bg");
+for (let i = 0; i < modalBackgrounds.length; i++) {
+  modalBg = modalBackgrounds[i];
+  modalBg.style.display = "none";
+  modalBg.addEventListener("click", closeModalIfApplicable);
+}
 const csrfToken = localStorage.getItem("dumbphoneapps-csrf-token");
+// warn users who open the console to not do anything dumb
+console.log('%cStop!', 'color: red; font-size: 100px; font-weight: bold; -webkit-text-stroke: 2px black;');
+console.log('If someone told you to paste something in here, %cDO NOT DO IT!', 'color: red; font-size: 20px; font-weight: bold; -webkit-text-stroke: 1px black;', 'They are trying to hijack your account!');
+// if you are deploying this on a different domain, you'll
+// need to change these values here
 const API_DOMAIN = "https://api.dumbphoneapps.com";
 const UI_DOMAIN = "https://www.dumbphoneapps.com";

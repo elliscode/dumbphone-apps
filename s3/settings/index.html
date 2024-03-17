@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quiz Diary</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=006" />
+    <link rel="stylesheet" href="../css/loader.css?v=006" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=006" />
+    <style>
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>settings</b>
+    </div>
+
+    <div id="loading">
+      <div class="lds-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+
+    <button onclick="confirmLogoutAll()">Log out of all devices</button>
+
+    <div id="logout-all-confirm" style="display:none;" class="modal-bg">
+      <div class="modal">
+        <p>Are you sure you want to log out of all devices?</p>
+        <button onclick="logoutAll(event)">Yes</button><button onclick="closeModals(event)">Cancel</button>
+      </div>
+    </div>
+
+
+    <div class="logout">
+      <button onclick="logOut(event)">Log out</button>
+    </div>
+    <script src="../js/utils.js?v=006"></script>
+    <script>
+let loader = document.getElementById("loading");
+function confirmLogoutAll(event) {
+  closeModals(event);
+  document.getElementById('logout-all-confirm').style.display = 'flex';
+}
+function closeModals(event) {
+  let modals = Array.from(document.getElementsByClassName('modal-bg'));
+  modals.forEach(m=>m.style.display='none')
+}
+function logoutAll(event) {
+  let url = API_DOMAIN + "/logout-all";
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true); // false for synchronous request
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handle;
+  xmlHttp.send(JSON.stringify({ csrf: csrfToken }));
+}
+function handle(event) {
+  logOut(event);
+}
+if (!csrfToken) {
+  window.location.replace("../signup.html");
+}
+if (
+  !navigator.userAgent.includes("Chrome") &&
+  navigator.userAgent.includes("Safari")
+) {
+  iosCookieRefresh();
+}
+loader.style.display = "none";
+    </script>
+  </body>
+</html>

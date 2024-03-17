@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Location Viewer</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=003" />
-    <link rel="stylesheet" href="../css/loader.css?v=003" />
-    <link rel="icon" type="image/png" href="../img/favicon.png?v=003" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=006" />
+    <link rel="stylesheet" href="../css/loader.css?v=006" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=006" />
     <style>
       body {
         padding-bottom: 30px;
@@ -51,7 +51,7 @@
       <button onclick="logOut(event)">Log out</button>
     </div>
 
-    <script src="../js/utils.js?v=003"></script>
+    <script src="../js/utils.js?v=006"></script>
     <script>
       if (!!csrfToken) {
         document.getElementsByClassName("logout")[0].style.display = "block";
@@ -144,7 +144,6 @@
             '">Click here for directions</a>';
           info.innerText = `last updated ${timestamp.toLocaleString()}`;
           info.style.display = 'none';
-          console.log(value);
           if (window.isES6) {
             moveMarker();
           }

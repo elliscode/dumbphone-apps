@@ -74,7 +74,6 @@ function handleWeatherGet(event) {
     return;
   }
   let responseJson = defaultHandlerV1(event);
-  console.log(responseJson);
   weatherData = responseJson;
   displayWeather();
 }

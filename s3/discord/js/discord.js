@@ -514,6 +514,8 @@ function buildMessage(parentElement, message) {
     for (let i = 0; i < message.sticker_items.length; i++) {
       let stickerItem = message.sticker_items[i];
       // create placeholder div that you will load later
+      // "https://discord.com/stickers/816087074310193162.json"
+      // figure out how to do this later
       let stickerDiv = document.createElement('div');
       stickerDiv.classList.add('to-be-loaded-sticker');
       stickerDiv.setAttribute('sticker-id', stickerItem.id);
