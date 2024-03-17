@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Quiz Diary Weekly Report</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=003" />
-    <link rel="stylesheet" href="../css/loader.css?v=003" />
-    <link rel="icon" type="image/png" href="../img/favicon.png?v=003" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=006" />
+    <link rel="stylesheet" href="../css/loader.css?v=006" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=006" />
     <style>
 .rotated td span {
   -ms-writing-mode: tb-rl;
@@ -64,7 +64,7 @@ table {
     </div>
 
     <div id="content"></div>
-    <script src="../js/utils.js?v=003"></script>
+    <script src="../js/utils.js?v=006"></script>
     <script>
 const datePicker = document.getElementById('date-picker');
 const loader = document.getElementById("loading");
@@ -208,6 +208,9 @@ function drawTextsWithSort() {
       table.appendChild(row);
     }
       for (let item of reportData) {
+        if (!(item.answers.hasOwnProperty(question.hash) && item.answers[question.hash].value)) {
+          continue;
+        }
         value = item.answers[question.hash].value;
         if (!value || value.length == 0) {
           continue;
@@ -298,7 +301,7 @@ function drawBarChart(params) {
   let y = params.yValues || [];
   let title = params.chartName || "Chart";
   let unit = params.yUnit || "";
-  let yMax = params.yMax || 1;
+  let yMax = params.yMax || (Math.max(y)*1.2);
   let lines = params.lines || [];
 
   let div = document.createElement('div');

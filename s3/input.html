@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+label {
+  display: flex;
+  flex-wrap: wrap;
+}
+input {
+  flex-grow: 1;
+}
+    </style>
+  </head>
+  <body>
+    <label>Put your cursor here: <input 
+      onkeydown="displayEventInfo(event, 'onkeydown')" 
+      onkeyup="displayEventInfo(event, 'onkeyup')" 
+      type="text"/>
+    </label>
+    <div id="event-info-text">
+    </div>
+    <script>
+const preventDefaultKeys = [
+  'SoftLeft',
+  'Call',
+  'Enter',
+  'MicrophoneToggle',
+  'EndCall',
+  'AudioVolumeDown',
+  'AudioVolumeUp'
+];
+const preventDefaultIfEmptyKeys = [
+  'Backspace'
+];
+const blurKeys = [
+  'EndCall'
+];
+const blurIfEmptyKeys = [
+  'Backspace'
+];
+const eventInfoDiv = document.getElementById('event-info-text');
+let previousValue = undefined;
+function displayEventInfo(event, type) {
+  if (preventDefaultKeys.includes(event.key) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
+    event.preventDefault();
+  }
+  if (blurKeys.includes(event.key)) {
+    event.target.blur();
+  }
+  if (type === 'onkeyup' && blurIfEmptyKeys.includes(event.key) && !event.target.value && !previousValue) {
+    event.target.blur();
+  }
+  console.log(event);
+  const p = document.createElement('p');
+  const idString = (Math.random() * 100000).toLocaleString();
+  p.id = idString;
+  let contentString = '';
+  if (event.key) {
+    contentString += event.key;
+  } else if (event.data) {
+    contentString += event.data;
+  }
+  p.innerText = contentString + ' (' + type + ')';
+  setTimeout(deleteItem, 5000, idString);
+  eventInfoDiv.insertBefore(p, eventInfoDiv.firstElementChild);
+  previousValue = event.target.value;
+}
+function deleteItem(idString) {
+  document.getElementById(idString).remove();
+}
+    </script>
+  </body>
+</html>

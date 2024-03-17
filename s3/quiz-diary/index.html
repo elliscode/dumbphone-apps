@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Quiz Diary</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=003" />
-    <link rel="stylesheet" href="../css/loader.css?v=003" />
-    <link rel="icon" type="image/png" href="../img/favicon.png?v=003" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=006" />
+    <link rel="stylesheet" href="../css/loader.css?v=006" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=006" />
     <style>
 .controls {
   position: absolute;
@@ -15,15 +15,24 @@
 .modal {
   background-color:rgb(255, 255, 255);
   border-color:rgb(53, 53, 53);
+  width:100%;
+  max-width:600px;
+  margin:5px;
+}
+.question-edit label, .list-entry, .single-text {
+  display:flex;
+}
+.single-text {
+  flex-wrap: wrap;
+}
+input {
+  flex-grow:1;
 }
 .modal-bg {
   background-color:rgba(0, 0, 0, 0.1);
 }
 .question-edit {
   margin: 10px 0px;
-}
-.question-edit label {
-  display:block;
 }
 #question-container {
   max-height:300px;
@@ -129,7 +138,7 @@ body {
     <div style="display: none" class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=003"></script>
+    <script src="../js/utils.js?v=006"></script>
     <script>
 const RESPONSE_LIST_QUESTIONS = ['radio','check'];
 const datePicker = document.getElementById('date-picker');
@@ -546,6 +555,7 @@ function renderQuestions(event) {
       input.type = 'text';
       input.onkeyup = triggerSave;
       qp.appendChild(input);
+      qp.classList.add('single-text');
     } else if ('list' == question.type) {
       let button = document.createElement('button');
       button.innerText = '+ Add new answer';
@@ -603,17 +613,18 @@ function addListText(event) {
 function deleteAnswer(event) {
   let answerDiv = findParentWithClass(event.target, 'list-entry');
   answerDiv.remove();
+  triggerSave(event);
 }
 
-// if (!csrfToken) {
-//   window.location.replace("../signup.html");
-// }
-// if (
-//   !navigator.userAgent.includes("Chrome") &&
-//   navigator.userAgent.includes("Safari")
-// ) {
-//   iosCookieRefresh();
-// }
+if (!csrfToken) {
+  window.location.replace("../signup.html");
+}
+if (
+  !navigator.userAgent.includes("Chrome") &&
+  navigator.userAgent.includes("Safari")
+) {
+  iosCookieRefresh();
+}
 
 document.addEventListener("keydown", function(e) {
   if (e.key === 's' && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {

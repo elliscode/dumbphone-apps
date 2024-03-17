@@ -422,14 +422,20 @@ def add_route(event, user_data, body):
     # then check if the full food name exists in that token, this prevents
     # duplocate values that I have seen in the past, when the user presses
     # the "Add" button instead of clicking on the relevant food
-    food_hash = body.get('hash')
-    if not food_hash:
+    food_hashes = []
+    if 'hash' in body:
+        food_hashes = [body.get('hash')]
+    elif 'hashes' in body:
+        food_hashes = body.get('hashes')
+    if not food_hashes:
         return format_response(
             event=event,
             http_code=400,
             body="Missing food hash",
         )
-    if food_hash:
+    food_hashes = sorted(set(food_hashes))
+    items_to_write = []
+    for food_index, food_hash in enumerate(food_hashes):
         food_key = {"key1": "food", "key2": food_hash}
         previous_serving_key = {
             "key1": f"serving_{user_data['key2']}",
@@ -508,20 +514,25 @@ def add_route(event, user_data, body):
         }
 
         print(current_entry)
-        current_entry["entries"][f"{time.mktime(time.gmtime())}"] = new_diary_entry
+        current_entry["entries"][f"{time.mktime(time.gmtime())}{food_index:0>3}"] = new_diary_entry
         print(current_entry)
 
-        items = [
-            {"PutRequest": {"Item": python_obj_to_dynamo_obj(current_entry)}},
-            {"PutRequest": {"Item": python_obj_to_dynamo_obj(serving_entry)}},
-        ]
+        items_to_write.append({"PutRequest": {"Item": python_obj_to_dynamo_obj(serving_entry)}})
 
-        dynamo.batch_write_item(RequestItems={TABLE_NAME: items})
-        return format_response(
-            event=event,
-            http_code=200,
-            body="Saved a diary entry",
-        )
+        if len(items_to_write) >= 25:
+            print(json.dumps(items_to_write))
+            dynamo.batch_write_item(RequestItems={TABLE_NAME: items_to_write})
+            items_to_write = []
+    items_to_write.append({"PutRequest": {"Item": python_obj_to_dynamo_obj(current_entry)}})
+    if len(items_to_write) > 0:
+        print(json.dumps(items_to_write))
+        dynamo.batch_write_item(RequestItems={TABLE_NAME: items_to_write})
+        items_to_write = []
+    return format_response(
+        event=event,
+        http_code=200,
+        body="Saved the diary entries",
+    )
 
 
 @authenticate
@@ -580,7 +591,14 @@ def create_food_route(event, user_data, body):
             ],
         }
         for value_key in ALL_VALUE_KEYS:
-            metadata[value_key] = f"{body.get(value_key, 0)}"
+            food_value_string = f"{body.get(value_key, 0)}"
+            if not food_value_string:
+                food_value_string = '0.0'
+            try:
+                float(food_value_string)
+            except:
+                food_value_string = '0.0'
+            metadata[value_key] = food_value_string
         new_food = {
             "key1": "food",
             "key2": create_id(32),
@@ -590,14 +608,7 @@ def create_food_route(event, user_data, body):
 
         calculated_values = {}
         for value_key in ALL_VALUE_KEYS:
-            food_value_string = new_food["metadata"][value_key]
-            if not food_value_string:
-                food_value_string = '0.0'
-            try:
-                float(food_value_string)
-            except:
-                food_value_string = '0.0'
-            calculated_values[value_key] = food_value_string
+            calculated_values[value_key] = new_food["metadata"][value_key]
 
         new_diary_entry = {
             "calculated_values": calculated_values,

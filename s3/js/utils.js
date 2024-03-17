@@ -128,6 +128,18 @@ function getTodayOrUrlParam() {
 
   return `${year}-${month}-${day}`;
 }
+function closeModalIfApplicable(event) {
+  if (event.target.classList.contains("modal-bg")) {
+    event.target.getElementsByClassName("modal")[0].style.display = "none";
+    event.target.style.display = "none";
+  }
+}
+let modalBackgrounds = document.getElementsByClassName("modal-bg");
+for (let i = 0; i < modalBackgrounds.length; i++) {
+  modalBg = modalBackgrounds[i];
+  modalBg.style.display = "none";
+  modalBg.addEventListener("click", closeModalIfApplicable);
+}
 const csrfToken = localStorage.getItem("dumbphoneapps-csrf-token");
 // warn users who open the console to not do anything dumb
 console.log('%cStop!', 'color: red; font-size: 100px; font-weight: bold; -webkit-text-stroke: 2px black;');

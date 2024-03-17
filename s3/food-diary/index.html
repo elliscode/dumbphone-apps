@@ -4,24 +4,41 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Food Diary</title>
-  <link rel="stylesheet" href="../css/stylesheet.css?v=004" />
-  <link rel="stylesheet" href="css/fooddiary.css?v=004" />
-  <link rel="stylesheet" href="../css/loader.css?v=004" />
-  <link rel="icon" type="image/png" href="../img/favicon.png?v=004" />
+  <link rel="stylesheet" href="../css/stylesheet.css?v=006" />
+  <link rel="stylesheet" href="css/fooddiary.css?v=006" />
+  <link rel="stylesheet" href="../css/loader.css?v=006" />
+  <link rel="icon" type="image/png" href="../img/favicon.png?v=006" />
 </head>
 
 <body>
 
+  <div id="loading">
+    <div class="lds-spinner">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+  </div>
+
   <div class="search-blob" id="food-search" style="display:none;">
     <div class="search-bar">
-      <input class="big" type="text" onkeyup="queueSearch(event)" />
+      <input class="big" type="text" onkeyup="queueSearch(event);searchKeyCallback(event, 'onkeyup');" onkeydown="searchKeyCallback(event, 'onkeydown');" />
       <button onclick="closeSearch(event)">Close</button>
       <!--<button onclick="addToList(event)">Add</button>-->
     </div>
     <ul id="search-list" class="suggestions"></ul>
   </div>
 
-  <div class="panel" id="food-edit">
+  <div class="panel" id="food-edit" style="display:none;">
     <label>Name:<input id="food-edit-name" type="text" /></label>
     <label>Calories:<input id="food-edit-calories" type="tel" onkeydown="forceToDecimal(event)" /></label>
     <label>Fat:<input id="food-edit-fat" type="tel" onkeydown="forceToDecimal(event)" />g</label>
@@ -29,12 +46,12 @@
     <label>Protein:<input id="food-edit-protein" type="tel" onkeydown="forceToDecimal(event)" />g</label>
     <label>Alcohol:<input id="food-edit-alcohol" type="tel" onkeydown="forceToDecimal(event)" />g</label>
     <label>Caffeine:<input id="food-edit-caffeine" type="tel" onkeydown="forceToDecimal(event)" />mg</label>
-    <button id="food-edit-recipe" onclick="displayRecipe(event)">Edit Recipe</button>
+    <!-- <button id="food-edit-recipe" onclick="displayRecipe(event)">Edit Recipe</button> -->
     <button id="food-edit-save" onclick="saveFood(event)">Save</button>
     <button onclick="closeFood(event)">&times;</button>
   </div>
 
-  <div class="panel" id="recipe-edit">
+  <div class="panel" id="recipe-edit" style="display:none;">
     <label>Name:<input id="recipe-edit-name" type="text" /></label>
     <table id="ingredients"></table>
     <button onclick="showSearch(event)" search-id="food-search" destination-id="ingredients">Add food</button>
@@ -46,7 +63,7 @@
     </div>
   </div>
 
-  <div class="modal-bg">
+  <div class="modal-bg" style="display:none;">
     <div class="modal" id="servings">
       <input id="servings-amount" type="tel" placeholder="amount" onkeydown="forceToDecimal(event)" />
       <select id="servings-name" onchange="servingChange(event)">
@@ -65,7 +82,7 @@
       <button onclick="closeServings(event)">&times;</button>
     </div>
   </div>
-  <div class="modal-bg">
+  <div class="modal-bg" style="display:none;">
     <div class="modal" id="recipe-servings">
       <input id="recipe-servings-amount" type="tel" onkeydown="forceToDecimal(event)" placeholder="amount" />
       <select id="recipe-servings-name" onchange="servingRecipeChange(event)">
@@ -89,7 +106,7 @@
     </div>
   </div>
 
-  <div class="panel" id="content">
+  <div class="panel" id="content" style="display:none;">
     <div style="display: inline">
       <b><a href="..">Home</a></b> &gt; <b>food-diary</b>
     </div>
@@ -104,29 +121,13 @@
 
     <hr />
 
-    <div id="loading">
-      <div class="lds-spinner">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-      </div>
-    </div>
     <table id="diary" style="border: none"></table>
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
   </div>
-  <script src="../js/utils.js?v=004"></script>
-  <script src="js/fooddiary.js?v=004"></script>
+  <script src="../js/utils.js?v=006"></script>
+  <script src="js/fooddiary.js?v=006"></script>
 </body>
 
 </html>

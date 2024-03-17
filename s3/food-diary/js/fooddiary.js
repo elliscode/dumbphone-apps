@@ -28,10 +28,14 @@ function queueSearch(event) {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(search, 400, event);
 }
+let previousSearch = undefined;
 function search(event) {
   const caller = event.target;
   const input = caller.parentElement.getElementsByTagName("input")[0];
   const query = input.value;
+  if (query === previousSearch) {
+    return;
+  }
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/food-diary/search", true);
   xmlHttp.withCredentials = true;
@@ -42,6 +46,7 @@ function search(event) {
       csrf: csrfToken
     })
   );
+  previousSearch = query;
 }
 function displaySearch(event) {
   let items = defaultHandlerV1(event);
@@ -60,7 +65,6 @@ function displaySearch(event) {
     li.style.display = "relative";
     li.setAttribute("hash", item.hash);
     li.setAttribute("food-name", item.name);
-    li.setAttribute("calories", item.calories);
     const span = document.createElement("span");
     span.innerText = item.name;
     li.appendChild(span);
@@ -902,13 +906,6 @@ for (let i = 0; i < searches.length; i++) {
   });
 }
 
-function closeModalIfApplicable(event) {
-  if (event.target.classList.contains("modal-bg")) {
-    event.target.getElementsByClassName("modal")[0].style.display = "none";
-    event.target.style.display = "none";
-  }
-}
-
 let currentSuggestionMethod = undefined;
 let itemsToIgnore = [];
 function showSearch(event) {
@@ -960,13 +957,6 @@ function closeSearch(event) {
   content.style.display = 'block';
 }
 
-let modalBackgrounds = document.getElementsByClassName("modal-bg");
-for (let i = 0; i < modalBackgrounds.length; i++) {
-  modalBg = modalBackgrounds[i];
-  modalBg.style.display = "none";
-  modalBg.addEventListener("click", closeModalIfApplicable);
-}
-
 const servingsTextBox = document.getElementById("servings-amount");
 const servingsSaveButton = document.getElementById("servings-save");
 servingsTextBox.addEventListener("keyup", function (event) {
@@ -976,5 +966,96 @@ servingsTextBox.addEventListener("keyup", function (event) {
     servingsSaveButton.click();
   }
 });
+
+const preventDefaultKeys = [
+  'SoftLeft',
+  'Call',
+  'Enter',
+  'MicrophoneToggle',
+  'EndCall',
+  'AudioVolumeDown',
+  'AudioVolumeUp'
+];
+const preventDefaultIfEmptyKeys = [
+  'Backspace'
+];
+const blurKeys = [
+  'EndCall'
+];
+const blurIfEmptyKeys = [
+  'Backspace'
+];
+const interactionKeyList = [
+  'ArrowDown',
+  'ArrowUp',
+  'SoftLeft',
+  'Enter'
+];
+let previousValue = undefined;
+let previousSoftLeftTime = new Date();
+function searchKeyCallback(event, type) {
+  let currentTime = new Date();
+  if (preventDefaultKeys.includes(event.key) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
+    event.preventDefault();
+  }
+  if (blurKeys.includes(event.key)) {
+    event.target.blur();
+  }
+  if (type === 'onkeyup' && blurIfEmptyKeys.includes(event.key) && !event.target.value && !previousValue) {
+    event.target.blur();
+  }
+  ///
+  if (type === 'onkeyup' && interactionKeyList.includes(event.key)) {
+    let searchBlob = findParentWithClass(event.target, 'search-blob');
+    let searchList = Array.from(searchBlob.getElementsByClassName('suggestions'))[0];
+    let items = Array.from(searchList.getElementsByTagName('li'));
+    if (items && items.length > 0) {
+      let selecteds = Array.from(searchList.getElementsByClassName('selected'));
+      let selected = undefined;
+      if (selecteds && selecteds.length > 0) {
+        selected = selecteds[0];
+      }
+      if (['ArrowDown', 'ArrowUp'].includes(event.key)) {
+        let startIndex = items.indexOf(selected);
+        let newIndex = startIndex + (event.key === 'ArrowDown' ? 1 : -1);
+        newIndex = newIndex < 0 ? items.length - 1 : newIndex;
+        newIndex = newIndex > items.length - 1 ? 0 : newIndex;
+        if (selected) {
+          selected.classList.remove('selected');
+        }
+        items[newIndex].classList.add('selected');
+        window.scrollBy({ top: items[newIndex].getBoundingClientRect().top - 40, behavior: "smooth" });
+      } else if (['SoftLeft'].includes(event.key)) {
+        if (currentTime - previousSoftLeftTime > 200) {
+          if (selected.classList.contains('checked')) {
+            selected.classList.remove('checked');
+          } else {
+            selected.classList.add('checked');
+          }
+          previousSoftLeftTime = currentTime;
+        }
+      } else if (selected && ['Enter'].includes(event.key)) {
+        event.target.blur();
+        showPanel('content');
+
+        let idsToAdd = [selected.getAttribute('hash')];
+        idsToAdd = idsToAdd.concat(Array.from(searchList.getElementsByClassName('checked')).map(x=>x.getAttribute('hash')));
+        const date = document.getElementById("date-picker").value;
+        let payload = {
+          hashes: idsToAdd,
+          date: date,
+          csrf: csrfToken
+        };
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", API_DOMAIN + "/food-diary/add", true);
+        xmlHttp.withCredentials = true;
+        xmlHttp.onload = setDate;
+        xmlHttp.send(JSON.stringify(payload));
+      }
+    }
+  }
+  ///
+  previousValue = event.target.value;
+}
 
 const loader = document.getElementById("loading");

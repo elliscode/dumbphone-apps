@@ -99,3 +99,12 @@ button:active {
 hr {
   margin: 2px 0px;
 }
+.selected {
+  background-color: rgb(209 233 255)!important;
+}
+.checked {
+  background-color: #cfc;
+}
+.checked::before {
+  content:'\2713 ';
+}
