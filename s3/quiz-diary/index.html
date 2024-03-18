@@ -69,6 +69,16 @@ body {
         transform: rotate(0deg);
     }
 }
+.checkbox-emulator {
+  width: 0;
+  overflow: hidden;
+  opacity:0;
+  filter:alpha(opacity=0);
+}
+.selected {
+  outline: 1px dotted #212121;
+  outline: 5px auto rgb(94, 158, 214);
+}
     </style>
   </head>
 
@@ -151,7 +161,68 @@ const loader = document.getElementById("loading");
 const controlsDiv = document.getElementsByClassName('controls')[0];
 let questions = undefined;
 let saveTimeout = undefined;
+const preventDefaultKeys = [
+  'SoftLeft',
+  'Call',
+  'Enter',
+  'MicrophoneToggle',
+  'EndCall',
+  'AudioVolumeDown',
+  'AudioVolumeUp',
+  'ArrowUp',
+  'ArrowDown'
+];
+const preventDefaultIfEmptyKeys = [
+  'Backspace'
+];
+const blurKeys = [
+  'EndCall'
+];
+const blurIfEmptyKeys = [
+  'Backspace'
+];
+let previousValue = undefined;
+function displayEventInfo(event, type) {
+  if (preventDefaultKeys.includes(event.key) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
+    event.preventDefault();
+  }
+  if (blurKeys.includes(event.key)) {
+    event.target.blur();
+  }
+  if (type === 'onkeyup' && blurIfEmptyKeys.includes(event.key) && !event.target.value && !previousValue) {
+    event.target.blur();
+  }
+  ///
+  if (type === 'onkeyup' && ['ArrowUp', 'ArrowDown'].includes(event.key)) {
+    let inputs = Array.from(document.getElementsByClassName('navigable-input'));
+    let index = inputs.indexOf(event.target);
+    index = index + (event.key === 'ArrowUp' ? -1 : 1);
+    index = index < 0 ? inputs.length - 1 : index;
+    index = index > inputs.length - 1 ? 0 : index;
+    let parent = findParentWithClass(inputs[index], 'question-p');
+    window.scrollBy({ top: parent.getBoundingClientRect().top, behavior: "instant" });
+    inputs[index].focus();
+    if (inputs[index].hasAttribute('checkbox')) {
+      let checkbox = inputs[index].parentElement.getElementsByTagName('input')[0];
+      checkbox.classList.add('selected');
+    }
+  }
+  if (type === 'onkeyup' && event.target.hasAttribute('checkbox') && ['Enter'].includes(event.key)) {
+      let checkbox = event.target.parentElement.getElementsByTagName('input')[0];
+      checkbox.checked = !checkbox.checked;
+      triggerSave(event);
+  }
+  ///
+  previousValue = event.target.value;
+}
+function blurCheckboxEmulator(event) {
+  let selecteds = Array.from(document.getElementsByClassName('selected'));
+  selecteds.forEach(x=>x.classList.remove('selected'));
+}
 function triggerSave(event) {
+  if (['ArrowUp', 'ArrowDown'].includes(event.key)) {
+    return;
+  }
   saving.style.display = 'inline-block';
   saved.style.display = 'none';
   error.style.display = 'none';
@@ -529,31 +600,24 @@ function renderQuestions(event) {
     if ('yn' == question.type) {
       let input = document.createElement('input');
       input.type = 'checkbox';
-      input.onchange = triggerSave;
+      input.addEventListener('change',triggerSave);
+
+      let emulatorInput = document.createElement('input');
+      emulatorInput.addEventListener('keyup',e=>{displayEventInfo(e,'onkeyup')});
+      emulatorInput.addEventListener('keydown',e=>{displayEventInfo(e,'onkeydown')});
+      emulatorInput.addEventListener('blur',blurCheckboxEmulator);
+      emulatorInput.setAttribute('checkbox', undefined);
+      emulatorInput.classList.add('navigable-input');
+      emulatorInput.classList.add('checkbox-emulator');
       qp.appendChild(input);
-    } else if ('radio' == question.type) {
-      // let fieldSet = document.createElement('fieldset');
-      // let legend = document.createElement('legend');
-      // legend.innerText = 'Select one:';
-      // fieldSet.appendChild(legend);
-      // for (let j = 0; j < question.responses.length; j++) {
-      //   let response = question.responses[j];
-      //   let label = document.createElement('label');
-      //   let input2 = document.createElement('input');
-      //   input2.type = 'radio';
-      //   input2.name = questionHash;
-      //   input2.onchange = triggerSave;
-      //   label.appendChild(input2);
-      //   let span = document.createElement('span');
-      //   span.innerText = response;
-      //   label.appendChild(span);
-      //   fieldSet.appendChild(label);
-      // }
-      // qp.appendChild(fieldSet);
+      qp.appendChild(emulatorInput);
     } else if ('text' == question.type) {
       let input = document.createElement('input');
       input.type = 'text';
-      input.onkeyup = triggerSave;
+      input.classList.add('navigable-input');
+      input.addEventListener('keyup',triggerSave);
+      input.addEventListener('keyup',e=>{displayEventInfo(e,'onkeyup')});
+      input.addEventListener('keydown',e=>{displayEventInfo(e,'onkeydown')});
       qp.appendChild(input);
       qp.classList.add('single-text');
     } else if ('list' == question.type) {
@@ -600,7 +664,10 @@ function addListText(event) {
   textWithButton.classList.add('list-entry');
   let input = document.createElement('input');
   input.type = 'text';
-  input.onkeyup = triggerSave;
+  input.classList.add('navigable-input');
+  input.addEventListener('keyup',triggerSave);
+  input.addEventListener('keyup',e=>{displayEventInfo(e,'onkeyup')});
+  input.addEventListener('keydown',e=>{displayEventInfo(e,'onkeydown')});
   textWithButton.appendChild(input);
   let button = document.createElement('button');
   button.innerHTML = '&times;';

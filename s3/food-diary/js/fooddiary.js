@@ -107,6 +107,7 @@ function setTextAndAdd(event) {
   while (suggestions.firstChild) {
     suggestions.removeChild(suggestions.firstChild);
   }
+  textBox.value = "";
   addToList({ target: textBox });
 }
 function deleteEntry(event) {
@@ -950,10 +951,17 @@ function showPanel(id) {
 }
 
 function closeSearch(event) {
-  let caller = event.target;
-  let searchBlob = findParentWithClass(caller, 'search-blob');
+  const caller = event.target;
+  const searchBlob = findParentWithClass(caller, 'search-blob');
   searchBlob.style.display = 'none';
-  let content = document.getElementById('content');
+  const textBox = searchBlob.getElementsByTagName('input')[0];
+  textBox.value = "";
+  const suggestions = searchBlob.getElementsByClassName("suggestions")[0];
+  while (suggestions.firstChild) {
+    suggestions.removeChild(suggestions.firstChild);
+  }
+  previousSearch = '';
+  const content = document.getElementById('content');
   content.style.display = 'block';
 }
 
@@ -998,11 +1006,9 @@ function searchKeyCallback(event, type) {
   if (preventDefaultKeys.includes(event.key) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
     event.preventDefault();
   }
-  if (blurKeys.includes(event.key)) {
+  if (blurKeys.includes(event.key) || (type === 'onkeyup' && blurIfEmptyKeys.includes(event.key) && !event.target.value && !previousValue)) {
     event.target.blur();
-  }
-  if (type === 'onkeyup' && blurIfEmptyKeys.includes(event.key) && !event.target.value && !previousValue) {
-    event.target.blur();
+    closeSearch(event);
   }
   ///
   if (type === 'onkeyup' && interactionKeyList.includes(event.key)) {
@@ -1024,7 +1030,7 @@ function searchKeyCallback(event, type) {
           selected.classList.remove('selected');
         }
         items[newIndex].classList.add('selected');
-        window.scrollBy({ top: items[newIndex].getBoundingClientRect().top - 40, behavior: "smooth" });
+        window.scrollBy({ top: items[newIndex].getBoundingClientRect().top - 40, behavior: "instant" });
       } else if (['SoftLeft'].includes(event.key)) {
         if (currentTime - previousSoftLeftTime > 200) {
           if (selected.classList.contains('checked')) {
