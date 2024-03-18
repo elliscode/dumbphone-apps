@@ -205,12 +205,19 @@ function displayEventInfo(event, type) {
     if (inputs[index].hasAttribute('checkbox')) {
       let checkbox = inputs[index].parentElement.getElementsByTagName('input')[0];
       checkbox.classList.add('selected');
+    } else if (inputs[index].hasAttribute('button')) {
+      let button = inputs[index].parentElement.getElementsByTagName('button')[0];
+      button.classList.add('selected');
     }
   }
   if (type === 'onkeyup' && event.target.hasAttribute('checkbox') && ['Enter'].includes(event.key)) {
       let checkbox = event.target.parentElement.getElementsByTagName('input')[0];
       checkbox.checked = !checkbox.checked;
       triggerSave(event);
+  }
+  if (type === 'onkeyup' && event.target.hasAttribute('button') && ['Enter'].includes(event.key)) {
+    let button = event.target.parentElement.getElementsByTagName('button')[0];
+    button.click();
   }
   ///
   previousValue = event.target.value;
@@ -253,7 +260,7 @@ function save(event) {
       let textBox = questionP.getElementsByTagName('input')[0];
       answer['value'] = textBox.value;
     } else if ('list' == question.type) {
-      let allBoxes = Array.from(questionP.getElementsByTagName('input'));
+      let allBoxes = Array.from(questionP.getElementsByClassName('text-list-item'));
       let value = [];
       for (let i = 0; i < allBoxes.length; i++) {
         let textBox = allBoxes[i];
@@ -334,7 +341,7 @@ function populateQuestions(answersJson) {
         let textBox = questionP.getElementsByTagName('input')[0];
         textBox.value = answer ? answer['value'] : '';
       } else if ('list' == question.type) {
-        let allBoxes = Array.from(questionP.getElementsByTagName('input'));
+        let allBoxes = Array.from(questionP.getElementsByClassName('text-list-item'));
         while (allBoxes.length > 0) {
           let box = allBoxes.pop();
           let listEntry = findParentWithClass(box, 'list-entry');
@@ -601,6 +608,7 @@ function renderQuestions(event) {
       let input = document.createElement('input');
       input.type = 'checkbox';
       input.addEventListener('change',triggerSave);
+      qp.appendChild(input);
 
       let emulatorInput = document.createElement('input');
       emulatorInput.addEventListener('keyup',e=>{displayEventInfo(e,'onkeyup')});
@@ -609,7 +617,6 @@ function renderQuestions(event) {
       emulatorInput.setAttribute('checkbox', undefined);
       emulatorInput.classList.add('navigable-input');
       emulatorInput.classList.add('checkbox-emulator');
-      qp.appendChild(input);
       qp.appendChild(emulatorInput);
     } else if ('text' == question.type) {
       let input = document.createElement('input');
@@ -626,6 +633,15 @@ function renderQuestions(event) {
       button.classList.add('add-list-button')
       button.onclick = addListText;
       qp.appendChild(button);
+
+      let emulatorInput = document.createElement('input');
+      emulatorInput.addEventListener('keyup',e=>{displayEventInfo(e,'onkeyup')});
+      emulatorInput.addEventListener('keydown',e=>{displayEventInfo(e,'onkeydown')});
+      emulatorInput.addEventListener('blur',blurCheckboxEmulator);
+      emulatorInput.setAttribute('button', undefined);
+      emulatorInput.classList.add('navigable-input');
+      emulatorInput.classList.add('checkbox-emulator');
+      qp.appendChild(emulatorInput);
     }
     // set index for reference later
     qp.setAttribute('question-index', i);
@@ -665,6 +681,7 @@ function addListText(event) {
   let input = document.createElement('input');
   input.type = 'text';
   input.classList.add('navigable-input');
+  input.classList.add('text-list-item');
   input.addEventListener('keyup',triggerSave);
   input.addEventListener('keyup',e=>{displayEventInfo(e,'onkeyup')});
   input.addEventListener('keydown',e=>{displayEventInfo(e,'onkeydown')});
@@ -674,6 +691,7 @@ function addListText(event) {
   button.onclick = deleteAnswer;
   textWithButton.appendChild(button);
   questionP.insertBefore(textWithButton, event.target);
+  input.focus();
   return input;
 }
 

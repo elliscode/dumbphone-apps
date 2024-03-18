@@ -41,6 +41,11 @@ input {
         onkeydown="displayEventInfo(event, 'onkeydown')" 
         onkeyup="displayEventInfo(event, 'onkeyup')" 
         type="text" class="navigable-input"/></label>
+        <label>Put your cursor here (button): <button>Button Text</button><input button type="text"
+          onkeydown="displayEventInfo(event, 'onkeydown')" 
+          onkeyup="displayEventInfo(event, 'onkeyup')" 
+          onblur="blurCheckboxEmulator(event)"
+          class="checkbox-emulator navigable-input"/></label>
     <div id="event-info-text">
     </div>
     <script>
@@ -90,11 +95,18 @@ function displayEventInfo(event, type) {
     if (inputs[index].hasAttribute('checkbox')) {
       let checkbox = inputs[index].parentElement.getElementsByTagName('input')[0];
       checkbox.classList.add('selected');
+    } else if (inputs[index].hasAttribute('button')) {
+      let button = inputs[index].parentElement.getElementsByTagName('button')[0];
+      button.classList.add('selected');
     }
   }
   if (type === 'onkeyup' && event.target.hasAttribute('checkbox') && ['Enter'].includes(event.key)) {
       let checkbox = event.target.parentElement.getElementsByTagName('input')[0];
       checkbox.checked = !checkbox.checked;
+  }
+  if (type === 'onkeyup' && event.target.hasAttribute('button') && ['Enter'].includes(event.key)) {
+    let button = inputs[index].parentElement.getElementsByTagName('button')[0];
+    button.click();
   }
   console.log(event);
   const p = document.createElement('p');
