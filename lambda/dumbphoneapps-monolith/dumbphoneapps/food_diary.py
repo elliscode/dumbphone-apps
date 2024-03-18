@@ -127,7 +127,7 @@ def set_food_route(event, user_data, body):
         food["name"] = body["name"]
         add_all_tokens(food["key2"], food["name"])
         diary_entry["entries"][body["timestamp"]]["name"] = food["name"]
-    if body["ingredients"]:
+    if body.get("ingredients"):
         print(f"Setting {food['name']} to a recipe!")
         food_keys = []
         for ingredient in body['ingredients']:
