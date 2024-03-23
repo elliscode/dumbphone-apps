@@ -1,3 +1,23 @@
+const preventDefaultKeys = [
+  'SoftLeft',
+  'Call',
+  'Enter',
+  'MicrophoneToggle',
+  'EndCall',
+  'AudioVolumeDown',
+  'AudioVolumeUp',
+  'ArrowUp',
+  'ArrowDown'
+];
+const preventDefaultIfEmptyKeys = [
+  'Backspace'
+];
+const blurKeys = [
+  'EndCall'
+];
+const blurIfEmptyKeys = [
+  'Backspace'
+];
 function logOut(event) {
   localStorage.removeItem("dumbphoneapps-csrf-token");
   window.location.replace("/signup.html");
@@ -134,6 +154,46 @@ function closeModalIfApplicable(event) {
     event.target.style.display = "none";
   }
 }
+function arrowKeyEmulator(event, functionHandle) {
+  if (preventDefaultKeys.includes(event.key) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
+    event.preventDefault();
+  }
+  if (blurKeys.includes(event.key)) {
+    event.target.blur();
+  }
+  if (event.type === 'keyup' && blurIfEmptyKeys.includes(event.key) && !event.target.value && !previousValue) {
+    event.target.blur();
+  }
+  if (event.type === 'keydown' && ['ArrowUp', 'ArrowDown'].includes(event.key)) {
+    let inputs = Array.from(document.getElementsByClassName('navigable-input'));
+    if (event.target.hasAttribute('input-group-name')) {
+      const currentTarget = event.target.getAttribute('input-group-name');
+      inputs = inputs.filter(x=>x.getAttribute('input-group-name') == currentTarget);
+    }
+    let index = inputs.indexOf(event.target);
+    index = index + (event.key === 'ArrowUp' ? -1 : 1);
+    index = index < 0 ? inputs.length - 1 : index;
+    index = index > inputs.length - 1 ? 0 : index;
+    inputs[index].focus();
+    if (event.type === 'keydown' && 
+        (inputs[index].hasAttribute('checkbox') || inputs[index].hasAttribute('button') || inputs[index].hasAttribute('link'))) {
+      let checkbox = inputs[index].parentElement.getElementsByClassName('selectable')[0];
+      checkbox.classList.add('selected');
+    }
+  }
+  if (event.type === 'keydown' && (event.target.hasAttribute('checkbox') || event.target.hasAttribute('button') || event.target.hasAttribute('link')) && ['Enter'].includes(event.key)) {
+    let button = event.target.parentElement.getElementsByClassName('selectable')[0];
+    button.click();
+  }
+  if (functionHandle) {
+    functionHandle(event);
+  }
+}
+function blurEmulator(event) {
+  let selecteds = Array.from(document.getElementsByClassName('selected'));
+  selecteds.forEach(x=>x.classList.remove('selected'));
+}
+// allows for clicking the background of the modal to exit the modal
 let modalBackgrounds = document.getElementsByClassName("modal-bg");
 for (let i = 0; i < modalBackgrounds.length; i++) {
   modalBg = modalBackgrounds[i];
