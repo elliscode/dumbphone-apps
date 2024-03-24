@@ -28,56 +28,56 @@ input {
   </head>
   <body>
     <label>Put your cursor here (tel): <input 
-      onkeydown="arrowKeyEmulator(event)" 
-      onkeyup="arrowKeyEmulator(event)" 
+      onkeydown="arrowKeyEmulator(event, createNotification)" 
+      onkeyup="arrowKeyEmulator(event, createNotification)" 
       type="tel" class="navigable-input" input-group-name="A"/>
     </label>
     <label>Put your cursor here (number): <input 
-      onkeydown="arrowKeyEmulator(event)" 
-      onkeyup="arrowKeyEmulator(event)" 
+      onkeydown="arrowKeyEmulator(event, createNotification)" 
+      onkeyup="arrowKeyEmulator(event, createNotification)" 
       type="number" class="navigable-input" input-group-name="A"/></label>
       <label>Put your cursor here (checkbox): <input 
         type="checkbox" class="selectable" onchange="createNotification(event)"/><input checkbox type="text"
-        onkeydown="arrowKeyEmulator(event)" 
-        onkeyup="arrowKeyEmulator(event)" 
+        onkeydown="arrowKeyEmulator(event, createNotification)" 
+        onkeyup="arrowKeyEmulator(event, createNotification)" 
         onblur="blurEmulator(event)"
         class="checkbox-emulator navigable-input" input-group-name="A"/></label>
       <label>Put your cursor here (text): <input 
-        onkeydown="arrowKeyEmulator(event)" 
-        onkeyup="arrowKeyEmulator(event)" 
+        onkeydown="arrowKeyEmulator(event, createNotification)" 
+        onkeyup="arrowKeyEmulator(event, createNotification)" 
         type="text" class="navigable-input" input-group-name="A"/></label>
         <label>Put your cursor here (button): <button onclick="createNotification(event)" class="selectable">Button Text</button><input button type="text"
-          onkeydown="arrowKeyEmulator(event)" 
-          onkeyup="arrowKeyEmulator(event)" 
+          onkeydown="arrowKeyEmulator(event, createNotification)" 
+          onkeyup="arrowKeyEmulator(event, createNotification)" 
           onblur="blurEmulator(event)"
           class="checkbox-emulator navigable-input" input-group-name="A"/></label>
 
 
       <label>Put your cursor here (tel): <input 
-        onkeydown="arrowKeyEmulator(event)" 
-        onkeyup="arrowKeyEmulator(event)" 
+        onkeydown="arrowKeyEmulator(event, createNotification)" 
+        onkeyup="arrowKeyEmulator(event, createNotification)" 
         type="tel" class="navigable-input" input-group-name="B"/>
       </label>
       <label>Put your cursor here (number): <input 
-        onkeydown="arrowKeyEmulator(event)" 
-        onkeyup="arrowKeyEmulator(event)" 
+        onkeydown="arrowKeyEmulator(event, createNotification)" 
+        onkeyup="arrowKeyEmulator(event, createNotification)" 
         type="number" class="navigable-input" input-group-name="B"/></label>
         <label>Put your cursor here (checkbox): <input 
           type="checkbox" class="selectable" onchange="createNotification(event)"/><input checkbox type="text"
-          onkeydown="arrowKeyEmulator(event)" 
-          onkeyup="arrowKeyEmulator(event)" 
+          onkeydown="arrowKeyEmulator(event, createNotification)" 
+          onkeyup="arrowKeyEmulator(event, createNotification)" 
           onblur="blurEmulator(event)"
           class="checkbox-emulator navigable-input" input-group-name="B"/></label>
         <label>Put your cursor here (text): <input 
-          onkeydown="arrowKeyEmulator(event)" 
-          onkeyup="arrowKeyEmulator(event)" 
+          onkeydown="arrowKeyEmulator(event, createNotification)" 
+          onkeyup="arrowKeyEmulator(event, createNotification)" 
           type="text" class="navigable-input" input-group-name="B"/></label>
           <label>Put your cursor here (button): 
             <button onclick="createNotification(event)">Other Button</button>
             <button onclick="createNotification(event)" class="selectable">Linked Button</button>
             <input button type="text"
-            onkeydown="arrowKeyEmulator(event)" 
-            onkeyup="arrowKeyEmulator(event)" 
+            onkeydown="arrowKeyEmulator(event, createNotification)" 
+            onkeyup="arrowKeyEmulator(event, createNotification)" 
             onblur="blurEmulator(event)"
             class="checkbox-emulator navigable-input" input-group-name="B"/></label>
     <div id="event-info-text">
@@ -105,11 +105,11 @@ function deleteItem(idString) {
   document.getElementById(idString).remove();
 }
 function displayMouseEvent(event) {
-  // createNotification(event);
+  createNotification(event);
 }
 document.body.addEventListener('mousemove',displayMouseEvent);
 function displayScrollEvent(event) {
-  // createNotification(event);
+  createNotification(event);
 }
 document.body.addEventListener('scroll',displayScrollEvent);
     </script>
