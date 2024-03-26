@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="stylesheet" href="css/stylesheet.css?v=006" />
     <style>
 body {
   margin: 0px;
@@ -8,78 +9,44 @@ body {
   height: 1600px;
 }
 label {
-  display: flex;
+  display: block;
   flex-wrap: wrap;
-}
-input {
-  flex-grow: 1;
-}
-.checkbox-emulator {
-  width: 0;
-  overflow: hidden;
-  opacity:0;
-  filter:alpha(opacity=0);
-}
-.selected {
-  outline: 1px dotted #212121;
-  outline: 5px auto rgb(94, 158, 214);
 }
     </style>
   </head>
   <body>
-    <label>Put your cursor here (tel): <input 
-      onkeydown="arrowKeyEmulator(event, createNotification)" 
-      onkeyup="arrowKeyEmulator(event, createNotification)" 
-      type="tel" class="navigable-input" input-group-name="A"/>
+    <label>Put your cursor here (tel): 
+      <input type="tel" input-group-name="A"/>
     </label>
-    <label>Put your cursor here (number): <input 
-      onkeydown="arrowKeyEmulator(event, createNotification)" 
-      onkeyup="arrowKeyEmulator(event, createNotification)" 
-      type="number" class="navigable-input" input-group-name="A"/></label>
-      <label>Put your cursor here (checkbox): <input 
-        type="checkbox" class="selectable" onchange="createNotification(event)"/><input checkbox type="text"
-        onkeydown="arrowKeyEmulator(event, createNotification)" 
-        onkeyup="arrowKeyEmulator(event, createNotification)" 
-        onblur="blurEmulator(event)"
-        class="checkbox-emulator navigable-input" input-group-name="A"/></label>
-      <label>Put your cursor here (text): <input 
-        onkeydown="arrowKeyEmulator(event, createNotification)" 
-        onkeyup="arrowKeyEmulator(event, createNotification)" 
-        type="text" class="navigable-input" input-group-name="A"/></label>
-        <label>Put your cursor here (button): <button onclick="createNotification(event)" class="selectable">Button Text</button><input button type="text"
-          onkeydown="arrowKeyEmulator(event, createNotification)" 
-          onkeyup="arrowKeyEmulator(event, createNotification)" 
-          onblur="blurEmulator(event)"
-          class="checkbox-emulator navigable-input" input-group-name="A"/></label>
-
-
-      <label>Put your cursor here (tel): <input 
-        onkeydown="arrowKeyEmulator(event, createNotification)" 
-        onkeyup="arrowKeyEmulator(event, createNotification)" 
-        type="tel" class="navigable-input" input-group-name="B"/>
-      </label>
-      <label>Put your cursor here (number): <input 
-        onkeydown="arrowKeyEmulator(event, createNotification)" 
-        onkeyup="arrowKeyEmulator(event, createNotification)" 
-        type="number" class="navigable-input" input-group-name="B"/></label>
-        <label>Put your cursor here (checkbox): <input 
-          type="checkbox" class="selectable" onchange="createNotification(event)"/><input checkbox type="text"
-          onkeydown="arrowKeyEmulator(event, createNotification)" 
-          onkeyup="arrowKeyEmulator(event, createNotification)" 
-          onblur="blurEmulator(event)"
-          class="checkbox-emulator navigable-input" input-group-name="B"/></label>
-        <label>Put your cursor here (text): <input 
-          onkeydown="arrowKeyEmulator(event, createNotification)" 
-          onkeyup="arrowKeyEmulator(event, createNotification)" 
-          type="text" class="navigable-input" input-group-name="B"/></label>
-          <label>Put your cursor here (button): 
-            <button onclick="createNotification(event)">Other Button</button>
-            <button onclick="createNotification(event)" class="selectable">Linked Button</button>
-            <input button type="text"
-            onkeydown="arrowKeyEmulator(event, createNotification)" 
-            onkeyup="arrowKeyEmulator(event, createNotification)" 
-            onblur="blurEmulator(event)"
-            class="checkbox-emulator navigable-input" input-group-name="B"/></label>
+    <div><a href="https://google.com" input-group-name="A">Link to google</a></div>
+    <label>Put your cursor here (number): 
+      <input type="number" input-group-name="A"/>
+    </label>
+    <label>Put your cursor here (checkbox): 
+      <input type="checkbox"  input-group-name="A"/>
+    </label>
+    <label>Put your cursor here (text): 
+      <input type="text" input-group-name="A"/>
+    </label>
+    <label>Put your cursor here (button): 
+      <button input-group-name="A">Button Text</button>
+    </label>
+    <hr />
+    <label>Put your cursor here (tel): 
+      <input type="tel" input-group-name="B"/>
+    </label>
+    <label>Put your cursor here (number): 
+      <input type="number" input-group-name="B"/>
+    </label>
+    <label>Put your cursor here (checkbox): 
+      <input type="checkbox"  input-group-name="B"/>
+    </label>
+    <label>Put your cursor here (text): 
+      <input type="text" input-group-name="B"/>
+    </label>
+    <label>Put your cursor here (button): 
+      <button input-group-name="B">Button Text</button>
+    </label>
     <div id="event-info-text">
     </div>
     <script src="js/utils.js?v=006"></script>
@@ -104,14 +71,6 @@ function createNotification(event) {
 function deleteItem(idString) {
   document.getElementById(idString).remove();
 }
-function displayMouseEvent(event) {
-  createNotification(event);
-}
-document.body.addEventListener('mousemove',displayMouseEvent);
-function displayScrollEvent(event) {
-  createNotification(event);
-}
-document.body.addEventListener('scroll',displayScrollEvent);
     </script>
   </body>
 </html>

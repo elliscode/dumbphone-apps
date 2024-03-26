@@ -70,6 +70,18 @@ function displaySearch(event) {
     li.appendChild(span);
     suggestions.appendChild(li);
   }
+  const textBoxParent = document.getElementsByClassName("search-bar")[0];
+  const textBox = textBoxParent.getElementsByTagName('input')[0];
+  if (textBox.value) {
+    const li = document.createElement("li");
+    li.addEventListener("click", handleFood);
+    li.style.cursor = "pointer";
+    li.style.display = "relative";
+    const span = document.createElement("span");
+    span.innerText = "+ Add a new food";
+    li.appendChild(span);
+    suggestions.appendChild(li);
+  }
 }
 function deleteFood(event) {
   let caller = event.target;
@@ -283,9 +295,18 @@ function editEitherFoodOrRecipe(event) {
 }
 
 function handleFood(event) {
+  showPanel('content');
   currentFood = defaultHandlerV1(event);
+  const textBoxParent = document.getElementsByClassName("search-bar")[0];
+  const textBox = textBoxParent.getElementsByTagName('input')[0];
   if (!currentFood) {
     currentFood = createBlankFood();
+    if (textBox.value) {
+      currentFood.name = textBox.value;
+    }
+  }
+  if (textBox.value) {
+    textBox.value = '';
   }
   if (currentFood.metadata.hasOwnProperty("ingredients")) {
     displayRecipe();
@@ -330,21 +351,23 @@ function displayFood() {
   let content = document.getElementById('content');
   content.style.display = 'none';
 
-  document.getElementById("food-edit-name").value = "";
+  document.getElementById("food-edit-name").value =     item ? item.name : "";
   document.getElementById("food-edit-calories").value = "";
-  document.getElementById("food-edit-protein").value = "";
-  document.getElementById("food-edit-fat").value = "";
-  document.getElementById("food-edit-carbs").value = "";
-  document.getElementById("food-edit-alcohol").value = "";
+  document.getElementById("food-edit-protein").value =  "";
+  document.getElementById("food-edit-fat").value =      "";
+  document.getElementById("food-edit-carbs").value =    "";
+  document.getElementById("food-edit-alcohol").value =  "";
   document.getElementById("food-edit-caffeine").value = "";
-  document.getElementById("food-edit-name").placeholder = item ? item.name : "";
+  document.getElementById("food-edit-name").placeholder =     item ? item.name : "";
   document.getElementById("food-edit-calories").placeholder = item ? item.metadata.calories : "";
-  document.getElementById("food-edit-protein").placeholder = item ? item.metadata.protein : "";
-  document.getElementById("food-edit-fat").placeholder = item ? item.metadata.fat : "";
-  document.getElementById("food-edit-carbs").placeholder = item ? item.metadata.carbs : "";
-  document.getElementById("food-edit-alcohol").placeholder = item ? item.metadata.alcohol : "";
+  document.getElementById("food-edit-protein").placeholder =  item ? item.metadata.protein : "";
+  document.getElementById("food-edit-fat").placeholder =      item ? item.metadata.fat : "";
+  document.getElementById("food-edit-carbs").placeholder =    item ? item.metadata.carbs : "";
+  document.getElementById("food-edit-alcohol").placeholder =  item ? item.metadata.alcohol : "";
   document.getElementById("food-edit-caffeine").placeholder = item ? item.metadata.caffeine : "";
   foodEdit.style.display = "block";
+
+  document.getElementById("food-edit-name").focus();
 }
 function displayRecipe(event) {
   let foodEdit = document.getElementById("food-edit");
@@ -975,7 +998,7 @@ servingsTextBox.addEventListener("keyup", function (event) {
   }
 });
 
-const preventDefaultKeys = [
+const foodListPreventDefaultKeys = [
   'SoftLeft',
   'Call',
   'Enter',
@@ -984,16 +1007,16 @@ const preventDefaultKeys = [
   'AudioVolumeDown',
   'AudioVolumeUp'
 ];
-const preventDefaultIfEmptyKeys = [
+const foodListPreventDefaultIfEmptyKeys = [
   'Backspace'
 ];
-const blurKeys = [
+const foodListBlurKeys = [
   'EndCall'
 ];
-const blurIfEmptyKeys = [
+const foodListBlurIfEmptyKeys = [
   'Backspace'
 ];
-const interactionKeyList = [
+const foodListInteractionKeyList = [
   'ArrowDown',
   'ArrowUp',
   'SoftLeft',
@@ -1003,15 +1026,14 @@ let previousValue = undefined;
 let previousSoftLeftTime = new Date();
 function searchKeyCallback(event, type) {
   let currentTime = new Date();
-  if (preventDefaultKeys.includes(event.key) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
+  if (foodListPreventDefaultKeys.includes(event.key) || (foodListPreventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
     event.preventDefault();
   }
-  if (blurKeys.includes(event.key) || (type === 'onkeyup' && blurIfEmptyKeys.includes(event.key) && !event.target.value && !previousValue)) {
+  if (foodListBlurKeys.includes(event.key) || (event.type === 'keyup' && foodListBlurIfEmptyKeys.includes(event.key) && !event.target.value && !previousValue)) {
     event.target.blur();
     closeSearch(event);
   }
-  ///
-  if (type === 'onkeyup' && interactionKeyList.includes(event.key)) {
+  if (event.type === 'keydown' && foodListInteractionKeyList.includes(event.key)) {
     let searchBlob = findParentWithClass(event.target, 'search-blob');
     let searchList = Array.from(searchBlob.getElementsByClassName('suggestions'))[0];
     let items = Array.from(searchList.getElementsByTagName('li'));
@@ -1032,36 +1054,79 @@ function searchKeyCallback(event, type) {
         items[newIndex].classList.add('selected');
         window.scrollBy({ top: items[newIndex].getBoundingClientRect().top - 40, behavior: "instant" });
       } else if (['SoftLeft'].includes(event.key)) {
-        if (currentTime - previousSoftLeftTime > 200) {
-          if (selected.classList.contains('checked')) {
-            selected.classList.remove('checked');
-          } else {
-            selected.classList.add('checked');
+        if (selected.hasAttribute('hash')) {
+          if (currentTime - previousSoftLeftTime > 200) {
+            if (selected.classList.contains('checked')) {
+              selected.classList.remove('checked');
+            } else {
+              selected.classList.add('checked');
+            }
+            previousSoftLeftTime = currentTime;
           }
-          previousSoftLeftTime = currentTime;
         }
       } else if (selected && ['Enter'].includes(event.key)) {
         event.target.blur();
         showPanel('content');
 
-        let idsToAdd = [selected.getAttribute('hash')];
-        idsToAdd = idsToAdd.concat(Array.from(searchList.getElementsByClassName('checked')).map(x=>x.getAttribute('hash')));
-        const date = document.getElementById("date-picker").value;
-        let payload = {
-          hashes: idsToAdd,
-          date: date,
-          csrf: csrfToken
-        };
-        let xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("POST", API_DOMAIN + "/food-diary/add", true);
-        xmlHttp.withCredentials = true;
-        xmlHttp.onload = setDate;
-        xmlHttp.send(JSON.stringify(payload));
+        if (!selected.hasAttribute('hash')) {
+          handleFood(event);
+        } else {
+          let idsToAdd = [selected.getAttribute('hash')];
+          idsToAdd = idsToAdd.concat(Array.from(searchList.getElementsByClassName('checked')).map(x=>x.getAttribute('hash')));
+          const date = document.getElementById("date-picker").value;
+          let payload = {
+            hashes: idsToAdd,
+            date: date,
+            csrf: csrfToken
+          };
+          const suggestions = document.getElementById("search-list");
+          while (suggestions.firstChild) {
+            suggestions.removeChild(suggestions.firstChild);
+          }
+          let xmlHttp = new XMLHttpRequest();
+          xmlHttp.open("POST", API_DOMAIN + "/food-diary/add", true);
+          xmlHttp.withCredentials = true;
+          xmlHttp.onload = setDate;
+          xmlHttp.send(JSON.stringify(payload));
+        }
       }
     }
   }
-  ///
   previousValue = event.target.value;
+}
+const servingListPreventDefaultKeys = [
+  'ArrowDown',
+  'ArrowUp'
+];
+const servingListPreventDefaultIfEmptyKeys = [
+  'Backspace'
+];
+const servingListBlurKeys = [
+  'EndCall'
+];
+const servingListBlurIfEmptyKeys = [
+  'Backspace'
+];
+const servingListInteractionKeyList = [
+  'ArrowDown',
+  'ArrowUp'
+];
+function servingsArrowCallback(event) {
+  if (servingListPreventDefaultKeys.includes(event.key) || (servingListPreventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
+    event.preventDefault();
+  }
+  if (servingListBlurKeys.includes(event.key) || (event.type === 'keyup' && servingListBlurIfEmptyKeys.includes(event.key) && !event.target.value && !previousValue)) {
+    event.target.blur();
+    closeSearch(event);
+  }
+  if (['ArrowDown', 'ArrowUp'].includes(event.key)) {
+    let modal = findParentWithClass(event.target, 'modal');
+    let select = modal.getElementsByTagName('select')[0]; 
+    let newIndex = select.selectedIndex + (event.key === 'ArrowDown' ? 1 : -1);
+    newIndex = newIndex < 0 ? select.length - 1 : newIndex;
+    newIndex = newIndex > select.length - 1 ? 0 : newIndex;
+    select.selectedIndex = newIndex;
+  }
 }
 
 const loader = document.getElementById("loading");

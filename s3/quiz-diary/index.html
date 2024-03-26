@@ -206,7 +206,8 @@ function displayEventInfo(event, type) {
       let checkbox = inputs[index].parentElement.getElementsByTagName('input')[0];
       checkbox.classList.add('selected');
     } else if (inputs[index].hasAttribute('button')) {
-      let button = inputs[index].parentElement.getElementsByTagName('button')[0];
+      let buttons = Array.from(inputs[index].parentElement.getElementsByTagName('button'));
+      let button = buttons[buttons.length - 1];
       button.classList.add('selected');
     }
   }
@@ -216,7 +217,8 @@ function displayEventInfo(event, type) {
       triggerSave(event);
   }
   if (type === 'onkeyup' && event.target.hasAttribute('button') && ['Enter'].includes(event.key)) {
-    let button = event.target.parentElement.getElementsByTagName('button')[0];
+    let buttons = Array.from(event.target.parentElement.getElementsByTagName('button'));
+    let button = buttons[buttons.length - 1];
     button.click();
   }
   ///

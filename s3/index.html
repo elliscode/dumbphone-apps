@@ -10,7 +10,11 @@
   <body>
     <div><b>Home</b></div>
     <ul>
-      <li><a href="grocery-list/index.html">Grocery List</a></li>
+      <li><a href="grocery-list/index.html">Grocery List</a><input checkbox type="text"
+        onkeydown="displayEventInfo(event)" 
+        onkeyup="displayEventInfo(event)" 
+        onblur="blurLinkEmulator(event)"
+        class="checkbox-emulator navigable-input"/></li>
       <li><a href="weather/index.html">Weather</a></li>
       <li><a href="food-diary/index.html">Food Diary</a></li>
       <li><a href="location-sharer/index.html">Location Sharer</a></li>
