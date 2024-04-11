@@ -1028,7 +1028,6 @@ const foodListInteractionKeyList = [
   'SoftLeft',
   'Enter'
 ];
-let previousValue = undefined;
 let previousSoftLeftTime = new Date();
 function searchKeyCallback(event, type) {
   let currentTime = new Date();

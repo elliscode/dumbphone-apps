@@ -451,9 +451,9 @@ function hideSubmit(event) {
   submitBar.style.display = "none";
 }
 function enterKeyListener(event) {
-  event.preventDefault();
-  if (event.keyCode === 13) {
+  if (event.keyCode === 13 && event.type == 'keyup') {
     document.getElementById("add").click();
+    event.preventDefault();
   }
 }
 loadList();
@@ -470,3 +470,4 @@ let modalBgs = document.getElementsByClassName("modal-bg");
 for (let i = 0; i < modalBgs.length; i++) {
   modalBgs[i].addEventListener("click", closeOnClick);
 }
+applyEmulators(enterKeyListener);

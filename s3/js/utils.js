@@ -5,9 +5,7 @@ const preventDefaultKeys = [
   'MicrophoneToggle',
   'EndCall',
   'AudioVolumeDown',
-  'AudioVolumeUp',
-  'ArrowUp',
-  'ArrowDown'
+  'AudioVolumeUp'
 ];
 const preventDefaultIfEmptyKeys = [
   'Backspace'
@@ -160,6 +158,7 @@ function closeModal(event) {
     parent.style.display = "none";
   }
 }
+let previousValue = undefined;
 function arrowKeyEmulator(event, functionHandle) {
   if (preventDefaultKeys.includes(event.key) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
     event.preventDefault();
@@ -194,6 +193,7 @@ function arrowKeyEmulator(event, functionHandle) {
   if (functionHandle) {
     functionHandle(event);
   }
+  previousValue = event.target.value;
 }
 function blurEmulator(event) {
   let selecteds = Array.from(document.getElementsByClassName('selected'));
