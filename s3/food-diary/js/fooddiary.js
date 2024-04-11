@@ -1058,7 +1058,7 @@ function searchKeyCallback(event, type) {
           selected.classList.remove('selected');
         }
         items[newIndex].classList.add('selected');
-        items[newIndex].scrollIntoView({behavior: 'smooth', block: 'nearest'});
+        window.scrollBy({ top: items[newIndex].getBoundingClientRect().top - 40, behavior: "instant" });
       } else if (['SoftLeft'].includes(event.key)) {
         if (selected.hasAttribute('hash')) {
           if (currentTime - previousSoftLeftTime > 200) {
