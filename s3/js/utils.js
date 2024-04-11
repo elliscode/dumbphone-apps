@@ -154,6 +154,12 @@ function closeModalIfApplicable(event) {
     event.target.style.display = "none";
   }
 }
+function closeModal(event) {
+  let parent = findParentWithClass(event.target, "modal-bg");
+  if (parent) {
+    parent.style.display = "none";
+  }
+}
 function arrowKeyEmulator(event, functionHandle) {
   if (preventDefaultKeys.includes(event.key) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
     event.preventDefault();
@@ -193,13 +199,17 @@ function blurEmulator(event) {
   let selecteds = Array.from(document.getElementsByClassName('selected'));
   selecteds.forEach(x=>x.classList.remove('selected'));
 }
-function applyEmulators() {
+function applyEmulators(customCallback) {
   let allItems = Array.from(document.querySelectorAll(`[input-group-name]`));
   for (let i = 0; i < allItems.length; i++) {
     let item = allItems[i];
+    if (item.hasAttribute('generated')) {
+      continue;
+    }
     if (item.tagName.toLowerCase() == 'input' && ['tel','number','text'].includes(item.type.toLowerCase())) {
-      item.addEventListener('keydown', arrowKeyEmulator);
-      item.addEventListener('keyup', arrowKeyEmulator);
+      item.addEventListener('keydown', (e)=>{arrowKeyEmulator(e, customCallback)});
+      item.addEventListener('keyup', (e)=>{arrowKeyEmulator(e, customCallback)});
+      item.setAttribute('generated', true);
       item.classList.add('navigable-input');
     } else if (item.tagName.toLowerCase() == 'a' || item.tagName.toLowerCase() == 'button' || (item.tagName.toLowerCase() == 'input' && ['checkbox'].includes(item.type.toLowerCase()))) {
       let invisibleInput = document.createElement('input');
@@ -207,9 +217,10 @@ function applyEmulators() {
       invisibleInput.classList.add('invisible-input');
       invisibleInput.classList.add('navigable-input');
       invisibleInput.setAttribute('input-group-name', item.getAttribute('input-group-name'));
+      invisibleInput.setAttribute('generated', true);
       invisibleInput.setAttribute('linked-item', true);
-      invisibleInput.addEventListener('keydown', arrowKeyEmulator);
-      invisibleInput.addEventListener('keyup', arrowKeyEmulator);
+      invisibleInput.addEventListener('keydown', (e)=>{arrowKeyEmulator(e, customCallback)});
+      invisibleInput.addEventListener('keyup', (e)=>{arrowKeyEmulator(e, customCallback)});
       invisibleInput.addEventListener('blur', blurEmulator);
       invisibleInput.tabIndex = '-1';
 
@@ -219,7 +230,6 @@ function applyEmulators() {
     }
   }
 }
-applyEmulators();
 // allows for clicking the background of the modal to exit the modal
 let modalBackgrounds = document.getElementsByClassName("modal-bg");
 for (let i = 0; i < modalBackgrounds.length; i++) {
@@ -233,5 +243,5 @@ console.log('%cStop!', 'color: red; font-size: 100px; font-weight: bold; -webkit
 console.log('If someone told you to paste something in here, %cDO NOT DO IT!', 'color: red; font-size: 20px; font-weight: bold; -webkit-text-stroke: 1px black;', 'They are trying to hijack your account!');
 // if you are deploying this on a different domain, you'll
 // need to change these values here
-const API_DOMAIN = "https://test.dumbphoneapps.com";
-const UI_DOMAIN = "https://aws.dumbphoneapps.com";
+const API_DOMAIN = "https://api.dumbphoneapps.com";
+const UI_DOMAIN = "https://www.dumbphoneapps.com";

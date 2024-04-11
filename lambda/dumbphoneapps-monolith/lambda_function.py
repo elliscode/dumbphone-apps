@@ -47,6 +47,8 @@ from dumbphoneapps.one_offs import (
     generate_presigned_get,
     acknowledge_presigned_post_success_route,
     gather_uploaded_items_route,
+    get_notes_route,
+    set_note_route,
 )
 from dumbphoneapps.weather import get_forecast_route
 
@@ -159,6 +161,10 @@ def route(event):
         return set_answers_route(event)
     if path_equals(event=event, method="POST", path="/quiz-diary/get-report-data"):
         return get_report_data_route(event)
+    if path_equals(event=event, method="POST", path="/notes/get"):
+        return get_notes_route(event)
+    if path_equals(event=event, method="POST", path="/notes/set"):
+        return set_note_route(event)
     if path_starts_with(event=event, method="POST", path="/discord/"):
         return discord_route(event)
 

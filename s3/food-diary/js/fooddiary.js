@@ -336,6 +336,9 @@ function closeFood(event) {
   recipeEdit.style.display = "none";
   let content = document.getElementById('content');
   content.style.display = 'block';
+  if (document.activeElement) {
+    document.activeElement.blur();
+  }
 }
 function displayFood() {
   let item = currentFood;
@@ -549,6 +552,9 @@ function deleteRow(event) {
   event.parentElement.parentElement.remove();
 }
 function saveFood(event) {
+  if (document.activeElement) {
+    document.activeElement.blur();
+  }
   const key = event.target.getAttribute("key");
   const date = document.getElementById("date-picker").value;
   const timestamp = event.target.getAttribute("timestamp");
@@ -1052,7 +1058,7 @@ function searchKeyCallback(event, type) {
           selected.classList.remove('selected');
         }
         items[newIndex].classList.add('selected');
-        window.scrollBy({ top: items[newIndex].getBoundingClientRect().top - 40, behavior: "instant" });
+        items[newIndex].scrollIntoView({behavior: 'smooth', block: 'nearest'});
       } else if (['SoftLeft'].includes(event.key)) {
         if (selected.hasAttribute('hash')) {
           if (currentTime - previousSoftLeftTime > 200) {
@@ -1130,3 +1136,5 @@ function servingsArrowCallback(event) {
 }
 
 const loader = document.getElementById("loading");
+
+applyEmulators();

@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Quiz Diary</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=006" />
-    <link rel="stylesheet" href="../css/loader.css?v=006" />
-    <link rel="icon" type="image/png" href="../img/favicon.png?v=006" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=007" />
+    <link rel="stylesheet" href="../css/loader.css?v=007" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=007" />
     <style>
 .controls {
   position: absolute;
@@ -148,7 +148,7 @@ body {
     <div style="display: none" class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=006"></script>
+    <script src="../js/utils.js?v=007"></script>
     <script>
 const RESPONSE_LIST_QUESTIONS = ['radio','check'];
 const datePicker = document.getElementById('date-picker');
@@ -161,73 +161,8 @@ const loader = document.getElementById("loading");
 const controlsDiv = document.getElementsByClassName('controls')[0];
 let questions = undefined;
 let saveTimeout = undefined;
-const preventDefaultKeys = [
-  'SoftLeft',
-  'Call',
-  'Enter',
-  'MicrophoneToggle',
-  'EndCall',
-  'AudioVolumeDown',
-  'AudioVolumeUp',
-  'ArrowUp',
-  'ArrowDown'
-];
-const preventDefaultIfEmptyKeys = [
-  'Backspace'
-];
-const blurKeys = [
-  'EndCall'
-];
-const blurIfEmptyKeys = [
-  'Backspace'
-];
 let previousValue = undefined;
-function displayEventInfo(event, type) {
-  if (preventDefaultKeys.includes(event.key) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
-    event.preventDefault();
-  }
-  if (blurKeys.includes(event.key)) {
-    event.target.blur();
-  }
-  if (type === 'onkeyup' && blurIfEmptyKeys.includes(event.key) && !event.target.value && !previousValue) {
-    event.target.blur();
-  }
-  ///
-  if (type === 'onkeyup' && ['ArrowUp', 'ArrowDown'].includes(event.key)) {
-    let inputs = Array.from(document.getElementsByClassName('navigable-input'));
-    let index = inputs.indexOf(event.target);
-    index = index + (event.key === 'ArrowUp' ? -1 : 1);
-    index = index < 0 ? inputs.length - 1 : index;
-    index = index > inputs.length - 1 ? 0 : index;
-    let parent = findParentWithClass(inputs[index], 'question-p');
-    window.scrollBy({ top: parent.getBoundingClientRect().top, behavior: "instant" });
-    inputs[index].focus();
-    if (inputs[index].hasAttribute('checkbox')) {
-      let checkbox = inputs[index].parentElement.getElementsByTagName('input')[0];
-      checkbox.classList.add('selected');
-    } else if (inputs[index].hasAttribute('button')) {
-      let buttons = Array.from(inputs[index].parentElement.getElementsByTagName('button'));
-      let button = buttons[buttons.length - 1];
-      button.classList.add('selected');
-    }
-  }
-  if (type === 'onkeyup' && event.target.hasAttribute('checkbox') && ['Enter'].includes(event.key)) {
-      let checkbox = event.target.parentElement.getElementsByTagName('input')[0];
-      checkbox.checked = !checkbox.checked;
-      triggerSave(event);
-  }
-  if (type === 'onkeyup' && event.target.hasAttribute('button') && ['Enter'].includes(event.key)) {
-    let buttons = Array.from(event.target.parentElement.getElementsByTagName('button'));
-    let button = buttons[buttons.length - 1];
-    button.click();
-  }
-  ///
-  previousValue = event.target.value;
-}
-function blurCheckboxEmulator(event) {
-  let selecteds = Array.from(document.getElementsByClassName('selected'));
-  selecteds.forEach(x=>x.classList.remove('selected'));
-}
+
 function triggerSave(event) {
   if (['ArrowUp', 'ArrowDown'].includes(event.key)) {
     return;
@@ -501,17 +436,21 @@ function buildQuestionToEdit(parentElement) {
 
 function moveQuestionUp(event) {
   let questionBlock = findParentWithClass(event.target, 'question-edit');
+  let questionContainer = document.getElementById('question-container');
   let prev = questionBlock.previousElementSibling;
   if (prev) {
     questionBlock.parentElement.insertBefore(questionBlock, prev);
+    questionBlock.scrollIntoView({behavior: 'smooth', block: 'nearest'});
   }
 }
 
 function moveQuestionDown(event) {
   let questionBlock = findParentWithClass(event.target, 'question-edit');
+  let questionContainer = document.getElementById('question-container');
   let next = questionBlock.nextElementSibling;
   if (next) {
     questionBlock.parentElement.insertBefore(next, questionBlock);
+    questionBlock.scrollIntoView({behavior: 'smooth', block: 'nearest'});
   }
 }
 
@@ -605,28 +544,19 @@ function renderQuestions(event) {
     qp.classList.add('question-p');
     let span = document.createElement('span');
     span.innerText = question.question;
+    span.addEventListener('click', focusInput);
     qp.appendChild(span);
     if ('yn' == question.type) {
       let input = document.createElement('input');
       input.type = 'checkbox';
       input.addEventListener('change',triggerSave);
+      input.setAttribute('input-group-name', 'questions');
       qp.appendChild(input);
-
-      let emulatorInput = document.createElement('input');
-      emulatorInput.addEventListener('keyup',e=>{displayEventInfo(e,'onkeyup')});
-      emulatorInput.addEventListener('keydown',e=>{displayEventInfo(e,'onkeydown')});
-      emulatorInput.addEventListener('blur',blurCheckboxEmulator);
-      emulatorInput.setAttribute('checkbox', undefined);
-      emulatorInput.classList.add('navigable-input');
-      emulatorInput.classList.add('checkbox-emulator');
-      qp.appendChild(emulatorInput);
     } else if ('text' == question.type) {
       let input = document.createElement('input');
       input.type = 'text';
-      input.classList.add('navigable-input');
       input.addEventListener('keyup',triggerSave);
-      input.addEventListener('keyup',e=>{displayEventInfo(e,'onkeyup')});
-      input.addEventListener('keydown',e=>{displayEventInfo(e,'onkeydown')});
+      input.setAttribute('input-group-name', 'questions');
       qp.appendChild(input);
       qp.classList.add('single-text');
     } else if ('list' == question.type) {
@@ -634,16 +564,8 @@ function renderQuestions(event) {
       button.innerText = '+ Add new answer';
       button.classList.add('add-list-button')
       button.onclick = addListText;
+      button.setAttribute('input-group-name', 'questions');
       qp.appendChild(button);
-
-      let emulatorInput = document.createElement('input');
-      emulatorInput.addEventListener('keyup',e=>{displayEventInfo(e,'onkeyup')});
-      emulatorInput.addEventListener('keydown',e=>{displayEventInfo(e,'onkeydown')});
-      emulatorInput.addEventListener('blur',blurCheckboxEmulator);
-      emulatorInput.setAttribute('button', undefined);
-      emulatorInput.classList.add('navigable-input');
-      emulatorInput.classList.add('checkbox-emulator');
-      qp.appendChild(emulatorInput);
     }
     // set index for reference later
     qp.setAttribute('question-index', i);
@@ -653,6 +575,18 @@ function renderQuestions(event) {
   }
   let hr = document.createElement('hr');
   questionsDiv.appendChild(hr);
+
+  applyEmulators(scrollIntoViewCallback);
+}
+function focusInput(event) {
+  let questionP = findParentWithClass(event.target, 'question-p');
+  let navigableInput = questionP.getElementsByClassName('navigable-input')[0];
+  navigableInput.focus();
+  if (navigableInput.hasAttribute('linked-item')) {
+    let checkbox = navigableInput.parentElement.getElementsByClassName('selectable')[0];
+    checkbox.classList.add('selected');
+  }
+  questionP.scrollIntoView({behavior: 'instant', block: 'start'});
 }
 function handleSetAnswer(event) {
   let result = defaultHandler(event);
@@ -677,16 +611,14 @@ function handleSetAnswerError(result) {
 }
 function addListText(event) {
   let questionP = findParentWithClass(event.target, 'question-p');
-  let addButton = event.target
+  let addButton = event.target;
   let textWithButton = document.createElement('div');
   textWithButton.classList.add('list-entry');
   let input = document.createElement('input');
   input.type = 'text';
-  input.classList.add('navigable-input');
-  input.classList.add('text-list-item');
   input.addEventListener('keyup',triggerSave);
-  input.addEventListener('keyup',e=>{displayEventInfo(e,'onkeyup')});
-  input.addEventListener('keydown',e=>{displayEventInfo(e,'onkeydown')});
+  input.setAttribute('input-group-name', 'questions');
+  input.classList.add('text-list-item');
   textWithButton.appendChild(input);
   let button = document.createElement('button');
   button.innerHTML = '&times;';
@@ -694,9 +626,13 @@ function addListText(event) {
   textWithButton.appendChild(button);
   questionP.insertBefore(textWithButton, event.target);
   input.focus();
+  applyEmulators(scrollIntoViewCallback);
   return input;
 }
-
+function scrollIntoViewCallback(event) {
+  let questionP = findParentWithClass(event.target, 'question-p');
+  questionP.scrollIntoView({behavior: 'instant', block: 'start'});
+}
 function deleteAnswer(event) {
   let answerDiv = findParentWithClass(event.target, 'list-entry');
   answerDiv.remove();
