@@ -7,6 +7,10 @@ const preventDefaultKeys = [
   'AudioVolumeDown',
   'AudioVolumeUp'
 ];
+const preventDefaultOnNumberInput = [
+  'ArrowUp',
+  'ArrowDown'
+];
 const preventDefaultIfEmptyKeys = [
   'Backspace'
 ];
@@ -159,8 +163,12 @@ function closeModal(event) {
   }
 }
 let previousValue = undefined;
+let previousArrowTime = new Date();
 function arrowKeyEmulator(event, functionHandle) {
   if (preventDefaultKeys.includes(event.key) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
+    event.preventDefault();
+  }
+  if (event.type == 'keydown' && event.target.type == 'number' && preventDefaultOnNumberInput.includes(event.key)) {
     event.preventDefault();
   }
   if (blurKeys.includes(event.key)) {
@@ -170,20 +178,29 @@ function arrowKeyEmulator(event, functionHandle) {
     event.target.blur();
   }
   if (event.type === 'keydown' && ['ArrowUp', 'ArrowDown'].includes(event.key)) {
-    let inputs = Array.from(document.getElementsByClassName('navigable-input'));
-    if (event.target.hasAttribute('input-group-name')) {
-      const currentTarget = event.target.getAttribute('input-group-name');
-      inputs = inputs.filter(x=>x.getAttribute('input-group-name') == currentTarget);
-    }
-    let index = inputs.indexOf(event.target);
-    index = index + (event.key === 'ArrowUp' ? -1 : 1);
-    index = index < 0 ? inputs.length - 1 : index;
-    index = index > inputs.length - 1 ? 0 : index;
-    inputs[index].focus();
-    if (event.type === 'keydown' && 
-        (inputs[index].hasAttribute('linked-item'))) {
-      let checkbox = inputs[index].parentElement.getElementsByClassName('selectable')[0];
-      checkbox.classList.add('selected');
+    // check if you are where youre supposed to be before you go
+    let tooFast = (new Date()) - previousArrowTime < 100;
+    let youreWhereYoureSupposedToBe = false;
+    youreWhereYoureSupposedToBe = youreWhereYoureSupposedToBe || event.target.selectionStart === null;
+    youreWhereYoureSupposedToBe = youreWhereYoureSupposedToBe || (event.key == 'ArrowUp' && event.target.selectionStart == 0);
+    youreWhereYoureSupposedToBe = youreWhereYoureSupposedToBe || (event.key == 'ArrowDown' && event.target.selectionStart == event.target.value.length);
+    if (!tooFast && youreWhereYoureSupposedToBe) {
+      let inputs = Array.from(document.getElementsByClassName('navigable-input'));
+      if (event.target.hasAttribute('input-group-name')) {
+        const currentTarget = event.target.getAttribute('input-group-name');
+        inputs = inputs.filter(x=>x.getAttribute('input-group-name') == currentTarget);
+      }
+      let index = inputs.indexOf(event.target);
+      index = index + (event.key === 'ArrowUp' ? -1 : 1);
+      index = index < 0 ? inputs.length - 1 : index;
+      index = index > inputs.length - 1 ? 0 : index;
+      inputs[index].focus();
+      if (event.type === 'keydown' && 
+          (inputs[index].hasAttribute('linked-item'))) {
+        let checkbox = inputs[index].parentElement.getElementsByClassName('selectable')[0];
+        checkbox.classList.add('selected');
+      }
+      previousArrowTime = new Date();
     }
   }
   if (event.type === 'keydown' && (event.target.hasAttribute('linked-item')) && ['Enter'].includes(event.key)) {

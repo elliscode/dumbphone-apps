@@ -52,7 +52,6 @@ label {
     <script src="js/utils.js?v=007"></script>
     <script>
 const eventInfoDiv = document.getElementById('event-info-text');
-let previousValue = undefined;
 function createNotification(event) {
   const p = document.createElement('p');
   const idString = (Math.random() * 100000).toLocaleString();
@@ -71,6 +70,7 @@ function createNotification(event) {
 function deleteItem(idString) {
   document.getElementById(idString).remove();
 }
+applyEmulators(createNotification);
     </script>
   </body>
 </html>
