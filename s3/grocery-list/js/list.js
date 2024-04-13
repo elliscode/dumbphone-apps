@@ -175,7 +175,7 @@ function moveUp(event) {
   if (otherGroup) {
     swapGroups(groupId, otherGroup.id);
     runOrderCall();
-    window.scrollBy({ top: groupElement.getBoundingClientRect().top, behavior: "smooth" });
+    groupElement.scrollIntoView({behavior: 'smooth', block: 'nearest'});
   }
 }
 function moveDown(event) {
@@ -187,7 +187,7 @@ function moveDown(event) {
   if (otherGroup) {
     swapGroups(otherGroup.id, groupId);
     runOrderCall();
-    window.scrollBy({ top: groupElement.getBoundingClientRect().top, behavior: "smooth" });
+    groupElement.scrollIntoView({behavior: 'smooth', block: 'nearest'});
   }
 }
 
@@ -391,10 +391,10 @@ if (
   navigator.userAgent.includes("Safari")
 ) {
   iosCookieRefresh();
-  setStylesheet("css/grocery-list-new.css?v=006");
+  setStylesheet("css/grocery-list-new.css?v=007");
   document.getElementById("item-text-box").addEventListener("blur", startHide);
 } else {
-  setStylesheet("css/grocery-list-old.css?v=006");
+  setStylesheet("css/grocery-list-old.css?v=007");
 }
 const loader = document.getElementById("loading");
 const dontDisplayWhileLoading = document.getElementById(
@@ -451,9 +451,9 @@ function hideSubmit(event) {
   submitBar.style.display = "none";
 }
 function enterKeyListener(event) {
-  event.preventDefault();
-  if (event.keyCode === 13) {
+  if (event.keyCode === 13 && event.type == 'keyup') {
     document.getElementById("add").click();
+    event.preventDefault();
   }
 }
 loadList();
@@ -470,3 +470,4 @@ let modalBgs = document.getElementsByClassName("modal-bg");
 for (let i = 0; i < modalBgs.length; i++) {
   modalBgs[i].addEventListener("click", closeOnClick);
 }
+applyEmulators(enterKeyListener);

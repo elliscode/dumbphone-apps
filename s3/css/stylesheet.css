@@ -60,13 +60,11 @@ input.big {
   height: 30px;
   border-radius: 20px;
 }
-
 .logout {
   position: absolute;
   top: 0px;
   right: 8px;
 }
-
 .add-to-group {
   width: 100%;
   padding-right: 0px;
@@ -82,13 +80,11 @@ input.big {
 .add-to-group {
   display: flex;
 }
-
 table,
 th,
 td {
   border: 1px solid;
 }
-
 #share {
   position: fixed;
   bottom: 0px;
@@ -100,11 +96,9 @@ td {
   padding: 20px;
   border-radius: 20px 20px 0px 0px;
 }
-
 #share p {
   margin-top: 0px;
 }
-
 #info {
   position: fixed;
   bottom: 0px;
@@ -117,11 +111,9 @@ td {
   border-radius: 20px 20px 0px 0px;
   margin-bottom: 0px;
 }
-
 #info p {
   margin: 0px;
 }
-
 .error {
   display: inline-block;
   padding: 20px;
@@ -129,11 +121,9 @@ td {
   background-color: #ffcccc;
   margin-top: 1em;
 }
-
 .error p {
   margin: 0px;
 }
-
 #modal-bg {
   z-index: 3;
   position: fixed;
@@ -143,7 +133,6 @@ td {
   height: 100%;
   background-color: #aaaaaa88;
 }
-
 #modal-popup {
   z-index: 4;
   padding: 20px;
@@ -155,7 +144,6 @@ td {
   transform: translateX(-50%) translateY(-50%);
   left: 50%;
 }
-
 .modal-bg {
   background-color: #fffe;
   display: flex;
@@ -168,7 +156,6 @@ td {
   align-items: center;
   justify-content: center;
 }
-
 .modal {
   background-color: #fff;
   padding: 5px;
@@ -177,4 +164,20 @@ td {
   height: fit-content;
   max-width: 100%;
   max-height: 100%;
+}
+li.selected {
+  background-color: rgb(209 233 255)!important;
+}
+a.selected, input.selected, button.selected {
+  outline: 5px auto rgb(94, 158, 214);
+}
+.invisible-input {
+  width: 0;
+  overflow: hidden;
+  opacity:0;
+  filter:alpha(opacity=0);
+  flex-grow:0;
+  padding:0px;
+  margin:0px;
+  border:0px;
 }

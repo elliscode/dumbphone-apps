@@ -4,10 +4,10 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Food Diary</title>
-  <link rel="stylesheet" href="../css/stylesheet.css?v=006" />
-  <link rel="stylesheet" href="css/fooddiary.css?v=006" />
-  <link rel="stylesheet" href="../css/loader.css?v=006" />
-  <link rel="icon" type="image/png" href="../img/favicon.png?v=006" />
+  <link rel="stylesheet" href="../css/stylesheet.css?v=007" />
+  <link rel="stylesheet" href="css/fooddiary.css?v=007" />
+  <link rel="stylesheet" href="../css/loader.css?v=007" />
+  <link rel="icon" type="image/png" href="../img/favicon.png?v=007" />
 </head>
 
 <body>
@@ -31,7 +31,7 @@
 
   <div class="search-blob" id="food-search" style="display:none;">
     <div class="search-bar">
-      <input class="big" type="text" onkeyup="queueSearch(event);searchKeyCallback(event, 'onkeyup');" onkeydown="searchKeyCallback(event, 'onkeydown');" />
+      <input class="big" type="text" onkeyup="queueSearch(event);searchKeyCallback(event);" onkeydown="searchKeyCallback(event);" />
       <button onclick="closeSearch(event)">Close</button>
       <!--<button onclick="addToList(event)">Add</button>-->
     </div>
@@ -39,16 +39,16 @@
   </div>
 
   <div class="panel" id="food-edit" style="display:none;">
-    <label>Name:<input id="food-edit-name" type="text" /></label>
-    <label>Calories:<input id="food-edit-calories" type="tel" onkeydown="forceToDecimal(event)" /></label>
-    <label>Fat:<input id="food-edit-fat" type="tel" onkeydown="forceToDecimal(event)" />g</label>
-    <label>Carbs:<input id="food-edit-carbs" type="tel" onkeydown="forceToDecimal(event)" />g</label>
-    <label>Protein:<input id="food-edit-protein" type="tel" onkeydown="forceToDecimal(event)" />g</label>
-    <label>Alcohol:<input id="food-edit-alcohol" type="tel" onkeydown="forceToDecimal(event)" />g</label>
-    <label>Caffeine:<input id="food-edit-caffeine" type="tel" onkeydown="forceToDecimal(event)" />mg</label>
+    <label>Name:<input input-group-name="food-edit" id="food-edit-name" type="text" /></label>
+    <label>Calories:<input input-group-name="food-edit" id="food-edit-calories" type="tel" onkeydown="forceToDecimal(event)" /></label>
+    <label>Fat:<input input-group-name="food-edit" id="food-edit-fat" type="tel" onkeydown="forceToDecimal(event)" />g</label>
+    <label>Carbs:<input input-group-name="food-edit" id="food-edit-carbs" type="tel" onkeydown="forceToDecimal(event)" />g</label>
+    <label>Protein:<input input-group-name="food-edit" id="food-edit-protein" type="tel" onkeydown="forceToDecimal(event)" />g</label>
+    <label>Alcohol:<input input-group-name="food-edit" id="food-edit-alcohol" type="tel" onkeydown="forceToDecimal(event)" />g</label>
+    <label>Caffeine:<input input-group-name="food-edit" id="food-edit-caffeine" type="tel" onkeydown="forceToDecimal(event)" />mg</label>
     <!-- <button id="food-edit-recipe" onclick="displayRecipe(event)">Edit Recipe</button> -->
-    <button id="food-edit-save" onclick="saveFood(event)">Save</button>
-    <button onclick="closeFood(event)">&times;</button>
+    <div><button input-group-name="food-edit" id="food-edit-save" onclick="saveFood(event)">Save</button></div>
+    <div><button input-group-name="food-edit" onclick="closeFood(event)">&times;</button></div>
   </div>
 
   <div class="panel" id="recipe-edit" style="display:none;">
@@ -126,8 +126,8 @@
       <button onclick="logOut(event)">Log out</button>
     </div>
   </div>
-  <script src="../js/utils.js?v=006"></script>
-  <script src="js/fooddiary.js?v=006"></script>
+  <script src="../js/utils.js?v=007"></script>
+  <script src="js/fooddiary.js?v=007"></script>
 </body>
 
 </html>

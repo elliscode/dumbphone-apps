@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Notes</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=007" />
+    <link rel="stylesheet" href="../css/loader.css?v=007" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=007" />
+    <style>
+.note {
+  position: relative;
+  display: block;
+}
+.note .controls {
+  position:absolute;
+  top:0px;
+  right:0px;
+
+}
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>notes</b>
+    </div>
+
+    <div id="loading">
+      <div class="lds-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+
+    <div id="notes">
+    </div>
+
+    <div style="display: none" id="confirm" class="modal-bg">
+      <div class="modal">
+        <p>Are you sure you want to delete the note <span id="note-name"></span>?</p>
+        <button id="save-settings" onclick="deleteNote(event)">Yes</button>
+        <button id="cancel-settings" onclick="closeModalLocal(event)">
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <div class="logout">
+      <button onclick="logOut(event)">Log out</button>
+    </div>
+    <script src="../js/utils.js?v=007"></script>
+    <script>
+const loader = document.getElementById("loading");
+const notes = document.getElementById("notes");
+const noteNameSpan = document.getElementById('note-name');
+const confirmModal = document.getElementById('confirm');
+if (!csrfToken) {
+  window.location.replace("../signup.html");
+}
+if (
+  !navigator.userAgent.includes("Chrome") &&
+  navigator.userAgent.includes("Safari")
+) {
+  iosCookieRefresh();
+}
+function getNotes() {
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/notes/get", true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleNotes;
+  xmlHttp.send(
+    JSON.stringify({
+      csrf: csrfToken
+    })
+  );
+}
+function handleNotes(event) {
+  let result = defaultHandler(event);
+  if (result.statusCode != 200) {
+    let p = document.createElement('p');
+    p.innerText = 'Error retrieving notes, try logging out and back in again or something, idk';
+    notes.appendChild(p);
+    loader.style.display = "none";
+    return;
+  }
+  let sorted = result.responseJson.notes.sort((a,b)=>b.name.localeCompare(a.name));
+  {
+    let hr = document.createElement('hr');
+    notes.appendChild(hr);
+  }
+  for (let i = 0; i < sorted.length; i++) {
+    let noteJson = sorted[i];
+    let div = document.createElement('div');
+    div.classList.add('note');
+    div.setAttribute('note-name', noteJson.name);
+    let controls = document.createElement('div');
+    controls.classList.add('controls');
+    let deleteButton = document.createElement('button');
+    deleteButton.innerHTML = '&times;'
+    deleteButton.addEventListener('click', confirmDelete);
+    controls.appendChild(deleteButton);
+    div.appendChild(controls);
+    let h3 = document.createElement('h3');
+    h3.innerText = noteJson.name;
+    div.appendChild(h3);
+    let p = document.createElement('p');
+    p.innerText = noteJson.text;
+    div.appendChild(p);
+    let hr = document.createElement('hr');
+    div.appendChild(hr);
+    notes.appendChild(div);
+  }
+  loader.style.display = "none";
+}
+function confirmDelete(event) {
+  let noteDiv = findParentWithClass(event.target, 'note');
+  let noteId = noteDiv.getAttribute('note-name');
+  noteNameSpan.innerText = noteId;
+  confirmModal.style.display = 'flex';
+}
+function deleteNote(event) {
+  let noteId = noteNameSpan.innerText;
+  let noteDiv = document.querySelector(`[note-name="${noteId}"]`);
+  noteDiv.remove();
+  console.log(`deleting note ${noteId}`);
+  closeModalLocal(event);
+}
+function closeModalLocal(event) {
+  let parent = findParentWithClass(event.target, "modal-bg");
+  if (parent) {
+    parent.style.display = "none";
+  }
+}
+getNotes();
+    </script>
+  </body>
+</html>

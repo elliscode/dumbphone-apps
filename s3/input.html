@@ -1,114 +1,58 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="stylesheet" href="css/stylesheet.css?v=007" />
     <style>
+body {
+  margin: 0px;
+  padding: 8px;
+  height: 1600px;
+}
 label {
-  display: flex;
+  display: block;
   flex-wrap: wrap;
-}
-input {
-  flex-grow: 1;
-}
-.checkbox-emulator {
-  width: 0;
-  overflow: hidden;
-  opacity:0;
-  filter:alpha(opacity=0);
-}
-.selected {
-  outline: 1px dotted #212121;
-  outline: 5px auto rgb(94, 158, 214);
 }
     </style>
   </head>
   <body>
-    <label>Put your cursor here (tel): <input 
-      onkeydown="displayEventInfo(event, 'onkeydown')" 
-      onkeyup="displayEventInfo(event, 'onkeyup')" 
-      type="tel" class="navigable-input"/>
+    <label>Put your cursor here (tel): 
+      <input type="tel" input-group-name="A"/>
     </label>
-    <label>Put your cursor here (number): <input 
-      onkeydown="displayEventInfo(event, 'onkeydown')" 
-      onkeyup="displayEventInfo(event, 'onkeyup')" 
-      type="number" class="navigable-input"/></label>
-      <label>Put your cursor here (checkbox): <input 
-        type="checkbox"/><input checkbox type="text"
-        onkeydown="displayEventInfo(event, 'onkeydown')" 
-        onkeyup="displayEventInfo(event, 'onkeyup')" 
-        onblur="blurCheckboxEmulator(event)"
-        class="checkbox-emulator navigable-input"/></label>
-      <label>Put your cursor here (text): <input 
-        onkeydown="displayEventInfo(event, 'onkeydown')" 
-        onkeyup="displayEventInfo(event, 'onkeyup')" 
-        type="text" class="navigable-input"/></label>
-        <label>Put your cursor here (button): <button>Button Text</button><input button type="text"
-          onkeydown="displayEventInfo(event, 'onkeydown')" 
-          onkeyup="displayEventInfo(event, 'onkeyup')" 
-          onblur="blurCheckboxEmulator(event)"
-          class="checkbox-emulator navigable-input"/></label>
+    <div><a href="https://google.com" input-group-name="A">Link to google</a></div>
+    <label>Put your cursor here (number): 
+      <input type="number" input-group-name="A"/>
+    </label>
+    <label>Put your cursor here (checkbox): 
+      <input type="checkbox"  input-group-name="A"/>
+    </label>
+    <label>Put your cursor here (text): 
+      <input type="text" input-group-name="A"/>
+    </label>
+    <label>Put your cursor here (button): 
+      <button input-group-name="A">Button Text</button>
+    </label>
+    <hr />
+    <label>Put your cursor here (tel): 
+      <input type="tel" input-group-name="B"/>
+    </label>
+    <label>Put your cursor here (number): 
+      <input type="number" input-group-name="B"/>
+    </label>
+    <label>Put your cursor here (checkbox): 
+      <input type="checkbox"  input-group-name="B"/>
+    </label>
+    <label>Put your cursor here (text): 
+      <input type="text" input-group-name="B"/>
+    </label>
+    <label>Put your cursor here (button): 
+      <button input-group-name="B">Button Text</button>
+    </label>
     <div id="event-info-text">
     </div>
+    <script src="js/utils.js?v=007"></script>
     <script>
-const preventDefaultKeys = [
-  'SoftLeft',
-  'Call',
-  'Enter',
-  'MicrophoneToggle',
-  'EndCall',
-  'AudioVolumeDown',
-  'AudioVolumeUp',
-  'ArrowUp',
-  'ArrowDown'
-];
-const preventDefaultIfEmptyKeys = [
-  'Backspace'
-];
-const blurKeys = [
-  'EndCall'
-];
-const blurIfEmptyKeys = [
-  'Backspace'
-];
 const eventInfoDiv = document.getElementById('event-info-text');
-let previousValue = undefined;
-function blurCheckboxEmulator(event) {
-  let selecteds = Array.from(document.getElementsByClassName('selected'));
-  selecteds.forEach(x=>x.classList.remove('selected'));
-}
-function displayEventInfo(event, type) {
-  if (preventDefaultKeys.includes(event.key) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
-    event.preventDefault();
-  }
-  if (blurKeys.includes(event.key)) {
-    event.target.blur();
-  }
-  if (type === 'onkeyup' && blurIfEmptyKeys.includes(event.key) && !event.target.value && !previousValue) {
-    event.target.blur();
-  }
-  if (type === 'onkeyup' && ['ArrowUp', 'ArrowDown'].includes(event.key)) {
-    let inputs = Array.from(document.getElementsByClassName('navigable-input'));
-    let index = inputs.indexOf(event.target);
-    index = index + (event.key === 'ArrowUp' ? -1 : 1);
-    index = index < 0 ? inputs.length - 1 : index;
-    index = index > inputs.length - 1 ? 0 : index;
-    inputs[index].focus();
-    if (inputs[index].hasAttribute('checkbox')) {
-      let checkbox = inputs[index].parentElement.getElementsByTagName('input')[0];
-      checkbox.classList.add('selected');
-    } else if (inputs[index].hasAttribute('button')) {
-      let button = inputs[index].parentElement.getElementsByTagName('button')[0];
-      button.classList.add('selected');
-    }
-  }
-  if (type === 'onkeyup' && event.target.hasAttribute('checkbox') && ['Enter'].includes(event.key)) {
-      let checkbox = event.target.parentElement.getElementsByTagName('input')[0];
-      checkbox.checked = !checkbox.checked;
-  }
-  if (type === 'onkeyup' && event.target.hasAttribute('button') && ['Enter'].includes(event.key)) {
-    let button = inputs[index].parentElement.getElementsByTagName('button')[0];
-    button.click();
-  }
-  console.log(event);
+function createNotification(event) {
   const p = document.createElement('p');
   const idString = (Math.random() * 100000).toLocaleString();
   p.id = idString;
@@ -118,7 +62,7 @@ function displayEventInfo(event, type) {
   } else if (event.data) {
     contentString += event.data;
   }
-  p.innerText = contentString + ' (' + type + ')';
+  p.innerText = `${event.type}`;
   setTimeout(deleteItem, 5000, idString);
   eventInfoDiv.insertBefore(p, eventInfoDiv.firstElementChild);
   previousValue = event.target.value;
@@ -126,6 +70,7 @@ function displayEventInfo(event, type) {
 function deleteItem(idString) {
   document.getElementById(idString).remove();
 }
+applyEmulators(createNotification);
     </script>
   </body>
 </html>
