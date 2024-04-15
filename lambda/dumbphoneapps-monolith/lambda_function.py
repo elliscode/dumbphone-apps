@@ -1,25 +1,6 @@
 import json
 import traceback
-from dumbphoneapps.utils import (
-    otp_route,
-    login_route,
-    path_equals,
-    format_response,
-    ios_cookie_refresh_route,
-    path_starts_with,
-    clear_all_tokens_route,
-)
-from dumbphoneapps.grocery_list import (
-    getlist_route,
-    additem_route,
-    deleteitem_route,
-    deletelist_route,
-    setcrossedoff_route,
-    setlistorder_route,
-    sendsharelist_route,
-    acceptsharelist_route,
-    cleanuplist_route,
-)
+
 from dumbphoneapps.discord import (
     discord_route,
     set_discord_token_route,
@@ -37,7 +18,21 @@ from dumbphoneapps.food_diary import (
     get_food_route,
     set_food_route,
 )
-
+from dumbphoneapps.grocery_list import (
+    getlist_route,
+    additem_route,
+    deleteitem_route,
+    deletelist_route,
+    setcrossedoff_route,
+    setlistorder_route,
+    sendsharelist_route,
+    acceptsharelist_route,
+    cleanuplist_route,
+)
+from dumbphoneapps.notes import (
+    get_notes_route,
+    set_note_route,
+)
 from dumbphoneapps.one_offs import (
     twilio_route,
     share_location_route,
@@ -48,12 +43,6 @@ from dumbphoneapps.one_offs import (
     acknowledge_presigned_post_success_route,
     gather_uploaded_items_route,
 )
-from dumbphoneapps.notes import (
-    get_notes_route,
-    set_note_route,
-)
-from dumbphoneapps.weather import get_forecast_route
-
 from dumbphoneapps.quiz_diary import (
     get_questions_route,
     set_questions_route,
@@ -61,6 +50,16 @@ from dumbphoneapps.quiz_diary import (
     get_answers_route,
     get_report_data_route,
 )
+from dumbphoneapps.utils import (
+    otp_route,
+    login_route,
+    path_equals,
+    format_response,
+    ios_cookie_refresh_route,
+    path_starts_with,
+    clear_all_tokens_route,
+)
+from dumbphoneapps.weather import get_forecast_route
 
 
 def lambda_handler(event, context):

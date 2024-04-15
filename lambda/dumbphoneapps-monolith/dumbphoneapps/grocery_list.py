@@ -1,4 +1,5 @@
 import json
+
 from .utils import (
     DOMAIN_NAME,
     get_user_data,

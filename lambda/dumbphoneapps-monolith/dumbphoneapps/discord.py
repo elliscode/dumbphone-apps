@@ -1,6 +1,8 @@
 import json
-import urllib3
 import time
+
+import urllib3
+
 from .utils import (
     authenticate,
     format_response,

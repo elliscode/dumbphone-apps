@@ -1,10 +1,13 @@
-import os
 import json
-import urllib
+import os
 import re
+import time
+import urllib
+
 from .grocery_list import (
     additem,
 )
+from .notes import parse_message_as_note
 from .utils import (
     sqs,
     get_user_data,
@@ -19,9 +22,6 @@ from .utils import (
     boto3,
     SMS_SQS_QUEUE_URL,
 )
-import time
-import datetime
-from .notes import parse_message_as_note
 
 sts_connection = boto3.client("sts")
 

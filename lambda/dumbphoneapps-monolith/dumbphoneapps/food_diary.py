@@ -1,6 +1,6 @@
-import time
 import json
-import re
+import time
+
 from .utils import (
     format_response,
     authenticate,

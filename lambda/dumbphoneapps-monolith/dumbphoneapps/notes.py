@@ -1,3 +1,5 @@
+import datetime
+
 from .utils import (
     authenticate,
     format_response,
@@ -6,7 +8,6 @@ from .utils import (
     TABLE_NAME,
     dynamo_obj_to_python_obj,
 )
-import datetime
 
 
 def parse_message_as_note(msg_text, user_data, from_number):

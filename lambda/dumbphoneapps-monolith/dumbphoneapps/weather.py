@@ -1,6 +1,10 @@
-import os
-import urllib3
+import base64
 import json
+import os
+import time
+
+import urllib3
+
 from .utils import (
     authenticate,
     format_response,
@@ -9,8 +13,6 @@ from .utils import (
     TABLE_NAME,
     dynamo_obj_to_python_obj,
 )
-import time
-import base64
 
 WEATHER_API_USERNAME = os.environ["WEATHER_API_USERNAME"]
 WEATHER_API_PASSWORD = os.environ["WEATHER_API_PASSWORD"]

@@ -1,3 +1,6 @@
+import datetime
+import time
+
 from .utils import (
     authenticate,
     format_response,
@@ -6,8 +9,6 @@ from .utils import (
     TABLE_NAME,
     dynamo_obj_to_python_obj,
 )
-import time
-import datetime
 
 
 @authenticate
