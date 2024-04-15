@@ -134,6 +134,20 @@ function deleteNote(event) {
   noteDiv.remove();
   console.log(`deleting note ${noteId}`);
   closeModalLocal(event);
+
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/notes/delete", true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleDelete;
+  xmlHttp.send(
+    JSON.stringify({
+      csrf: csrfToken,
+      note_id: noteId
+    })
+  );
+}
+function handleDelete(event) {
+  let result = defaultHandler(event);
 }
 function closeModalLocal(event) {
   let parent = findParentWithClass(event.target, "modal-bg");

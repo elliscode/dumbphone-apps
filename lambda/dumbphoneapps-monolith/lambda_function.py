@@ -32,6 +32,7 @@ from dumbphoneapps.grocery_list import (
 from dumbphoneapps.notes import (
     get_notes_route,
     set_note_route,
+    delete_note_route,
 )
 from dumbphoneapps.one_offs import (
     twilio_route,
@@ -166,6 +167,8 @@ def route(event):
         return get_notes_route(event)
     if path_equals(event=event, method="POST", path="/notes/set"):
         return set_note_route(event)
+    if path_equals(event=event, method="POST", path="/notes/delete"):
+        return delete_note_route(event)
     if path_starts_with(event=event, method="POST", path="/discord/"):
         return discord_route(event)
 

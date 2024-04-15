@@ -70,3 +70,21 @@ def set_note_route(event, user_data, body):
         http_code=200,
         body=f"Successfully set note with ID {note_id}",
     )
+
+
+@authenticate
+def delete_note_route(event, user_data, body):
+    note_id = body["note_id"]
+    phone = user_data["key2"]
+    response = dynamo.delete_item(
+        TableName=TABLE_NAME,
+        Key=python_obj_to_dynamo_obj(
+            {"key1": f"note_{phone}", "key2": note_id, "note": body["note"]}
+        ),
+    )
+
+    return format_response(
+        event=event,
+        http_code=200,
+        body=f"Successfully deleted note with ID {note_id}",
+    )
