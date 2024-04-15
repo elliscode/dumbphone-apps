@@ -48,10 +48,7 @@ def remove_all_tokens(food_id, food_name):
             print(current_data)
             print(food_id)
             print(food_name)
-            if (
-                current_data["hash"] == food_id
-                and current_data["name"] == food_name
-            ):
+            if current_data["hash"] == food_id and current_data["name"] == food_name:
                 print("matches!")
                 break
             found_index = found_index + 1
@@ -63,9 +60,7 @@ def remove_all_tokens(food_id, food_name):
                 {"DeleteRequest": {"Key": python_obj_to_dynamo_obj(json_data)}}
             )
         else:
-            items.append(
-                {"PutRequest": {"Item": python_obj_to_dynamo_obj(json_data)}}
-            )
+            items.append({"PutRequest": {"Item": python_obj_to_dynamo_obj(json_data)}})
         if len(items) >= 25:
             print(items)
             response = dynamo.batch_write_item(RequestItems={TABLE_NAME: items})
@@ -130,11 +125,13 @@ def set_food_route(event, user_data, body):
     if body.get("ingredients"):
         print(f"Setting {food['name']} to a recipe!")
         food_keys = []
-        for ingredient in body['ingredients']:
-            key = python_obj_to_dynamo_obj({
-                'key1': 'food',
-                'key2': ingredient['hash'],
-            })
+        for ingredient in body["ingredients"]:
+            key = python_obj_to_dynamo_obj(
+                {
+                    "key1": "food",
+                    "key2": ingredient["hash"],
+                }
+            )
             if key not in food_keys:
                 food_keys.append(key)
         response = dynamo.batch_get_item(
@@ -148,27 +145,29 @@ def set_food_route(event, user_data, body):
         responses = response["Responses"][TABLE_NAME]
         for food_item_dynamo in responses:
             food_item = dynamo_obj_to_python_obj(food_item_dynamo)
-            food_map[food_item['key2']] = food_item
+            food_map[food_item["key2"]] = food_item
 
         totals = {}
-        for ingredient in body['ingredients']:
-            food_hash = ingredient['hash']
+        for ingredient in body["ingredients"]:
+            food_hash = ingredient["hash"]
             food_item = food_map[food_hash]
             for value_key in ALL_VALUE_KEYS:
-                if food_item['metadata'][value_key]:
-                    totals[value_key] = totals.get(value_key, 0) + (float(ingredient['multiplier']) * float(ingredient['serving']['multiplier']) * float(food_item['metadata'][value_key]))
+                if food_item["metadata"][value_key]:
+                    totals[value_key] = totals.get(value_key, 0) + (
+                        float(ingredient["multiplier"])
+                        * float(ingredient["serving"]["multiplier"])
+                        * float(food_item["metadata"][value_key])
+                    )
 
-        food['metadata']['ingredients'] = body['ingredients']
+        food["metadata"]["ingredients"] = body["ingredients"]
         for value_key in ALL_VALUE_KEYS:
             this_value = totals[value_key]
             string_value = f"{totals[value_key]:.3g}"
             if this_value > 100:
                 string_value = f"{round(totals[value_key])}"
-            food['metadata'][value_key] = string_value
+            food["metadata"][value_key] = string_value
 
-
-
-        food['metadata']['servings'] = [
+        food["metadata"]["servings"] = [
             {
                 "amount": f"1",
                 "multiplier": f"{1}",
@@ -423,10 +422,10 @@ def add_route(event, user_data, body):
     # duplocate values that I have seen in the past, when the user presses
     # the "Add" button instead of clicking on the relevant food
     food_hashes = []
-    if 'hash' in body:
-        food_hashes = [body.get('hash')]
-    elif 'hashes' in body:
-        food_hashes = body.get('hashes')
+    if "hash" in body:
+        food_hashes = [body.get("hash")]
+    elif "hashes" in body:
+        food_hashes = body.get("hashes")
     if not food_hashes:
         return format_response(
             event=event,
@@ -494,9 +493,9 @@ def add_route(event, user_data, body):
 
         calculated_values = {}
         for value_key in ALL_VALUE_KEYS:
-            calculated_values[
-                value_key
-            ] = f"{float(food_item['metadata'][value_key]) * float(serving_entry['multiplier'])}"
+            calculated_values[value_key] = (
+                f"{float(food_item['metadata'][value_key]) * float(serving_entry['multiplier'])}"
+            )
         serving_amount = (
             float(actual_serving["amount"])
             * float(serving_entry["multiplier"])
@@ -508,22 +507,28 @@ def add_route(event, user_data, body):
         new_diary_entry = {
             "name": f'{food_item["name"]}',
             "calculated_values": calculated_values,
-            "food_id": f'{food_hash}',
+            "food_id": f"{food_hash}",
             "multiplier": f"{serving_entry['multiplier']}",
             "unit": f"{serving_entry['unit']}",
         }
 
         print(current_entry)
-        current_entry["entries"][f"{time.mktime(time.gmtime())}{food_index:0>3}"] = new_diary_entry
+        current_entry["entries"][
+            f"{time.mktime(time.gmtime())}{food_index:0>3}"
+        ] = new_diary_entry
         print(current_entry)
 
-        items_to_write.append({"PutRequest": {"Item": python_obj_to_dynamo_obj(serving_entry)}})
+        items_to_write.append(
+            {"PutRequest": {"Item": python_obj_to_dynamo_obj(serving_entry)}}
+        )
 
         if len(items_to_write) >= 25:
             print(json.dumps(items_to_write))
             dynamo.batch_write_item(RequestItems={TABLE_NAME: items_to_write})
             items_to_write = []
-    items_to_write.append({"PutRequest": {"Item": python_obj_to_dynamo_obj(current_entry)}})
+    items_to_write.append(
+        {"PutRequest": {"Item": python_obj_to_dynamo_obj(current_entry)}}
+    )
     if len(items_to_write) > 0:
         print(json.dumps(items_to_write))
         dynamo.batch_write_item(RequestItems={TABLE_NAME: items_to_write})
@@ -556,18 +561,20 @@ def create_food_route(event, user_data, body):
     # then check if the full food name exists in that token, this prevents
     # duplocate values that I have seen in the past, when the user presses
     # the "Add" button instead of clicking on the relevant food
-    food_hash = body.get('hash')
+    food_hash = body.get("hash")
     if not food_hash:
         full_food_token = body.get("name").lower().strip()
         food_token_response = dynamo.get_item(
             TableName=TABLE_NAME,
-            Key=python_obj_to_dynamo_obj({"key1": "food_token", "key2": full_food_token}),
+            Key=python_obj_to_dynamo_obj(
+                {"key1": "food_token", "key2": full_food_token}
+            ),
         )
         if "Item" in food_token_response:
             food_token_result = dynamo_obj_to_python_obj(food_token_response["Item"])
-            for food_id_token in food_token_result['food_ids']:
-                if food_id_token['name'].lower().strip() == full_food_token:
-                    food_hash = food_id_token['hash']
+            for food_id_token in food_token_result["food_ids"]:
+                if food_id_token["name"].lower().strip() == full_food_token:
+                    food_hash = food_id_token["hash"]
     if food_hash:
         return format_response(
             event=event,
@@ -593,11 +600,11 @@ def create_food_route(event, user_data, body):
         for value_key in ALL_VALUE_KEYS:
             food_value_string = f"{body.get(value_key, 0)}"
             if not food_value_string:
-                food_value_string = '0.0'
+                food_value_string = "0.0"
             try:
                 float(food_value_string)
             except:
-                food_value_string = '0.0'
+                food_value_string = "0.0"
             metadata[value_key] = food_value_string
         new_food = {
             "key1": "food",

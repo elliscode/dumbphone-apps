@@ -47,6 +47,8 @@ from dumbphoneapps.one_offs import (
     generate_presigned_get,
     acknowledge_presigned_post_success_route,
     gather_uploaded_items_route,
+)
+from dumbphoneapps.notes import (
     get_notes_route,
     set_note_route,
 )

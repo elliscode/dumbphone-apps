@@ -2,18 +2,12 @@ import os
 import urllib3
 import json
 from .utils import (
-    sqs,
-    get_user_data,
-    ADMIN_PHONE,
     authenticate,
-    create_id,
     format_response,
     python_obj_to_dynamo_obj,
     dynamo,
     TABLE_NAME,
     dynamo_obj_to_python_obj,
-    boto3,
-    generate_query_parameters,
 )
 import time
 import base64
