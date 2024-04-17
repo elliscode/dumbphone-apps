@@ -1,0 +1,1 @@
+zip -vr lambda-release-${$(date +%s)}.zip lambda/dumbphoneapps-monolith/ -x "*.DS_Store"
