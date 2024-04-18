@@ -31,9 +31,9 @@ fi
 if $lambda; then
     cd lambda/dumbphoneapps-monolith/
     TIMESTAMP=$(date +%s)
-    zip -vr ../../lambda-release-${env}-${TIMESTAMP}.zip . -x "*.DS_Store"
+    zip -vr ../../lambda-release-${ENV}-${TIMESTAMP}.zip . -x "*.DS_Store"
     cd ../../
-    aws lambda update-function-code --function-name=dumbphoneapps-${FUNCTION_SUFFIX} --zip-file=fileb://lambda-release-${env}-${TIMESTAMP}.zip --no-cli-pager
+    aws lambda update-function-code --function-name=dumbphoneapps-${FUNCTION_SUFFIX} --zip-file=fileb://lambda-release-${ENV}-${TIMESTAMP}.zip --no-cli-pager
 fi
 
 if $s3; then
