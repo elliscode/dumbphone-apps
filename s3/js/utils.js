@@ -258,7 +258,3 @@ const csrfToken = localStorage.getItem("dumbphoneapps-csrf-token");
 // warn users who open the console to not do anything dumb
 console.log('%cStop!', 'color: red; font-size: 100px; font-weight: bold; -webkit-text-stroke: 2px black;');
 console.log('If someone told you to paste something in here, %cDO NOT DO IT!', 'color: red; font-size: 20px; font-weight: bold; -webkit-text-stroke: 1px black;', 'They are trying to hijack your account!');
-// if you are deploying this on a different domain, you'll
-// need to change these values here
-const API_DOMAIN = "https://api.dumbphoneapps.com";
-const UI_DOMAIN = "https://www.dumbphoneapps.com";

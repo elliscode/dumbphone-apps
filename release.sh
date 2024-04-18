@@ -1,15 +1,4 @@
 #!/bin/bash
-if [ "$ENV" = "dev" ]; then
-    BUCKET_SUFFIX="-dev"
-    FUNCTION_SUFFIX="test"
-    sed -i '' 's/const API_DOMAIN.*/const API_DOMAIN = "https:\/\/test.dumbphoneapps.com";/' s3/js/utils.js
-    sed -i '' 's/const UI_DOMAIN.*/const UI_DOMAIN = "https:\/\/aws.dumbphoneapps.com";/' s3/js/utils.js
-else
-    BUCKET_SUFFIX=""
-    FUNCTION_SUFFIX="prod"
-    sed -i '' 's/const API_DOMAIN.*/const API_DOMAIN = "https:\/\/api.dumbphoneapps.com";/' s3/js/utils.js
-    sed -i '' 's/const UI_DOMAIN.*/const UI_DOMAIN = "https:\/\/www.dumbphoneapps.com";/' s3/js/utils.js
-fi
 lambda=false;
 s3=false;
 for flag in "$@"
@@ -42,5 +31,5 @@ if $lambda; then
 fi
 
 if $s3; then
-    aws s3 sync s3 s3://daniel-townsend-dumbphoneapps${BUCKET_SUFFIX}
+    aws s3 sync s3 s3://daniel-townsend-dumbphoneapps${BUCKET_SUFFIX} --exclude "*/env.js"
 fi
