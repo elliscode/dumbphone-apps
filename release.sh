@@ -1,4 +1,11 @@
 #!/bin/bash
+if [ "$ENV" = "dev" ]; then
+    BUCKET_SUFFIX="-dev"
+    FUNCTION_SUFFIX="test"
+else
+    BUCKET_SUFFIX=""
+    FUNCTION_SUFFIX="prod"
+fi
 lambda=false;
 s3=false;
 for flag in "$@"
@@ -17,9 +24,9 @@ if $s3; then
     echo "S3 selected";
 fi
 if ! $lambda && ! $s3; then
-    echo "You can supply either l or s, or ls, you supplied nothing, so i will assume you meant ls";
-    lambda=true;
-    s3=true;
+    echo "You can supply either l or s, or ls, you supplied nothing, so I will do nothing";
+    echo "e.g.";
+    echo "> sh ${ENV}-release.sh ls";
 fi
 
 if $lambda; then
