@@ -79,7 +79,7 @@ def delete_note_route(event, user_data, body):
     response = dynamo.delete_item(
         TableName=TABLE_NAME,
         Key=python_obj_to_dynamo_obj(
-            {"key1": f"note_{phone}", "key2": note_id, "note": body["note"]}
+            {"key1": f"note_{phone}", "key2": note_id}
         ),
     )
 
