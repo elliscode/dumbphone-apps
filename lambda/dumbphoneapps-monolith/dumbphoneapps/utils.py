@@ -1,10 +1,11 @@
-import os
 import json
-import time
-import boto3
+import os
 import re
 import secrets
+import time
 import urllib
+
+import boto3
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 
 ADMIN_PHONE = os.environ["ADMIN_PHONE"]
@@ -142,8 +143,8 @@ def authenticate(func):
                 http_code=403,
                 body="Your session has expired, please log in",
             )
-        active_tokens = get_active_tokens(token_data['user'])
-        if token_data['key2'] not in active_tokens['tokens'].keys():
+        active_tokens = get_active_tokens(token_data["user"])
+        if token_data["key2"] not in active_tokens["tokens"].keys():
             return format_response(
                 event=event,
                 http_code=403,
@@ -164,8 +165,8 @@ def authenticate(func):
 
 @authenticate
 def clear_all_tokens_route(event, user_data, body):
-    active_tokens = get_active_tokens(user_data['key2'])
-    active_tokens['tokens'] = {}
+    active_tokens = get_active_tokens(user_data["key2"])
+    active_tokens["tokens"] = {}
     dynamo.put_item(
         TableName=TABLE_NAME,
         Item=python_obj_to_dynamo_obj(active_tokens),
@@ -330,7 +331,7 @@ def create_token(phone):
 
 def track_token(token_data):
     active_tokens = get_active_tokens(token_data["user"])
-    token_id = token_data['key2']
+    token_id = token_data["key2"]
     active_tokens["tokens"][token_id] = token_data["expiration"]
     dynamo.put_item(
         TableName=TABLE_NAME,
@@ -345,7 +346,9 @@ def get_active_tokens(username):
     )
     if "Item" in active_tokens_boto:
         active_tokens = dynamo_obj_to_python_obj(active_tokens_boto["Item"])
-        active_tokens["tokens"] = {k: v for k, v in active_tokens["tokens"].items() if v > int(time.time())}
+        active_tokens["tokens"] = {
+            k: v for k, v in active_tokens["tokens"].items() if v > int(time.time())
+        }
     else:
         active_tokens = {"key1": "active_tokens", "key2": username, "tokens": {}}
     return active_tokens

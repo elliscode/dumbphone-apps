@@ -1,22 +1,18 @@
-import os
-import urllib3
+import base64
 import json
+import os
+import time
+
+import urllib3
+
 from .utils import (
-    sqs,
-    get_user_data,
-    ADMIN_PHONE,
     authenticate,
-    create_id,
     format_response,
     python_obj_to_dynamo_obj,
     dynamo,
     TABLE_NAME,
     dynamo_obj_to_python_obj,
-    boto3,
-    generate_query_parameters,
 )
-import time
-import base64
 
 WEATHER_API_USERNAME = os.environ["WEATHER_API_USERNAME"]
 WEATHER_API_PASSWORD = os.environ["WEATHER_API_PASSWORD"]
