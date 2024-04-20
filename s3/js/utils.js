@@ -247,6 +247,28 @@ function applyEmulators(customCallback) {
     }
   }
 }
+function showPanel(id) {
+  let modals = Array.from(document.getElementsByClassName('modal-bg'));
+  let panels = Array.from(document.getElementsByClassName('panel'));
+  let searchBlobs = Array.from(document.getElementsByClassName('search-blob'));
+  let both = modals.concat(panels, searchBlobs);
+  for(let i = 0; i < both.length; i++) {
+    both[i].style.display = 'none';
+  }
+  if (!id) {
+    return;
+  }
+  let selected = document.getElementById(id);
+  if (!selected) {
+    return;
+  }
+  if (selected.classList.contains('panel') || selected.classList.contains('search-blob')) {
+    selected.style.display = 'block';
+  } else if (selected.classList.contains('modal')) {
+    let modalBg = findParentWithClass(selected, 'modal-bg');
+    modalBg.style.display = 'flex';
+  }
+}
 // allows for clicking the background of the modal to exit the modal
 let modalBackgrounds = document.getElementsByClassName("modal-bg");
 for (let i = 0; i < modalBackgrounds.length; i++) {

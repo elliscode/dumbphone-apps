@@ -11,18 +11,60 @@
   position: relative;
   display: block;
 }
-.note .controls {
+.controls {
   position:absolute;
   top:0px;
   right:0px;
-
+}
+.new-note-parent {
+  width:100%;
+  height:100%;
+}
+.new-note {
+  display:flex;
+  flex-direction: column;
+}
+.new-note textarea {
+  flex-grow: 1;
 }
     </style>
   </head>
 
   <body>
-    <div>
-      <b><a href="../index.html">Home</a></b> &gt; <b>notes</b>
+    <div id="main-ui" class="panel">
+      <div>
+        <b><a href="../index.html">Home</a></b> &gt; <b>notes</b>
+      </div>
+
+      <button onclick="openCreate(event)">Create new note +</button>
+
+      <div id="notes">
+      </div>
+
+      <div class="logout">
+        <button onclick="logOut(event)">Log out</button>
+      </div>
+    </div>
+
+    <div style="display: none" id="confirm" class="modal-bg">
+      <div class="modal">
+        <p>Are you sure you want to delete the note <span id="note-name"></span>?</p>
+        <button id="save-settings" onclick="deleteNote(event)">Yes</button>
+        <button id="cancel-settings" onclick="closeModalLocal(event)">
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <div id="create-new-note" style="display: none" class="panel">
+      <div class="new-note">
+        <input type="text" />
+        <textarea></textarea>
+      </div>
+      <div class="controls">
+        <button onclick="createButtonCallback(event)">Create note</button>
+        <button onclick="showPanel('main-ui')">&times;</button>
+      </div>
     </div>
 
     <div id="loading">
@@ -41,23 +83,6 @@
         <div></div>
       </div>
     </div>
-
-    <div id="notes">
-    </div>
-
-    <div style="display: none" id="confirm" class="modal-bg">
-      <div class="modal">
-        <p>Are you sure you want to delete the note <span id="note-name"></span>?</p>
-        <button id="save-settings" onclick="deleteNote(event)">Yes</button>
-        <button id="cancel-settings" onclick="closeModalLocal(event)">
-          Cancel
-        </button>
-      </div>
-    </div>
-
-    <div class="logout">
-      <button onclick="logOut(event)">Log out</button>
-    </div>
     <script src="../js/utils.js?v=007"></script>
     <script src="../js/env.js"></script>
     <script>
@@ -74,7 +99,7 @@ if (
 ) {
   iosCookieRefresh();
 }
-function getNotes() {
+function getNotes(event) {
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/notes/get", true);
   xmlHttp.withCredentials = true;
@@ -86,6 +111,9 @@ function getNotes() {
   );
 }
 function handleNotes(event) {
+  while (notes.firstElementChild) {
+    notes.firstElementChild.remove();
+  }
   let result = defaultHandler(event);
   if (result.statusCode != 200) {
     let p = document.createElement('p');
@@ -155,6 +183,35 @@ function closeModalLocal(event) {
   if (parent) {
     parent.style.display = "none";
   }
+}
+function openCreate(event) {
+  showPanel('create-new-note');
+}
+function createButtonCallback(event) {
+  const parentDiv = findParentWithClass(event.target, 'panel');
+  const titleInput = parentDiv.getElementsByTagName('input')[0];
+  const textArea = parentDiv.getElementsByTagName('textarea')[0];
+  setNote(titleInput.value, textArea.value);
+  showPanel('main-ui');
+}
+// function save(event) {  
+//   const parentDiv = findParentWithClass(event.target, 'note');
+//   const noteId = parentDiv.getAttribute('note-name');
+//   const editBox = parentDiv.getElementsByClassName('note-edit')[0];
+//   setNote(noteId, editBox.value);
+// }
+function setNote(noteId, noteText) {
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/notes/set", true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = getNotes;
+  xmlHttp.send(
+    JSON.stringify({
+      csrf: csrfToken,
+      note_id: noteId,
+      note: noteText
+    })
+  );
 }
 getNotes();
     </script>

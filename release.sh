@@ -38,5 +38,5 @@ if $lambda; then
 fi
 
 if $s3; then
-    aws s3 sync s3 s3://daniel-townsend-dumbphoneapps${BUCKET_SUFFIX} --exclude "*/env.js"
+    aws s3 sync s3 s3://daniel-townsend-dumbphoneapps${BUCKET_SUFFIX} --exclude "*/env.js" --exclude "*/.DS_Store"
 fi
