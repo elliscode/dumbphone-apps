@@ -24,11 +24,20 @@
   height:100%;
 }
 .new-note {
+  height: calc(100vh - 16px);
   display:flex;
   flex-direction: column;
 }
 .new-note textarea {
   flex-grow: 1;
+  resize:none;
+}
+.new-note .toolbar input {
+  flex-grow: 1;
+}
+.new-note .toolbar {
+  display:flex;
+  flex-direction: row;
 }
     </style>
   </head>
@@ -61,12 +70,12 @@
 
     <div id="create-new-note" style="display: none" class="panel">
       <div class="new-note">
-        <input type="text" />
+        <div class="toolbar">
+          <input type="text" />
+          <button onclick="createButtonCallback(event)">Save note</button>
+          <button onclick="showPanel('main-ui')">&times;</button>
+        </div>
         <textarea></textarea>
-      </div>
-      <div class="controls">
-        <button onclick="createButtonCallback(event)">Create note</button>
-        <button onclick="showPanel('main-ui')">&times;</button>
       </div>
     </div>
 
@@ -137,6 +146,10 @@ function handleNotes(event) {
     div.setAttribute('note-name', noteJson.name);
     let controls = document.createElement('div');
     controls.classList.add('controls');
+    let editButton = document.createElement('button');
+    editButton.innerText = 'Edit';
+    editButton.addEventListener('click', openEdit);
+    controls.appendChild(editButton);
     let deleteButton = document.createElement('button');
     deleteButton.innerHTML = '&times;'
     deleteButton.addEventListener('click', confirmDelete);
@@ -153,6 +166,15 @@ function handleNotes(event) {
     notes.appendChild(div);
   }
   loader.style.display = "none";
+}
+function openEdit(event) {
+  const parentDiv = findParentWithClass(event.target, 'note');
+  const title = parentDiv.getElementsByTagName('h3')[0];
+  const text = parentDiv.getElementsByTagName('p')[0];
+  const inputs = getInputs();
+  inputs.title.value = title.innerText;
+  inputs.text.value = text.innerText;
+  showPanel('create-new-note');
 }
 function confirmDelete(event) {
   let noteDiv = findParentWithClass(event.target, 'note');
@@ -187,7 +209,16 @@ function closeModalLocal(event) {
     parent.style.display = "none";
   }
 }
+function getInputs() {
+  let parentDiv = document.getElementById('create-new-note');
+  const titleInput = parentDiv.getElementsByTagName('input')[0];
+  const textArea = parentDiv.getElementsByTagName('textarea')[0];
+  return {title: titleInput, text: textArea};
+}
 function openCreate(event) {
+  const inputs = getInputs();
+  inputs.title.value = '';
+  inputs.text.value = '';
   showPanel('create-new-note');
 }
 function createButtonCallback(event) {
@@ -197,12 +228,6 @@ function createButtonCallback(event) {
   setNote(titleInput.value, textArea.value);
   showPanel('main-ui');
 }
-// function save(event) {  
-//   const parentDiv = findParentWithClass(event.target, 'note');
-//   const noteId = parentDiv.getAttribute('note-name');
-//   const editBox = parentDiv.getElementsByClassName('note-edit')[0];
-//   setNote(noteId, editBox.value);
-// }
 function setNote(noteId, noteText) {
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/notes/set", true);
