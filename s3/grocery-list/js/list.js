@@ -391,10 +391,10 @@ if (
   navigator.userAgent.includes("Safari")
 ) {
   iosCookieRefresh();
-  setStylesheet("css/grocery-list-new.css?v=007");
+  setStylesheet("css/grocery-list-new.css?v=008");
   document.getElementById("item-text-box").addEventListener("blur", startHide);
 } else {
-  setStylesheet("css/grocery-list-old.css?v=007");
+  setStylesheet("css/grocery-list-old.css?v=008");
 }
 const loader = document.getElementById("loading");
 const dontDisplayWhileLoading = document.getElementById(
