@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GIF Keyboard</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=008" />
+    <link rel="stylesheet" href="../css/loader.css?v=008" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=008" />
+    <style>
+#results img {
+  display:block;
+}
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>gif-keyboard</b>
+    </div>
+
+    <div class="search-bar">
+      <input placeholder="Search on tenor.com" id="search-text-input" input-group-name="search" class="big" type="text" related-button-id="search-button" />
+      <button id="search-button" input-group-name="search" onclick="runSearch(event)">Search</button>
+    </div>
+
+    <div id="results"></div>
+
+    <div style="display: none" class="logout">
+      <button onclick="logOut(event)">Log out</button>
+    </div>
+    <script src="../js/utils.js?v=008"></script>
+    <script src="../js/env.js"></script>
+    <script>
+const searchTextInput = document.getElementById('search-text-input');
+const resultsDiv = document.getElementById('results');
+
+function enterCallback(event) {
+  if (event.type == 'keyup' && event.key == 'Enter' && event.target.hasAttribute('related-button-id')) {
+    const relatedButtonId = event.target.getAttribute('related-button-id');
+    const relatedButton = document.getElementById(relatedButtonId);
+    relatedButton.click();
+  }
+}
+
+function runSearch(event) {
+  let payload = { csrf: csrfToken, query: searchTextInput.value };
+  if (event.target.hasAttribute('pos')) {
+    payload['pos'] = event.target.getAttribute('pos');
+  }
+  let url = API_DOMAIN + "/tenor/search";
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleSearch;
+  xmlHttp.onerror = handleSearch;
+  xmlHttp.send(JSON.stringify(payload));
+}
+
+function handleSearch(event) {
+  while (resultsDiv.firstElementChild) {
+    resultsDiv.firstElementChild.remove();
+  }
+  let result = defaultHandler(event);
+  console.log(result.responseJson);
+  const allItems = result.responseJson.results.results;
+  for (let item of allItems) {
+    let img = document.createElement('img');
+    img.src = item.media_formats.nanogif.url;
+    img.setAttribute('share-url', item.url);
+    img.addEventListener('click', shareWithSms)
+    resultsDiv.appendChild(img);
+  }
+  let button = document.createElement('button');
+  button.addEventListener('click', runSearch);
+  button.setAttribute('pos', result.responseJson.results.next);
+  button.innerText = "Load next 5";
+  resultsDiv.appendChild(button);
+}
+
+function shareWithSms(event) {
+  let url = event.target.getAttribute('share-url');
+  const parentDiv = findParentWithClass(event.target, 'note');
+  const smsLink = document.createElement("a");
+  smsLink.style.display = "block";
+  smsLink.href = "sms://?&body=" + encodeURIComponent(url); 
+  smsLink.click();
+}
+
+applyEmulators(enterCallback);
+    </script>
+  </body>
+</html>

@@ -61,7 +61,12 @@ from dumbphoneapps.utils import (
     clear_all_tokens_route,
 )
 from dumbphoneapps.weather import get_forecast_route
-
+from dumbphoneapps.tenor import (
+    tenor_search_route,
+)
+from dumbphoneapps.contacts import (
+    get_contacts_route,
+)
 
 def lambda_handler(event, context):
     try:
@@ -169,6 +174,10 @@ def route(event):
         return set_note_route(event)
     if path_equals(event=event, method="POST", path="/notes/delete"):
         return delete_note_route(event)
+    if path_equals(event=event, method="POST", path="/tenor/search"):
+        return tenor_search_route(event)
+    if path_equals(event=event, method="POST", path="/contacts/get"):
+        return get_contacts_route(event)
     if path_starts_with(event=event, method="POST", path="/discord/"):
         return discord_route(event)
 

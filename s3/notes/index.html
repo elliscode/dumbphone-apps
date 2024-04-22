@@ -150,6 +150,12 @@ function handleNotes(event) {
     editButton.innerText = 'Edit';
     editButton.addEventListener('click', openEdit);
     controls.appendChild(editButton);
+
+    let smsButton = document.createElement('button');
+    smsButton.innerText = 'SMS';
+    smsButton.addEventListener('click', sendSms);
+    controls.appendChild(smsButton);
+
     let deleteButton = document.createElement('button');
     deleteButton.innerHTML = '&times;'
     deleteButton.addEventListener('click', confirmDelete);
@@ -166,6 +172,15 @@ function handleNotes(event) {
     notes.appendChild(div);
   }
   loader.style.display = "none";
+}
+function sendSms(event) {
+  const parentDiv = findParentWithClass(event.target, 'note');
+  const title = parentDiv.getElementsByTagName('h3')[0];
+  const text = parentDiv.getElementsByTagName('p')[0];  
+  const smsLink = document.createElement("a");
+  smsLink.style.display = "block";
+  smsLink.href = "sms://?&body=" + encodeURIComponent(text.innerText); 
+  smsLink.click();
 }
 function openEdit(event) {
   const parentDiv = findParentWithClass(event.target, 'note');
