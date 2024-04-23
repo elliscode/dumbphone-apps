@@ -3,12 +3,24 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>GIF Keyboard</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=008" />
-    <link rel="stylesheet" href="../css/loader.css?v=008" />
-    <link rel="icon" type="image/png" href="../img/favicon.png?v=008" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=010" />
+    <link rel="stylesheet" href="../css/loader.css?v=010" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=010" />
     <style>
-#results img {
-  display:block;
+.search-bar {
+  display:flex;
+  width:100%;
+  height:40px;
+}
+
+.invisible-input {
+  flex-grow: 0;
+}
+#results {
+  margin-bottom:80vh;
+}
+.search-result {
+  display:inline-block;
 }
     </style>
   </head>
@@ -28,7 +40,7 @@
     <div style="display: none" class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=008"></script>
+    <script src="../js/utils.js?v=010"></script>
     <script src="../js/env.js"></script>
     <script>
 const searchTextInput = document.getElementById('search-text-input');
@@ -39,6 +51,15 @@ function enterCallback(event) {
     const relatedButtonId = event.target.getAttribute('related-button-id');
     const relatedButton = document.getElementById(relatedButtonId);
     relatedButton.click();
+  }
+  if (event.type == 'keyup' && ['ArrowUp','ArrowDown'].includes(event.key)) {
+    let element = event.target;
+    if (element.hasAttribute('linked-item')) {
+      element = element.parentElement.getElementsByClassName('selectable')[0];
+    }
+    if (element.getBoundingClientRect().top < 0 || element.getBoundingClientRect().bottom > (window.innerHeight - 40)) {
+      element.scrollIntoView({behavior: 'instant', block: 'start'});
+    }
   }
 }
 
@@ -63,27 +84,36 @@ function handleSearch(event) {
   let result = defaultHandler(event);
   console.log(result.responseJson);
   const allItems = result.responseJson.results.results;
+  let firstDiv = undefined;
   for (let item of allItems) {
+    let div = document.createElement('div');
+    let a = document.createElement('a');
+    a.classList.add('search-result');
+    a.href = "sms://?&body=" + encodeURIComponent(item.url); 
+    a.setAttribute('input-group-name', 'search');
     let img = document.createElement('img');
     img.src = item.media_formats.nanogif.url;
-    img.setAttribute('share-url', item.url);
-    img.addEventListener('click', shareWithSms)
-    resultsDiv.appendChild(img);
+    a.appendChild(img);
+    div.appendChild(a);
+    resultsDiv.appendChild(div);
+    if (!firstDiv) {
+      firstDiv = div;
+    }
   }
+  let div = document.createElement('div');
   let button = document.createElement('button');
   button.addEventListener('click', runSearch);
   button.setAttribute('pos', result.responseJson.results.next);
   button.innerText = "Load next 5";
-  resultsDiv.appendChild(button);
-}
-
-function shareWithSms(event) {
-  let url = event.target.getAttribute('share-url');
-  const parentDiv = findParentWithClass(event.target, 'note');
-  const smsLink = document.createElement("a");
-  smsLink.style.display = "block";
-  smsLink.href = "sms://?&body=" + encodeURIComponent(url); 
-  smsLink.click();
+  button.setAttribute('input-group-name', 'search');
+  div.appendChild(button);
+  resultsDiv.appendChild(div);
+  applyEmulators(enterCallback);
+  let invisibleBox = firstDiv.getElementsByClassName('invisible-input')[0];
+  invisibleBox.focus();
+  let itemToHighlight = firstDiv.getElementsByClassName('selectable')[0];
+  itemToHighlight.classList.add('selected');
+  itemToHighlight.scrollIntoView({behavior: 'instant', block: 'start'});
 }
 
 applyEmulators(enterCallback);
