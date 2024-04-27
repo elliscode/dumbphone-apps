@@ -228,7 +228,7 @@ function applyEmulators(customCallback) {
       item.addEventListener('keyup', (e)=>{arrowKeyEmulator(e, customCallback)});
       item.setAttribute('generated', true);
       item.classList.add('navigable-input');
-    } else if (item.tagName.toLowerCase() == 'a' || item.tagName.toLowerCase() == 'button' || (item.tagName.toLowerCase() == 'input' && ['checkbox'].includes(item.type.toLowerCase()))) {
+    } else {
       let invisibleInput = document.createElement('input');
       invisibleInput.type = 'text';
       invisibleInput.classList.add('invisible-input');

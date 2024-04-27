@@ -170,7 +170,7 @@ td {
 li.selected {
   background-color: rgb(209 233 255)!important;
 }
-a.selected, input.selected, button.selected {
+a.selected, input.selected, button.selected, div.selected {
   outline: 5px auto rgb(94, 158, 214);
 }
 .invisible-input {
