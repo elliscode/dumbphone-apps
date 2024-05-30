@@ -8,17 +8,20 @@ import urllib
 import boto3
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 
-ADMIN_PHONE = os.environ["ADMIN_PHONE"]
-DOMAIN_NAME = os.environ["DOMAIN_NAME"]
-DOMAIN_NAME_WWW = os.environ["DOMAIN_NAME_WWW"]
-TABLE_NAME = os.environ["DYNAMODB_TABLE_NAME"]
-SMS_SQS_QUEUE_URL = os.environ["SMS_SQS_QUEUE_URL"]
+ADMIN_PHONE = os.environ.get("ADMIN_PHONE")
+DOMAIN_NAME = os.environ.get("DOMAIN_NAME")
+DOMAIN_NAME_WWW = os.environ.get("DOMAIN_NAME_WWW")
+TABLE_NAME = os.environ.get("DYNAMODB_TABLE_NAME")
+SMS_SQS_QUEUE_URL = os.environ.get("SMS_SQS_QUEUE_URL")
+SMS_SQS_QUEUE_ARN = os.environ.get("SMS_SQS_QUEUE_ARN")
+SMS_SCHEDULER_ROLE_ARN = os.environ.get("SMS_SCHEDULER_ROLE_ARN")
 
 digits = "0123456789"
 lowercase_letters = "abcdefghijklmnopqrstuvwxyz"
 uppercase_letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 dynamo = boto3.client("dynamodb")
 sqs = boto3.client("sqs")
+scheduler = boto3.client('scheduler')
 
 
 def format_response(event, http_code, body, headers=None):

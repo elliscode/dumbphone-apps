@@ -8,7 +8,7 @@ from .utils import (
     format_response,
 )
 
-TENOR_API_KEY = os.environ["TENOR_API_KEY"]
+TENOR_API_KEY = os.environ.get("TENOR_API_KEY")
 
 http = urllib3.PoolManager()
 
@@ -29,8 +29,8 @@ def tenor_search_route(event, user_data, body):
             },
         )
     key = query
-    if body.get('pos'):
-        key = key + '_' + body.get('pos')
+    if body.get("pos"):
+        key = key + "_" + body.get("pos")
 
     if key in cached_searches:
         return format_response(
@@ -45,7 +45,7 @@ def tenor_search_route(event, user_data, body):
     uri = (
         f"https://tenor.googleapis.com/v2/search?q={query}&key={TENOR_API_KEY}&limit=5"
     )
-    if body.get('pos'):
+    if body.get("pos"):
         uri = uri + f"&pos={body.get('pos')}"
     print(uri)
     tenor_response = http.request("GET", uri)

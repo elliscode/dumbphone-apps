@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reminders</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=013" />
+    <link rel="stylesheet" href="../css/loader.css?v=013" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=013" />
+    <style>
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>reminders</b>
+    </div>
+
+    <p>Send yourself an SMS in the future, to remind you of something important</p>
+
+    <div id="reminders"></div>
+
+    <div class="logout">
+      <button onclick="logOut(event)">Log out</button>
+    </div>
+    <script src="../js/utils.js?v=013"></script>
+    <script src="../js/env.js"></script>
+    <script>
+const remindersDiv = document.getElementById('reminders');
+
+function createReminder(event) {
+  let payload = { csrf: csrfToken };
+  let url = API_DOMAIN + "/scheduler/set";
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleCreateReminder;
+  xmlHttp.onerror = handleCreateReminder;
+  xmlHttp.send(JSON.stringify(payload));
+}
+
+function handleCreateReminder(event) {
+  while (resultsDiv.firstElementChild) {
+    resultsDiv.firstElementChild.remove();
+  }
+  let result = defaultHandler(event);
+  console.log(result.responseJson);
+  const allItems = result.responseJson.results.results;
+  let firstDiv = undefined;
+  for (let item of allItems) {
+    let div = document.createElement('div');
+    let a = document.createElement('a');
+    a.classList.add('search-result');
+    a.href = "sms://?&body=" + encodeURIComponent(item.url); 
+    a.setAttribute('input-group-name', 'search');
+    let img = document.createElement('img');
+    img.src = item.media_formats.nanogif.url;
+    a.appendChild(img);
+    div.appendChild(a);
+    resultsDiv.appendChild(div);
+    if (!firstDiv) {
+      firstDiv = div;
+    }
+  }
+  let div = document.createElement('div');
+  let button = document.createElement('button');
+  button.addEventListener('click', runSearch);
+  button.setAttribute('pos', result.responseJson.results.next);
+  button.innerText = "Load next 5";
+  button.setAttribute('input-group-name', 'search');
+  div.appendChild(button);
+  resultsDiv.appendChild(div);
+  applyEmulators(enterCallback);
+  let invisibleBox = firstDiv.getElementsByClassName('invisible-input')[0];
+  invisibleBox.focus();
+  let itemToHighlight = firstDiv.getElementsByClassName('selectable')[0];
+  itemToHighlight.classList.add('selected');
+  itemToHighlight.scrollIntoView({behavior: 'instant', block: 'start'});
+}
+
+applyEmulators(enterCallback);
+    </script>
+  </body>
+</html>

@@ -40,12 +40,12 @@ function defaultHandlerV1(event) {
   }
   return result;
 }
-function defaultHandler(event) {
+function defaultHandler(event, logOutIf403 = true) {
   if (!event || !event.target) {
     return undefined;
   }
   let xmlHttp = event.target;
-  if (xmlHttp.status == 403) {
+  if (logOutIf403 && xmlHttp.status == 403) {
     logOut(event);
   }
   let result = {};
