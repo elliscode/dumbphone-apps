@@ -21,6 +21,23 @@
 
     <div id="controls"></div>
 
+    <div id="loading">
+      <div class="lds-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
@@ -30,6 +47,7 @@
 const controlsDiv = document.getElementById('controls');
 const projectId = '2d07542a-86b2-4edc-84e6-20004c25a42d';
 const authCodeLink = document.getElementById('auth-code-link');
+const loader = document.getElementById("loading");
 let authorizationCode = getParameterByName('code');
 let bearerToken = undefined;
 let deviceId = undefined;
@@ -57,8 +75,20 @@ function handleDevices(event) {
     controlsDiv.appendChild(pre);
     deviceId = device.name
   }
+  loader.style.display = "none";
 }
 function checkIfYouHaveAuthCode(event) {
+  // if you have a token already, and its not expired, just use that
+  try {
+    let nestToken = localStorage.getItem("dumbphoneapps-discord-nest-token");
+    let nestTokenJson = JSON.parse(nestToken);
+    if (nestTokenJson.expiration > Date.now()) {
+      handleTokenResult({statusCode: 200, responseJson: {access_token: nestTokenJson.token, expiration: nestTokenJson.expiration}});
+      return;
+    }
+  } catch (e) {
+    // noop
+  }
   // if you have a code in your URI, then send it and get a token
   if (authorizationCode) {
     let url = API_DOMAIN + "/thermostat/get-token-from-code";
@@ -78,11 +108,22 @@ function checkIfYouHaveAuthCode(event) {
 }
 function handleToken(event) {
   let result = defaultHandler(event, false);
+  handleTokenResult(result);
+  localStorage.setItem(
+    "dumbphoneapps-discord-nest-token",
+    JSON.stringify({
+      "token": bearerToken,
+      "expiration": (Date.now() + (result.responseJson.expires_in * 1000)),
+    })
+  );
+}
+function handleTokenResult(result) {
   if (result.statusCode == 200) {
     bearerToken = result.responseJson.access_token;
     getDevices();
   } else {
     authCodeLink.style.display = 'block';
+    loader.style.display = "none";
   }
 }
 function setFanForTwelveHours(event) {
