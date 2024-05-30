@@ -3,25 +3,20 @@ import re
 import urllib3
 import os
 from .utils import (
-    DOMAIN_NAME,
     DOMAIN_NAME_WWW,
-    get_user_data,
     format_response,
-    sqs,
     authenticate,
     python_obj_to_dynamo_obj,
     dynamo,
     TABLE_NAME,
     dynamo_obj_to_python_obj,
-    create_id,
-    SMS_SQS_QUEUE_URL,
-    SMS_SQS_QUEUE_ARN,
-    SMS_SCHEDULER_ROLE_ARN,
-    scheduler,
 )
 
 http = urllib3.PoolManager()
 
+# The reason we don't just do all this client-side is because I don't want to expose my client secret value, keeping all
+# of the token generation inside my lambda function allows me to share only the short-lived tokens and expiration times
+# with the users, while keeping the client secret safe
 NEST_CLIENT_ID = os.environ.get("NEST_CLIENT_ID")
 NEST_CLIENT_SECRET = os.environ.get("NEST_CLIENT_SECRET")
 
@@ -59,7 +54,10 @@ def get_token_from_code_route(event, user_data, body):
         return format_response(
             event=event,
             http_code=google_token_response.status,
-            body=google_token_response_json,
+            body={
+                "access_token": google_token_response_json['access_token'],
+                "expires_in": google_token_response_json['expires_in'],
+            },
         )
     else:
         return format_response(
@@ -95,7 +93,10 @@ def get_token_from_existing_refresh_token_route(event, user_data, body):
         return format_response(
             event=event,
             http_code=google_token_response.status,
-            body=google_token_response_json,
+            body={
+                "access_token": google_token_response_json['access_token'],
+                "expires_in": google_token_response_json['expires_in'],
+            },
         )
     else:
         return format_response(

@@ -64,10 +64,10 @@ from dumbphoneapps.weather import get_forecast_route
 from dumbphoneapps.tenor import (
     tenor_search_route,
 )
-from dumbphoneapps.sms_scheduler import (
-    schedule_sms_route,
-    get_sms_schedules_route,
-)
+# from dumbphoneapps.sms_scheduler import (
+#     schedule_sms_route,
+#     get_sms_schedules_route,
+# )
 from dumbphoneapps.thermostat import (
     get_token_from_code_route,
     get_token_from_existing_refresh_token_route,
@@ -182,10 +182,10 @@ def route(event):
         return delete_note_route(event)
     if path_equals(event=event, method="POST", path="/tenor/search"):
         return tenor_search_route(event)
-    if path_equals(event=event, method="POST", path="/scheduler/set"):
-        return schedule_sms_route(event)
-    if path_equals(event=event, method="POST", path="/scheduler/get"):
-        return get_sms_schedules_route(event)
+    # if path_equals(event=event, method="POST", path="/scheduler/set"):
+    #     return schedule_sms_route(event)
+    # if path_equals(event=event, method="POST", path="/scheduler/get"):
+    #     return get_sms_schedules_route(event)
     if path_equals(event=event, method="POST", path="/thermostat/get-token-from-code"):
         return get_token_from_code_route(event)
     if path_equals(event=event, method="POST", path="/thermostat/get-token-from-existing-refresh-token"):
