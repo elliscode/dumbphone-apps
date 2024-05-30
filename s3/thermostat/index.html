@@ -15,7 +15,7 @@
       <b><a href="../index.html">Home</a></b> &gt; <b>thermostat</b>
     </div>
 
-    <a href="https://nestservices.google.com/partnerconnections/2d07542a-86b2-4edc-84e6-20004c25a42d/auth?redirect_uri=https://aws.dumbphoneapps.com/thermostat/index.html&access_type=offline&prompt=consent&client_id=483860665172-4h3cvjgenh1177s8hp1p7bjhl92dufg8.apps.googleusercontent.com&response_type=code&scope=https://www.googleapis.com/auth/sdm.service">
+    <a style="display:none;" id="auth-code-link" href="https://nestservices.google.com/partnerconnections/2d07542a-86b2-4edc-84e6-20004c25a42d/auth?redirect_uri=https://aws.dumbphoneapps.com/thermostat/index.html&access_type=offline&prompt=consent&client_id=483860665172-4h3cvjgenh1177s8hp1p7bjhl92dufg8.apps.googleusercontent.com&response_type=code&scope=https://www.googleapis.com/auth/sdm.service">
       Connect your Nest thermostat account
     </a>
 
@@ -29,56 +29,10 @@
     <script>
 const controlsDiv = document.getElementById('controls');
 const projectId = '2d07542a-86b2-4edc-84e6-20004c25a42d';
+const authCodeLink = document.getElementById('auth-code-link');
 let authorizationCode = getParameterByName('code');
 let bearerToken = undefined;
 let deviceId = undefined;
-let structureId = undefined;
-let roomId = undefined;
-// function getStructures() {
-//   let url = `https://smartdevicemanagement.googleapis.com/v1/enterprises/${projectId}/structures`;
-//   xmlHttp = new XMLHttpRequest();
-//   xmlHttp.open("GET", url, true);
-//   xmlHttp.setRequestHeader('authorization', `Bearer ${bearerToken}`);
-//   xmlHttp.withCredentials = false;
-//   xmlHttp.onload = handleStructures;
-//   xmlHttp.send();
-// }
-// function handleStructures(event) {
-//   while(controlsDiv.firstElementChild) {
-//     controlsDiv.firstElementChild.remove();
-//   }
-//   let data = defaultHandler(event);
-//   for (let structure of data.responseJson.structures) {
-//     let button = document.createElement('button');
-//     button.innerText = structure.traits['sdm.structures.traits.Info'].customName;
-//     button.setAttribute('url', structure.name);
-//     button.addEventListener('click', getRooms);
-//     controlsDiv.appendChild(button);
-//   }
-// }
-// function getRooms(event) {
-//   const suffix = event.target.getAttribute('url');
-//   let url = `https://smartdevicemanagement.googleapis.com/v1/${suffix}/rooms`;
-//   xmlHttp = new XMLHttpRequest();
-//   xmlHttp.open("GET", url, true);
-//   xmlHttp.setRequestHeader('authorization', `Bearer ${bearerToken}`);
-//   xmlHttp.withCredentials = false;
-//   xmlHttp.onload = handleRooms;
-//   xmlHttp.send();
-// }
-// function handleRooms(event) {
-//   while(controlsDiv.firstElementChild) {
-//     controlsDiv.firstElementChild.remove();
-//   }
-//   let data = defaultHandler(event);
-//   for (let room of data.responseJson.rooms) {
-//     let button = document.createElement('button');
-//     button.innerText = room.traits['sdm.structures.traits.RoomInfo'].customName;
-//     button.setAttribute('url', room.name);
-//     button.addEventListener('click', getDevices);
-//     controlsDiv.appendChild(button);
-//   }
-// }
 function getDevices() {
   let url = `https://smartdevicemanagement.googleapis.com/v1/enterprises/${projectId}/devices`;
   xmlHttp = new XMLHttpRequest();
@@ -94,9 +48,14 @@ function handleDevices(event) {
   }
   let data = defaultHandler(event);
   for (let device of data.responseJson.devices) {
+    let fanButton = document.createElement('button');
+    fanButton.innerText = "Set fan for 12 hours";
+    fanButton.addEventListener('click', setFanForTwelveHours);
+    controlsDiv.appendChild(fanButton);
     let pre = document.createElement('pre');
     pre.innerText = JSON.stringify(device.traits, undefined, 2);
     controlsDiv.appendChild(pre);
+    deviceId = device.name
   }
 }
 function checkIfYouHaveAuthCode(event) {
@@ -106,34 +65,42 @@ function checkIfYouHaveAuthCode(event) {
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
     xmlHttp.withCredentials = true;
-    xmlHttp.onload = handleGetTokenFromCode;
+    xmlHttp.onload = handleToken;
     xmlHttp.send(JSON.stringify({ csrf: csrfToken, code: authorizationCode }));
   } else { // if you don't have a code in your URI, check for a refresh token
     let url = API_DOMAIN + "/thermostat/get-token-from-existing-refresh-token";
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true);
     xmlHttp.withCredentials = true;
-    xmlHttp.onload = handleGetTokenFromExistingRefreshToken;
+    xmlHttp.onload = handleToken;
     xmlHttp.send(JSON.stringify({ csrf: csrfToken }));
   }
 }
-
-function handleGetTokenFromCode(event) {
+function handleToken(event) {
   let result = defaultHandler(event, false);
   if (result.statusCode == 200) {
     bearerToken = result.responseJson.access_token;
     getDevices();
+  } else {
+    authCodeLink.style.display = 'block';
   }
 }
-
-function handleGetTokenFromExistingRefreshToken(event) {
-  let result = defaultHandler(event, false);
-  if (result.statusCode == 200) {
-    bearerToken = result.responseJson.access_token;
-    getDevices();
-  }
+function setFanForTwelveHours(event) {
+  const payload = {
+    "command" : "sdm.devices.commands.Fan.SetTimer",
+    "params" : {
+      "timerMode" : "ON",
+      "duration" : "43200s"
+    }
+  };
+  let url = `https://smartdevicemanagement.googleapis.com/v1/${deviceId}:executeCommand`;
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true);
+  xmlHttp.setRequestHeader('authorization', `Bearer ${bearerToken}`);
+  xmlHttp.withCredentials = false;
+  xmlHttp.onload = getDevices;
+  xmlHttp.send(JSON.stringify(payload));
 }
-
 
 checkIfYouHaveAuthCode(event);
     </script>
