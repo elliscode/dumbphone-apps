@@ -139,8 +139,20 @@ function setFanForTwelveHours(event) {
   xmlHttp.open("POST", url, true);
   xmlHttp.setRequestHeader('authorization', `Bearer ${bearerToken}`);
   xmlHttp.withCredentials = false;
-  xmlHttp.onload = getDevices;
+  xmlHttp.onload = verifyResponse;
   xmlHttp.send(JSON.stringify(payload));
+}
+function verifyResponse(event) {
+  let result = defaultHandler(event, false);
+  if (result.statusCode == 200) {
+    console.log(`Succcess ${result.statusCode}`);
+    getDevices();
+  } else if (result.statusCode == 401) {
+    console.log(`Unauthorized ${result.statusCode}, re-authorizing, try again`);
+    checkIfYouHaveAuthCode(event);
+  } else {
+    console.log(`Error ${result.statusCode}, not sure what went wrong`);
+  }
 }
 
 checkIfYouHaveAuthCode(event);

@@ -63,7 +63,7 @@ function createNotification(event) {
   } else if (event.data) {
     contentString += event.data;
   }
-  p.innerText = `${event.type}`;
+  p.innerText = `${event.type} ${contentString}`;
   setTimeout(deleteItem, 5000, idString);
   eventInfoDiv.insertBefore(p, eventInfoDiv.firstElementChild);
   previousValue = event.target.value;
