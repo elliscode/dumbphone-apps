@@ -15,7 +15,7 @@
       <b><a href="../index.html">Home</a></b> &gt; <b>thermostat</b>
     </div>
 
-    <a style="display:none;" id="auth-code-link" href="https://nestservices.google.com/partnerconnections/2d07542a-86b2-4edc-84e6-20004c25a42d/auth?redirect_uri=https://aws.dumbphoneapps.com/thermostat/index.html&access_type=offline&prompt=consent&client_id=483860665172-4h3cvjgenh1177s8hp1p7bjhl92dufg8.apps.googleusercontent.com&response_type=code&scope=https://www.googleapis.com/auth/sdm.service">
+    <a style="display:none;" id="auth-code-link" href="https://nestservices.google.com/partnerconnections/2d07542a-86b2-4edc-84e6-20004c25a42d/auth?redirect_uri=https://www.dumbphoneapps.com/thermostat/index.html&access_type=offline&prompt=consent&client_id=483860665172-4h3cvjgenh1177s8hp1p7bjhl92dufg8.apps.googleusercontent.com&response_type=code&scope=https://www.googleapis.com/auth/sdm.service">
       Connect your Nest thermostat account
     </a>
 
@@ -66,10 +66,18 @@ function handleDevices(event) {
   }
   let data = defaultHandler(event);
   for (let device of data.responseJson.devices) {
-    let fanButton = document.createElement('button');
-    fanButton.innerText = "Set fan for 12 hours";
-    fanButton.addEventListener('click', setFanForTwelveHours);
-    controlsDiv.appendChild(fanButton);
+    {
+      let button = document.createElement('button');
+      button.innerText = "Set fan for 12 hours";
+      button.addEventListener('click', setFanForTwelveHours);
+      controlsDiv.appendChild(button);
+    }
+    {
+      let button = document.createElement('button');
+      button.innerText = "Turn off fan";
+      button.addEventListener('click', turnOffFan);
+      controlsDiv.appendChild(button);
+    }
     let pre = document.createElement('pre');
     pre.innerText = JSON.stringify(device.traits, undefined, 2);
     controlsDiv.appendChild(pre);
@@ -126,6 +134,18 @@ function handleTokenResult(result) {
     loader.style.display = "none";
   }
 }
+function verifyResponse(event) {
+  let result = defaultHandler(event, false);
+  if (result.statusCode == 200) {
+    console.log(`Succcess ${result.statusCode}`);
+    getDevices();
+  } else if (result.statusCode == 401) {
+    console.log(`Unauthorized ${result.statusCode}, re-authorizing, try again`);
+    checkIfYouHaveAuthCode(event);
+  } else {
+    console.log(`Error ${result.statusCode}, not sure what went wrong`);
+  }
+}
 function setFanForTwelveHours(event) {
   const payload = {
     "command" : "sdm.devices.commands.Fan.SetTimer",
@@ -142,17 +162,20 @@ function setFanForTwelveHours(event) {
   xmlHttp.onload = verifyResponse;
   xmlHttp.send(JSON.stringify(payload));
 }
-function verifyResponse(event) {
-  let result = defaultHandler(event, false);
-  if (result.statusCode == 200) {
-    console.log(`Succcess ${result.statusCode}`);
-    getDevices();
-  } else if (result.statusCode == 401) {
-    console.log(`Unauthorized ${result.statusCode}, re-authorizing, try again`);
-    checkIfYouHaveAuthCode(event);
-  } else {
-    console.log(`Error ${result.statusCode}, not sure what went wrong`);
-  }
+function turnOffFan(event) {
+  const payload = {
+    "command" : "sdm.devices.commands.Fan.SetTimer",
+    "params" : {
+      "timerMode" : "OFF"
+    }
+  };
+  let url = `https://smartdevicemanagement.googleapis.com/v1/${deviceId}:executeCommand`;
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true);
+  xmlHttp.setRequestHeader('authorization', `Bearer ${bearerToken}`);
+  xmlHttp.withCredentials = false;
+  xmlHttp.onload = verifyResponse;
+  xmlHttp.send(JSON.stringify(payload));
 }
 
 checkIfYouHaveAuthCode(event);
