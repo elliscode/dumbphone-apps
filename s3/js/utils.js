@@ -247,6 +247,36 @@ function applyEmulators(customCallback) {
     }
   }
 }
+function pressCallToFocus(event) {
+  let current = document.activeElement;
+  if (current.hasAttribute('primary-button')
+      || current.hasAttribute('primary-input')
+      || current.hasAttribute('input-group-name')) {
+        return;
+  }
+  if (event.key === 'Call') {
+    let foundClicker = document.querySelector('[primary-button]');
+    if (foundClicker) {
+      foundClicker.click();
+    } else {
+      let foundItem = document.querySelector('[primary-input]');
+      if (!foundItem) {
+        let allItems = Array.from(document.querySelectorAll(`[input-group-name]`));
+        if (allItems.length > 0) {
+          foundItem = allItems[0];
+        }
+      }
+      if (foundItem) {
+        foundItem.focus();
+        if (foundItem.hasAttribute('linked-item')) {
+          let checkbox = foundItem.parentElement.getElementsByClassName('selectable')[0];
+          checkbox.classList.add('selected');
+        }
+      }
+    }
+  }
+}
+document.addEventListener('keyup',pressCallToFocus);
 function showPanel(id) {
   let modals = Array.from(document.getElementsByClassName('modal-bg'));
   let panels = Array.from(document.getElementsByClassName('panel'));
