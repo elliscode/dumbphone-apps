@@ -26,10 +26,13 @@ function getCurrentLocation() {
   }
   if (navigator.geolocation) {
     json.innerHTML = "Retrieving current location from device...";
-    navigator.geolocation.getCurrentPosition(getWeatherForPosition);
+    navigator.geolocation.getCurrentPosition(getWeatherForPosition, displayGeolocationError, {enableHighAccuracy: false});
   } else {
     json.innerHTML = "Geolocation is not supported by this browser.";
   }
+}
+function displayGeolocationError(event) {
+  json.innerHTML = "Geolocation failed, please refresh the page and try again.";
 }
 function getWeatherForPosition(position) {
   if (weatherData) {
