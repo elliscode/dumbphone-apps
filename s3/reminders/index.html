@@ -125,23 +125,14 @@
       <div style="
       padding-top: 15px;
   ">
-        <input onkeypress="checkIfValid(event)" id="reminder-text" style="
+        <input oninput="checkIfValid(event)" id="reminder-text" style="
         box-sizing:border-box;
         width:100%;
 " type="text"/>
       </div>
     </div>
-    <div style="
-    display:flex;
-    justify-content: flex-start;
-">
-      <button id="create-button" disabled onclick="createReminder(event)" style="
-      border-radius: 5px;
-      padding: 10px;
-      margin-bottom: 10px;
-      position:relative;
-  ">Step 3: Create Reminder</button>
-    </div>
+
+
 
     <div style="
     display:none;
@@ -152,6 +143,18 @@
     position:relative;
 ">
       <p style="margin:0px;" id="status"></p>
+    </div>
+
+    <div style="
+    display:flex;
+    justify-content: flex-start;
+">
+      <button id="create-button" disabled onclick="createReminder(event)" style="
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+      position:relative;
+  ">Step 3: Create Reminder</button>
     </div>
 
 <!-- <div style="
