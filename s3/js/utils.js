@@ -40,12 +40,12 @@ function defaultHandlerV1(event) {
   }
   return result;
 }
-function defaultHandler(event) {
+function defaultHandler(event, logOutIf403 = true) {
   if (!event || !event.target) {
     return undefined;
   }
   let xmlHttp = event.target;
-  if (xmlHttp.status == 403) {
+  if (logOutIf403 && xmlHttp.status == 403) {
     logOut(event);
   }
   let result = {};
@@ -228,7 +228,7 @@ function applyEmulators(customCallback) {
       item.addEventListener('keyup', (e)=>{arrowKeyEmulator(e, customCallback)});
       item.setAttribute('generated', true);
       item.classList.add('navigable-input');
-    } else if (item.tagName.toLowerCase() == 'a' || item.tagName.toLowerCase() == 'button' || (item.tagName.toLowerCase() == 'input' && ['checkbox'].includes(item.type.toLowerCase()))) {
+    } else {
       let invisibleInput = document.createElement('input');
       invisibleInput.type = 'text';
       invisibleInput.classList.add('invisible-input');
@@ -245,6 +245,58 @@ function applyEmulators(customCallback) {
       item.removeAttribute('input-group-name');
       item.classList.add('selectable');
     }
+  }
+}
+function pressCallToFocus(event) {
+  let current = document.activeElement;
+  if (current.hasAttribute('primary-button')
+      || current.hasAttribute('primary-input')
+      || current.hasAttribute('input-group-name')) {
+        return;
+  }
+  if (event.key === 'Call') {
+    let foundClicker = document.querySelector('[primary-button]');
+    if (foundClicker) {
+      foundClicker.click();
+    } else {
+      let foundItem = document.querySelector('[primary-input]');
+      if (!foundItem) {
+        let allItems = Array.from(document.querySelectorAll(`[input-group-name]`));
+        if (allItems.length > 0) {
+          foundItem = allItems[0];
+        }
+      }
+      if (foundItem) {
+        foundItem.focus();
+        if (foundItem.hasAttribute('linked-item')) {
+          let checkbox = foundItem.parentElement.getElementsByClassName('selectable')[0];
+          checkbox.classList.add('selected');
+        }
+      }
+    }
+  }
+}
+document.addEventListener('keyup',pressCallToFocus);
+function showPanel(id) {
+  let modals = Array.from(document.getElementsByClassName('modal-bg'));
+  let panels = Array.from(document.getElementsByClassName('panel'));
+  let searchBlobs = Array.from(document.getElementsByClassName('search-blob'));
+  let both = modals.concat(panels, searchBlobs);
+  for(let i = 0; i < both.length; i++) {
+    both[i].style.display = 'none';
+  }
+  if (!id) {
+    return;
+  }
+  let selected = document.getElementById(id);
+  if (!selected) {
+    return;
+  }
+  if (selected.classList.contains('panel') || selected.classList.contains('search-blob')) {
+    selected.style.display = 'block';
+  } else if (selected.classList.contains('modal')) {
+    let modalBg = findParentWithClass(selected, 'modal-bg');
+    modalBg.style.display = 'flex';
   }
 }
 // allows for clicking the background of the modal to exit the modal

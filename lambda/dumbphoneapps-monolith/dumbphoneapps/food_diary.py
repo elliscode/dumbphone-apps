@@ -56,9 +56,7 @@ def remove_all_tokens(food_id, food_name):
             json_data["food_ids"].pop(found_index)
         if len(json_data["food_ids"]) == 0:
             json_data.pop("food_ids")
-            items.append(
-                {"DeleteRequest": {"Key": python_obj_to_dynamo_obj(json_data)}}
-            )
+            items.append({"DeleteRequest": {"Key": python_obj_to_dynamo_obj(json_data)}})
         else:
             items.append({"PutRequest": {"Item": python_obj_to_dynamo_obj(json_data)}})
         if len(items) >= 25:
@@ -106,9 +104,7 @@ def set_food_route(event, user_data, body):
         )
     diary_response = dynamo.get_item(
         TableName=TABLE_NAME,
-        Key=python_obj_to_dynamo_obj(
-            {"key1": f"diary_{user_data['key2']}", "key2": body["date"]}
-        ),
+        Key=python_obj_to_dynamo_obj({"key1": f"diary_{user_data['key2']}", "key2": body["date"]}),
     )
     diary_entry = dynamo_obj_to_python_obj(diary_response["Item"])
     food_response = dynamo.get_item(
@@ -280,9 +276,7 @@ def create_serving_route(event, user_data, body):
 def set_serving_route(event, user_data, body):
     diary_response = dynamo.get_item(
         TableName=TABLE_NAME,
-        Key=python_obj_to_dynamo_obj(
-            {"key1": f"diary_{user_data['key2']}", "key2": body["date"]}
-        ),
+        Key=python_obj_to_dynamo_obj({"key1": f"diary_{user_data['key2']}", "key2": body["date"]}),
     )
     diary_entry = dynamo_obj_to_python_obj(diary_response["Item"])
     serving_item = diary_entry["entries"][body["timestamp"]]
@@ -312,16 +306,12 @@ def set_serving_route(event, user_data, body):
                 body=f"No unit found for {body_unit}",
             )
     determined_multiplier = (
-        float(found_food_serving["multiplier"])
-        * float(body_amount)
-        / float(found_food_serving["amount"])
+        float(found_food_serving["multiplier"]) * float(body_amount) / float(found_food_serving["amount"])
     )
     if "calculated_values" not in serving_item:
         serving_item["calculated_values"] = {}
     for value_key in ALL_VALUE_KEYS:
-        serving_item["calculated_values"][
-            value_key
-        ] = f"{determined_multiplier * float(food['metadata'][value_key])}"
+        serving_item["calculated_values"][value_key] = f"{determined_multiplier * float(food['metadata'][value_key])}"
     serving_item["calculated_values"]["serving_amount"] = f"{body_amount}"
     serving_item["calculated_values"]["serving_name"] = f"{found_food_serving['name']}"
     serving_item["multiplier"] = f"{determined_multiplier}"
@@ -470,10 +460,7 @@ def add_route(event, user_data, body):
 
         actual_serving = None
         for food_serving in food_item["metadata"]["servings"]:
-            if (
-                "name" in food_serving
-                and food_serving["name"].strip() == serving_entry["unit"].strip()
-            ):
+            if "name" in food_serving and food_serving["name"].strip() == serving_entry["unit"].strip():
                 actual_serving = food_serving
                 break
         if actual_serving is None:
@@ -497,9 +484,7 @@ def add_route(event, user_data, body):
                 f"{float(food_item['metadata'][value_key]) * float(serving_entry['multiplier'])}"
             )
         serving_amount = (
-            float(actual_serving["amount"])
-            * float(serving_entry["multiplier"])
-            / float(actual_serving["multiplier"])
+            float(actual_serving["amount"]) * float(serving_entry["multiplier"]) / float(actual_serving["multiplier"])
         )
         calculated_values["serving_amount"] = f"{serving_amount:g}"
         calculated_values["serving_name"] = f"{serving_entry['unit']}"
@@ -513,22 +498,16 @@ def add_route(event, user_data, body):
         }
 
         print(current_entry)
-        current_entry["entries"][
-            f"{time.mktime(time.gmtime())}{food_index:0>3}"
-        ] = new_diary_entry
+        current_entry["entries"][f"{time.mktime(time.gmtime())}{food_index:0>3}"] = new_diary_entry
         print(current_entry)
 
-        items_to_write.append(
-            {"PutRequest": {"Item": python_obj_to_dynamo_obj(serving_entry)}}
-        )
+        items_to_write.append({"PutRequest": {"Item": python_obj_to_dynamo_obj(serving_entry)}})
 
         if len(items_to_write) >= 25:
             print(json.dumps(items_to_write))
             dynamo.batch_write_item(RequestItems={TABLE_NAME: items_to_write})
             items_to_write = []
-    items_to_write.append(
-        {"PutRequest": {"Item": python_obj_to_dynamo_obj(current_entry)}}
-    )
+    items_to_write.append({"PutRequest": {"Item": python_obj_to_dynamo_obj(current_entry)}})
     if len(items_to_write) > 0:
         print(json.dumps(items_to_write))
         dynamo.batch_write_item(RequestItems={TABLE_NAME: items_to_write})
@@ -566,9 +545,7 @@ def create_food_route(event, user_data, body):
         full_food_token = body.get("name").lower().strip()
         food_token_response = dynamo.get_item(
             TableName=TABLE_NAME,
-            Key=python_obj_to_dynamo_obj(
-                {"key1": "food_token", "key2": full_food_token}
-            ),
+            Key=python_obj_to_dynamo_obj({"key1": "food_token", "key2": full_food_token}),
         )
         if "Item" in food_token_response:
             food_token_result = dynamo_obj_to_python_obj(food_token_response["Item"])
@@ -660,9 +637,7 @@ def get_day_route(event, user_data, body):
     totals = {}
     for timestamp, food_diary_entry in food_diary_entries.items():
         for vk in ALL_VALUE_KEYS:
-            totals[vk] = totals.get(vk, 0) + float(
-                food_diary_entry.get("calculated_values", {}).get(vk, 0)
-            )
+            totals[vk] = totals.get(vk, 0) + float(food_diary_entry.get("calculated_values", {}).get(vk, 0))
 
     return format_response(
         event=event,

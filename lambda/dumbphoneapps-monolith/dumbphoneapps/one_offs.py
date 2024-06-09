@@ -25,9 +25,9 @@ from .utils import (
 
 sts_connection = boto3.client("sts")
 
-GOOGLE_API_KEY = os.environ["GOOGLE_API_KEY"]
-PRESIGNED_AWS_ACCESS_KEY_ID = os.environ["PRESIGNED_AWS_ACCESS_KEY_ID"]
-PRESIGNED_AWS_SECRET_ACCESS_KEY = os.environ["PRESIGNED_AWS_SECRET_ACCESS_KEY"]
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+PRESIGNED_AWS_ACCESS_KEY_ID = os.environ.get("PRESIGNED_AWS_ACCESS_KEY_ID")
+PRESIGNED_AWS_SECRET_ACCESS_KEY = os.environ.get("PRESIGNED_AWS_SECRET_ACCESS_KEY")
 
 CONTENT_TYPES = {
     "mov": "video/quicktime",
@@ -234,9 +234,7 @@ def parse_message_as_grocery_items(msg_text, from_number):
         event["headers"] = {}
         event["headers"]["origin"] = ""
 
-        add_response = additem(
-            event, {"key2": from_number}, {"name": group, "item": item}
-        )
+        add_response = additem(event, {"key2": from_number}, {"name": group, "item": item})
 
         print(add_response)
 

@@ -49,6 +49,7 @@ h1 {
 .ui-list li {
   background-color: #ddd;
   margin-top: 5px;
+  overflow-wrap: anywhere;
 }
 
 li {

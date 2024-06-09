@@ -113,11 +113,7 @@ def get_report_data_route(event, user_data, body):
     keys = []
     for i in range(-6, 1):
         new_date_obj = date_obj + datetime.timedelta(days=i)
-        keys.append(
-            python_obj_to_dynamo_obj(
-                {"key1": f"answers_{phone}", "key2": new_date_obj.strftime("%Y-%m-%d")}
-            )
-        )
+        keys.append(python_obj_to_dynamo_obj({"key1": f"answers_{phone}", "key2": new_date_obj.strftime("%Y-%m-%d")}))
         keys.append(
             python_obj_to_dynamo_obj(
                 {
@@ -139,13 +135,9 @@ def get_report_data_route(event, user_data, body):
     for response_item in responses:
         python_item = dynamo_obj_to_python_obj(response_item)
         if "answers" in python_item:
-            output_answers.append(
-                {"date": python_item["key2"], "answers": python_item["answers"]}
-            )
+            output_answers.append({"date": python_item["key2"], "answers": python_item["answers"]})
         elif "entries" in python_item:
-            output_diary.append(
-                {"date": python_item["key2"], "entries": python_item["entries"]}
-            )
+            output_diary.append({"date": python_item["key2"], "entries": python_item["entries"]})
     return format_response(
         event=event,
         http_code=200,

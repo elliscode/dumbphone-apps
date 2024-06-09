@@ -14,8 +14,8 @@ from .utils import (
     dynamo_obj_to_python_obj,
 )
 
-WEATHER_API_USERNAME = os.environ["WEATHER_API_USERNAME"]
-WEATHER_API_PASSWORD = os.environ["WEATHER_API_PASSWORD"]
+WEATHER_API_USERNAME = os.environ.get("WEATHER_API_USERNAME")
+WEATHER_API_PASSWORD = os.environ.get("WEATHER_API_PASSWORD")
 
 weather_token = None
 weather_token_expiration = None
@@ -86,9 +86,9 @@ def get_token():
 
     print("weather db miss")
 
-    base64_encoded_auth = base64.b64encode(
-        f"{WEATHER_API_USERNAME}:{WEATHER_API_PASSWORD}".encode("utf-8")
-    ).decode("utf-8")
+    base64_encoded_auth = base64.b64encode(f"{WEATHER_API_USERNAME}:{WEATHER_API_PASSWORD}".encode("utf-8")).decode(
+        "utf-8"
+    )
 
     weather_uri = "https://login.meteomatics.com/api/v1/token"
     weather_headers = {

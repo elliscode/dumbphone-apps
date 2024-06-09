@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Thermostat</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
+    <link rel="stylesheet" href="../css/loader.css?v=015" />
+    <link rel="icon" type="image/png" href="../img/thermometer.favicon.png?v=015" />
+    <style>
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>thermostat</b>
+    </div>
+
+    <a style="display:none;" id="auth-code-link" href="https://nestservices.google.com/partnerconnections/2d07542a-86b2-4edc-84e6-20004c25a42d/auth?redirect_uri=https://www.dumbphoneapps.com/thermostat/index.html&access_type=offline&prompt=consent&client_id=483860665172-4h3cvjgenh1177s8hp1p7bjhl92dufg8.apps.googleusercontent.com&response_type=code&scope=https://www.googleapis.com/auth/sdm.service">
+      Connect your Nest thermostat account
+    </a>
+
+    <div id="controls"></div>
+
+    <div id="loading">
+      <div class="lds-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+
+    <div class="logout">
+      <button onclick="logOut(event)">Log out</button>
+    </div>
+    <script src="../js/utils.js?v=015"></script>
+    <script src="../js/env.js"></script>
+    <script>
+const controlsDiv = document.getElementById('controls');
+const projectId = '2d07542a-86b2-4edc-84e6-20004c25a42d';
+const authCodeLink = document.getElementById('auth-code-link');
+const loader = document.getElementById("loading");
+let authorizationCode = getParameterByName('code');
+let bearerToken = undefined;
+let deviceId = undefined;
+function getDevices() {
+  let url = `https://smartdevicemanagement.googleapis.com/v1/enterprises/${projectId}/devices`;
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("GET", url, true);
+  xmlHttp.setRequestHeader('authorization', `Bearer ${bearerToken}`);
+  xmlHttp.withCredentials = false;
+  xmlHttp.onload = handleDevices;
+  xmlHttp.send();
+}
+function handleDevices(event) {
+  while(controlsDiv.firstElementChild) {
+    controlsDiv.firstElementChild.remove();
+  }
+  let data = defaultHandler(event);
+  for (let device of data.responseJson.devices) {
+    {
+      let button = document.createElement('button');
+      button.innerText = "Set fan for 12 hours";
+      button.addEventListener('click', setFanForTwelveHours);
+      controlsDiv.appendChild(button);
+    }
+    {
+      let button = document.createElement('button');
+      button.innerText = "Turn off fan";
+      button.addEventListener('click', turnOffFan);
+      controlsDiv.appendChild(button);
+    }
+    let pre = document.createElement('pre');
+    pre.innerText = JSON.stringify(device.traits, undefined, 2);
+    controlsDiv.appendChild(pre);
+    deviceId = device.name
+  }
+  loader.style.display = "none";
+}
+function checkIfYouHaveAuthCode(event) {
+  // if you have a token already, and its not expired, just use that
+  try {
+    let nestToken = localStorage.getItem("dumbphoneapps-discord-nest-token");
+    let nestTokenJson = JSON.parse(nestToken);
+    if (nestTokenJson.expiration > Date.now()) {
+      handleTokenResult({statusCode: 200, responseJson: {access_token: nestTokenJson.token, expiration: nestTokenJson.expiration}});
+      return;
+    }
+  } catch (e) {
+    // noop
+  }
+  // if you have a code in your URI, then send it and get a token
+  if (authorizationCode) {
+    let url = API_DOMAIN + "/thermostat/get-token-from-code";
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true);
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleToken;
+    xmlHttp.send(JSON.stringify({ csrf: csrfToken, code: authorizationCode }));
+  } else { // if you don't have a code in your URI, check for a refresh token
+    let url = API_DOMAIN + "/thermostat/get-token-from-existing-refresh-token";
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true);
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleToken;
+    xmlHttp.send(JSON.stringify({ csrf: csrfToken }));
+  }
+}
+function handleToken(event) {
+  let result = defaultHandler(event, false);
+  handleTokenResult(result);
+  localStorage.setItem(
+    "dumbphoneapps-discord-nest-token",
+    JSON.stringify({
+      "token": bearerToken,
+      "expiration": (Date.now() + (result.responseJson.expires_in * 1000)),
+    })
+  );
+}
+function handleTokenResult(result) {
+  if (result.statusCode == 200) {
+    bearerToken = result.responseJson.access_token;
+    getDevices();
+  } else {
+    authCodeLink.style.display = 'block';
+    loader.style.display = "none";
+  }
+}
+function verifyResponse(event) {
+  let result = defaultHandler(event, false);
+  if (result.statusCode == 200) {
+    console.log(`Succcess ${result.statusCode}`);
+    getDevices();
+  } else if (result.statusCode == 401) {
+    console.log(`Unauthorized ${result.statusCode}, re-authorizing, try again`);
+    checkIfYouHaveAuthCode(event);
+  } else {
+    console.log(`Error ${result.statusCode}, not sure what went wrong`);
+  }
+}
+function setFanForTwelveHours(event) {
+  const payload = {
+    "command" : "sdm.devices.commands.Fan.SetTimer",
+    "params" : {
+      "timerMode" : "ON",
+      "duration" : "43200s"
+    }
+  };
+  let url = `https://smartdevicemanagement.googleapis.com/v1/${deviceId}:executeCommand`;
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true);
+  xmlHttp.setRequestHeader('authorization', `Bearer ${bearerToken}`);
+  xmlHttp.withCredentials = false;
+  xmlHttp.onload = verifyResponse;
+  xmlHttp.send(JSON.stringify(payload));
+}
+function turnOffFan(event) {
+  const payload = {
+    "command" : "sdm.devices.commands.Fan.SetTimer",
+    "params" : {
+      "timerMode" : "OFF"
+    }
+  };
+  let url = `https://smartdevicemanagement.googleapis.com/v1/${deviceId}:executeCommand`;
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true);
+  xmlHttp.setRequestHeader('authorization', `Bearer ${bearerToken}`);
+  xmlHttp.withCredentials = false;
+  xmlHttp.onload = verifyResponse;
+  xmlHttp.send(JSON.stringify(payload));
+}
+
+checkIfYouHaveAuthCode(event);
+    </script>
+  </body>
+</html>

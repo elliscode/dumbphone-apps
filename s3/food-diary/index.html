@@ -4,10 +4,10 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Food Diary</title>
-  <link rel="stylesheet" href="../css/stylesheet.css?v=007" />
-  <link rel="stylesheet" href="css/fooddiary.css?v=007" />
-  <link rel="stylesheet" href="../css/loader.css?v=007" />
-  <link rel="icon" type="image/png" href="../img/favicon.png?v=007" />
+  <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
+  <link rel="stylesheet" href="css/fooddiary.css?v=015" />
+  <link rel="stylesheet" href="../css/loader.css?v=015" />
+  <link rel="icon" type="image/png" href="../img/food.favicon.png?v=015" />
 </head>
 
 <body>
@@ -54,7 +54,7 @@
   <div class="panel" id="recipe-edit" style="display:none;">
     <label>Name:<input id="recipe-edit-name" type="text" /></label>
     <table id="ingredients"></table>
-    <button onclick="showSearch(event)" search-id="food-search" destination-id="ingredients">Add food</button>
+    <button onclick="showSearch(event)" search-id="food-search" destination-id="ingredients" primary-button>Add food</button>
     <label>Servings:<input id="recipe-edit-servings" type="tel" /></label>
     <div>
       <button id="recipe-edit-food" onclick="displayFood(event)">Edit Food</button>
@@ -126,9 +126,9 @@
       <button onclick="logOut(event)">Log out</button>
     </div>
   </div>
-  <script src="../js/utils.js?v=007"></script>
+  <script src="../js/utils.js?v=015"></script>
   <script src="../js/env.js"></script>
-  <script src="js/fooddiary.js?v=007"></script>
+  <script src="js/fooddiary.js?v=015"></script>
 </body>
 
 </html>

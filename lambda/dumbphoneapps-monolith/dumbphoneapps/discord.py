@@ -91,9 +91,7 @@ def discord_route(event, user_data, body):
         get_params.pop("csrf")
         get_params.pop("method")
         url_suffix = generate_query_parameters(get_params)
-        response = http.request(
-            body["method"], discord_uri + url_suffix, headers=discord_headers
-        )
+        response = http.request(body["method"], discord_uri + url_suffix, headers=discord_headers)
     else:
         response = http.request(body["method"], discord_uri, headers=discord_headers)
 
@@ -107,9 +105,7 @@ def discord_route(event, user_data, body):
     # check if this is a call to api/v10/users/@me/channels, and save that channel in
     # this users list of channels (these are most likely DMs, and we want to be able
     # to easily get back to DMs) without having to call this endpoint so much
-    if discord_uri.endswith("/api/v10/users/@me/channels") or discord_uri.endswith(
-        "/api/v10/users/@me/channels/"
-    ):
+    if discord_uri.endswith("/api/v10/users/@me/channels") or discord_uri.endswith("/api/v10/users/@me/channels/"):
         recipients_response = response_json["recipients"]
         recipients_list = []
         sort_key_list = []

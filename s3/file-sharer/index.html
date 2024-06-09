@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>File Sharer</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=007" />
-    <link rel="stylesheet" href="../css/loader.css?v=007" />
-    <link rel="icon" type="image/png" href="../img/favicon.png?v=007" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
+    <link rel="stylesheet" href="../css/loader.css?v=015" />
+    <link rel="icon" type="image/png" href="../img/share.favicon.png?v=015" />
     <style>
       body {
         padding-bottom: 30px;
@@ -24,7 +24,7 @@
     <div id="loading"></div>
 
     <form onsubmit="runFileUpload(event)" id="form">
-      <input type="file" id="file" name="filename" />
+      <input type="file" id="file" name="filename" primary-button/>
       <input type="submit" id="submit" value="Upload file" />
     </form>
 
@@ -37,7 +37,7 @@
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=007"></script>
+    <script src="../js/utils.js?v=015"></script>
     <script src="../js/env.js"></script>
     <script>
       if (!csrfToken) {

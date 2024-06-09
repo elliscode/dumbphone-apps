@@ -45,6 +45,8 @@ function handleAddList(event) {
   if (result.hasOwnProperty("group") && result.hasOwnProperty("item")) {
     addItem(result.group, result.item);
   }
+
+  applyEmulators(sideKeyListener);
 }
 function findFirstChildWithClass(element, className) {
   const results = element.getElementsByClassName(className);
@@ -85,6 +87,7 @@ function openShareWindow(event) {
     .innerText.trim();
   listName.setAttribute("hash", groupElement.id);
   share.style.display = "block";
+  event.stopPropagation();
 }
 function hidePopups(event) {
   let share = document.getElementById("share");
@@ -165,35 +168,40 @@ function clearCrossedOffItems(event) {
   xmlHttp.withCredentials = true;
   xmlHttp.onload = handleToggle;
   xmlHttp.send(JSON.stringify(body));
+  event.stopPropagation();
 }
 function moveUp(event) {
   hidePopups(event);
   const caller = event.target;
   let groupElement = findParentWithClass(caller, "group");
   let groupId = groupElement.id;
-  let otherGroup = groupElement.previousElementSibling;
-  if (otherGroup) {
+  let sibling = findParentWithClass(groupElement, 'group-parent').previousElementSibling;
+  if (sibling) {
+    let otherGroup = sibling.getElementsByClassName('group')[0];
     swapGroups(groupId, otherGroup.id);
     runOrderCall();
     groupElement.scrollIntoView({behavior: 'smooth', block: 'nearest'});
   }
+  event.stopPropagation();
 }
 function moveDown(event) {
   hidePopups(event);
   const caller = event.target;
   let groupElement = findParentWithClass(caller, "group");
   let groupId = groupElement.id;
-  let otherGroup = groupElement.nextElementSibling;
-  if (otherGroup) {
+  let sibling = findParentWithClass(groupElement, 'group-parent').nextElementSibling;
+  if (sibling) {
+    let otherGroup = sibling.getElementsByClassName('group')[0];
     swapGroups(otherGroup.id, groupId);
     runOrderCall();
     groupElement.scrollIntoView({behavior: 'smooth', block: 'nearest'});
   }
+  event.stopPropagation();
 }
 
 function runOrderCall() {
   let url = API_DOMAIN + "/grocery-list/set-list-order";
-  const groups = document.querySelectorAll("div#content>div.group");
+  const groups = document.querySelectorAll("div.group");
   let group_hashes = [];
   for (let index = 0; index < groups.length; index++) {
     let group = groups[index];
@@ -213,8 +221,8 @@ function handleOrderCall(event) {
 
 function swapGroups(groupOneId, groupTwoId) {
   let mainList = document.getElementById("content");
-  let groupOneLi = document.getElementById(groupOneId);
-  let groupTwoLi = document.getElementById(groupTwoId);
+  let groupOneLi = findParentWithClass(document.getElementById(groupOneId), 'group-parent');
+  let groupTwoLi = findParentWithClass(document.getElementById(groupTwoId), 'group-parent');
 
   mainList.insertBefore(groupOneLi, groupTwoLi);
 }
@@ -225,11 +233,17 @@ function addItem(group, item) {
   const groupId = group.hash;
   let groupLi = document.getElementById(groupId);
   if (!groupLi) {
+    let parent = document.createElement("div");
+    parent.style.display = 'flex';
+    parent.classList.add('group-parent');
     groupLi = document.createElement("div");
     groupLi.id = groupId;
     groupLi.classList.add("group");
+    groupLi.setAttribute('input-group-name','list');
+    groupLi.style.flexGrow = '1';
 
     let itemsList = document.createElement("h2");
+    itemsList.addEventListener('click', focusList);
     let blankItem = document.createElement("span");
     blankItem.classList.add("blank-item");
     blankItem.style.width = "114px";
@@ -277,7 +291,8 @@ function addItem(group, item) {
     let ulInIt = document.createElement("ul");
     ulInIt.classList.add("ui-list");
     groupLi.appendChild(ulInIt);
-    mainList.appendChild(groupLi);
+    parent.appendChild(groupLi);
+    mainList.appendChild(parent);
   }
 
   let itemUl = groupLi.getElementsByClassName("ui-list")[0];
@@ -288,6 +303,7 @@ function addItem(group, item) {
     let itemLi = document.createElement("li");
     itemLi.classList.add("list-item");
     itemLi.id = itemId;
+    itemLi.style.display = 'flex';
     let nameDiv = document.createElement("div");
     nameDiv.classList.add("name");
     nameDiv.innerHTML = item.name;
@@ -295,6 +311,8 @@ function addItem(group, item) {
     if (item.crossed_off) {
       nameDiv.classList.add("crossed-off");
     }
+    nameDiv.setAttribute('input-group-name', groupId);
+    nameDiv.style.flexGrow = '1';
     itemLi.appendChild(nameDiv);
     let deleteButton = document.createElement("button");
     deleteButton.onclick = deleteFromList;
@@ -391,10 +409,10 @@ if (
   navigator.userAgent.includes("Safari")
 ) {
   iosCookieRefresh();
-  setStylesheet("css/grocery-list-new.css?v=007");
+  setStylesheet("css/grocery-list-new.css?v=015");
   document.getElementById("item-text-box").addEventListener("blur", startHide);
 } else {
-  setStylesheet("css/grocery-list-old.css?v=007");
+  setStylesheet("css/grocery-list-old.css?v=015");
 }
 const loader = document.getElementById("loading");
 const dontDisplayWhileLoading = document.getElementById(
@@ -413,6 +431,8 @@ function handleGetList(event) {
   }
   loader.style.display = "none";
   dontDisplayWhileLoading.style.display = "block";
+
+  applyEmulators(sideKeyListener);
 }
 function loadList(event) {
   loader.style.display = "block";
@@ -455,6 +475,39 @@ function enterKeyListener(event) {
     document.getElementById("add").click();
     event.preventDefault();
   }
+}
+function sideKeyListener(event) {
+  if (event.type === 'keydown' && ['ArrowLeft', 'ArrowRight'].includes(event.key)) {
+    let parentDiv = findParentWithClass(event.target, 'group-parent');
+    let targetGroupName = event.target.getAttribute('input-group-name');
+    let invisibles = Array.from(parentDiv.getElementsByClassName('invisible-input'));
+    let item = undefined;
+    if (targetGroupName == 'list') {
+      item = invisibles[0];
+    } else {
+      item = invisibles.pop();
+    }
+    item.focus();
+    let checkbox = item.parentElement.getElementsByClassName('selectable')[0];
+    checkbox.classList.add('selected');
+  }
+  if (event.type == 'keyup' && ['ArrowUp','ArrowDown'].includes(event.key)) {
+    let element = event.target;
+    if (element.hasAttribute('linked-item')) {
+      element = element.parentElement.getElementsByClassName('selectable')[0];
+    }
+    if (element.getBoundingClientRect().top < 0 || element.getBoundingClientRect().bottom > (window.innerHeight - 40)) {
+      element.scrollIntoView({behavior: 'instant', block: 'start'});
+    }
+  }
+}
+function focusList(event) {
+  let parentDiv = findParentWithClass(event.target, 'group-parent');
+  let invisibles = Array.from(parentDiv.getElementsByClassName('invisible-input'));
+  let item = invisibles.pop();
+  item.focus();
+  let checkbox = item.parentElement.getElementsByClassName('selectable')[0];
+  checkbox.classList.add('selected');
 }
 loadList();
 let sharedGroupId = getParameterByName("share");

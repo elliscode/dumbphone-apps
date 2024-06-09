@@ -242,9 +242,7 @@ def deletelist_route(event, user_data, body):
             found_list = list
             break
     if found_list is None:
-        return format_response(
-            event=event, http_code=404, body="Provided list does not exist"
-        )
+        return format_response(event=event, http_code=404, body="Provided list does not exist")
 
     delete_list(found_list["key2"])
 
@@ -269,9 +267,7 @@ def deleteitem_route(event, user_data, body):
             found_list = this_list
             break
     if found_list is None:
-        return format_response(
-            event=event, http_code=404, body="Provided list does not exist"
-        )
+        return format_response(event=event, http_code=404, body="Provided list does not exist")
 
     item = body["item"]
     if item not in found_list["items"]:
@@ -360,9 +356,7 @@ def format_list_data(list_data):
         list_name = list["name"]
         items = []
         for key, value in list["items"].items():
-            items.append(
-                {"name": key, "crossed_off": value, "hash": (list_id + str(len(items)))}
-            )
+            items.append({"name": key, "crossed_off": value, "hash": (list_id + str(len(items)))})
         output[list_name] = {"hash": list_id, "name": list_name, "items": items}
     return output
 

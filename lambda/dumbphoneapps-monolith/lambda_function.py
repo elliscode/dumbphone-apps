@@ -61,6 +61,17 @@ from dumbphoneapps.utils import (
     clear_all_tokens_route,
 )
 from dumbphoneapps.weather import get_forecast_route
+from dumbphoneapps.tenor import (
+    tenor_search_route,
+)
+from dumbphoneapps.sms_scheduler import (
+    schedule_sms_route,
+    get_sms_schedules_route,
+)
+from dumbphoneapps.thermostat import (
+    get_token_from_code_route,
+    get_token_from_existing_refresh_token_route,
+)
 
 
 def lambda_handler(event, context):
@@ -137,15 +148,11 @@ def route(event):
         return get_maps_key_route(event)
     if path_equals(event=event, method="POST", path="/weather/get-forecast"):
         return get_forecast_route(event)
-    if path_equals(
-        event=event, method="POST", path="/one-offs/generate-presigned-post"
-    ):
+    if path_equals(event=event, method="POST", path="/one-offs/generate-presigned-post"):
         return generate_presigned_post(event)
     if path_equals(event=event, method="POST", path="/one-offs/generate-presigned-get"):
         return generate_presigned_get(event)
-    if path_equals(
-        event=event, method="POST", path="/one-offs/acknowledge-presigned-post-success"
-    ):
+    if path_equals(event=event, method="POST", path="/one-offs/acknowledge-presigned-post-success"):
         return acknowledge_presigned_post_success_route(event)
     if path_equals(event=event, method="POST", path="/one-offs/get-uploaded-items"):
         return gather_uploaded_items_route(event)
@@ -169,6 +176,16 @@ def route(event):
         return set_note_route(event)
     if path_equals(event=event, method="POST", path="/notes/delete"):
         return delete_note_route(event)
+    if path_equals(event=event, method="POST", path="/tenor/search"):
+        return tenor_search_route(event)
+    if path_equals(event=event, method="POST", path="/scheduler/set"):
+        return schedule_sms_route(event)
+    # if path_equals(event=event, method="POST", path="/scheduler/get"):
+    #     return get_sms_schedules_route(event)
+    if path_equals(event=event, method="POST", path="/thermostat/get-token-from-code"):
+        return get_token_from_code_route(event)
+    if path_equals(event=event, method="POST", path="/thermostat/get-token-from-existing-refresh-token"):
+        return get_token_from_existing_refresh_token_route(event)
     if path_starts_with(event=event, method="POST", path="/discord/"):
         return discord_route(event)
 

@@ -25,8 +25,8 @@ if $s3; then
 fi
 if ! $lambda && ! $s3; then
     echo "You can supply either l or s, or ls, you supplied nothing, so I will do nothing";
-    echo "e.g.";
-    echo "> sh ${ENV}-release.sh ls";
+    echo "";
+    echo "./${ENV}-release.sh ls";
 fi
 
 if $lambda; then
@@ -38,5 +38,5 @@ if $lambda; then
 fi
 
 if $s3; then
-    aws s3 sync s3 s3://daniel-townsend-dumbphoneapps${BUCKET_SUFFIX} --exclude "*/env.js"
+    aws s3 sync s3 s3://daniel-townsend-dumbphoneapps${BUCKET_SUFFIX} --exclude "*env.js" --exclude "*.DS_Store" --delete
 fi

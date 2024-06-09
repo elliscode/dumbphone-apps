@@ -14,7 +14,6 @@ function getCurrentLocation() {
     json.innerHTML = "Geolocation is not supported by this browser.";
   }
 }
-
 let locationToken = localStorage.getItem("locationToken");
 let locationTimeout = undefined;
 let lat = 0;
@@ -48,7 +47,6 @@ function showPosition(position) {
   }
   xmlHttp.send(JSON.stringify(payload));
 }
-
 function handleShare(event) {
   if (locationTimeout) {
     return;

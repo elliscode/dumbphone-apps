@@ -3,37 +3,6 @@ h1 {
   margin-bottom: 5px;
 }
 
-.ui-list {
-  list-style: none;
-  padding-left: 0px;
-  margin: 0;
-}
-
-.ui-list li {
-  padding: 5px;
-  border-radius: 20px;
-  font-size: 16px;
-}
-
-.ui-list div.name {
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-.top-list {
-  margin-top: 10px;
-}
-
-.top-list > li {
-  margin-bottom: 5px;
-  background-color: #eee;
-}
-
-.bottom-list > li {
-  background-color: #ddd;
-  margin-top: 5px;
-}
-
 li {
   position: relative;
 }
@@ -50,6 +19,8 @@ div#input > input {
 
 input.big {
   font-size: 20px;
+  flex-grow: 1;
+  min-width: 1px;
 }
 
 .delete {
@@ -114,6 +85,13 @@ td {
 #info p {
   margin: 0px;
 }
+.success {
+  display: inline-block;
+  padding: 20px;
+  border: 3px rgb(15, 209, 15) solid;
+  background-color: rgb(156, 255, 156);
+  margin-top: 1em;
+}
 .error {
   display: inline-block;
   padding: 20px;
@@ -168,7 +146,7 @@ td {
 li.selected {
   background-color: rgb(209 233 255)!important;
 }
-a.selected, input.selected, button.selected {
+a.selected, input.selected, button.selected, div.selected {
   outline: 5px auto rgb(94, 158, 214);
 }
 .invisible-input {

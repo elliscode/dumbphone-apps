@@ -269,30 +269,52 @@ function handleMessages(event) {
     inputDiv.classList.add("discord");
     inputDiv.classList.add("input-div");
 
+    let div1 = document.createElement("div");
+    div1.style.display = 'flex';
+
     refreshButton = document.createElement("button");
+    refreshButton.setAttribute("input-group-name", "controls");
     refreshButton.classList.add("input-refresh");
     refreshButton.innerText = "Refresh";
     refreshButton.style.display = "block";
     refreshButton.onclick = getMessages;
-    inputDiv.appendChild(refreshButton);
+
+    div1.appendChild(refreshButton);
+    inputDiv.appendChild(div1);
+
+
+    let div2 = document.createElement("div");
+    div2.style.flexGrow = "1";
+    div2.style.display = 'flex';
 
     textBox = document.createElement("input");
+    textBox.setAttribute("input-group-name", "controls");
+    textBox.setAttribute("primary-input","true");
     textBox.classList.add("input-text-box");
     textBox.type = "text";
     textBox.style.display = "block";
-    textBox.style.flexGrow = "1";
     textBox.style.width = "30px";
+    textBox.style.flexGrow = "1";
     textBox.id = "message-box";
     textBox.onkeyup = enterKeyListener;
-    inputDiv.appendChild(textBox);
+
+    div2.appendChild(textBox);
+    inputDiv.appendChild(div2);
+
+
+    let div3 = document.createElement("div");
+    div3.style.display = 'flex';
 
     submitButton = document.createElement("button");
+    submitButton.setAttribute("input-group-name", "controls");
     submitButton.classList.add("input-submit");
     submitButton.innerText = "Send";
     submitButton.onclick = sendMessage;
     submitButton.id = "submit";
     submitButton.style.display = "block";
-    inputDiv.appendChild(submitButton);
+
+    div3.appendChild(submitButton);
+    inputDiv.appendChild(div3);
 
     document.body.appendChild(inputDiv);
   }
@@ -333,6 +355,8 @@ function handleMessages(event) {
   };
   reloadDiv.appendChild(reloadButton);
   document.body.appendChild(reloadDiv);
+
+  applyEmulators();
 
   loader.style.display = "none";
 }
