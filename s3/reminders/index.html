@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Reminders</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=013" />
-    <link rel="stylesheet" href="../css/loader.css?v=013" />
-    <link rel="icon" type="image/png" href="../img/favicon.png?v=013" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=014" />
+    <link rel="stylesheet" href="../css/loader.css?v=014" />
+    <link rel="icon" type="image/png" href="../img/favicon.png?v=014" />
     <style>
     </style>
   </head>
@@ -15,69 +15,271 @@
       <b><a href="../index.html">Home</a></b> &gt; <b>reminders</b>
     </div>
 
-    <p>Send yourself an SMS in the future, to remind you of something important</p>
+    <div style="
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    margin-top: 15px;
+    position:relative;
+">
+      <div style="
+      position: absolute;
+      top: calc(-0.5em - 5px);
+      background-color: #fff;
+      text-align: center;
+      padding: 5px;
+      box-sizing: border-box;
+      border-radius: 5px;
+      border: 1px black solid;
+  ">How it works</div>
+    <p style="
+    margin-bottom:0px;
+">Send yourself an SMS in the future, to remind you of something important</p>
+  </div>
+    <div style="
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    margin-top: 20px;
+    position:relative;
+">
+      <div style="
+      position: absolute;
+      top: calc(-0.5em - 5px);
+      background-color: #fff;
+      text-align: center;
+      padding: 5px;
+      box-sizing: border-box;
+      border-radius: 5px;
+      border: 1px black solid;
+  ">Step 1: Set Time</div>
+      <!-- <div style="
+      padding-top: 10px;
+  ">
+        <label><input radio-group="time-group" onchange="exclusivityCallback(event)" type="radio"/>
+          Relative Time:
+          <select>
+            <option>Select a relative time</option>
+            <option>1 hour from now</option>
+            <option>3 hours from now</option>
+            <option>6 hours from now</option>
+            <option>12 hours from now</option>
+            <option>1 day from now</option>
+            <option>3 days from now</option>
+            <option>1 week from now</option>
+            <option>1 month from now</option>
+            <option>3 months from now</option>
+            <option>1 year from now</option>
+            <option>2 years from now</option>
+          </select>
+        </label>
+      </div>
+      <div style="position:relative;">
+        <hr style="
+        margin: 15px 0px;
+    ">
+        <div style="
+        position: absolute;
+        top: calc(-0.5em - 5px);
+        left: calc(1.5em);
+        width: 40px;
+        background-color: #fff;
+        text-align: center;
+        padding: 5px;
+        box-sizing: border-box;
+        border-radius: 5px;
+        border: 1px black solid;
+    ">OR</div>
+      </div> -->
+      <div style="
+      padding-top: 10px;
+  ">
+        <label>
+          <!-- <input radio-group="time-group" onchange="exclusivityCallback(event)" type="radio"/> -->
+          Date and time:
+          <input onchange="checkIfValid(event)" id="reminder-date" type="date"/>
+          <input onchange="checkIfValid(event)" id="reminder-time" type="time"/>
+        </label>
+      </div>
+    </div>
+    <div style="
+    margin-top:20px;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    position:relative;
+">
+      <div style="
+      position: absolute;
+      top: calc(-0.5em - 5px);
+      background-color: #fff;
+      text-align: center;
+      padding: 5px;
+      box-sizing: border-box;
+      border-radius: 5px;
+      border: 1px black solid;
+  ">Step 2: Set Message</div>
+      <div style="
+      padding-top: 15px;
+  ">
+        <input onkeypress="checkIfValid(event)" id="reminder-text" style="
+        box-sizing:border-box;
+        width:100%;
+" type="text"/>
+      </div>
+    </div>
+    <div style="
+    display:flex;
+    justify-content: flex-start;
+">
+      <button id="create-button" disabled onclick="createReminder(event)" style="
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+      position:relative;
+  ">Step 3: Create Reminder</button>
+    </div>
 
-    <div id="reminders"></div>
+    <div style="
+    display:none;
+    margin-top:0px;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    position:relative;
+">
+      <p style="margin:0px;" id="status"></p>
+    </div>
+
+<!-- <div style="
+margin-top:10px;
+border: 1px solid black;
+border-radius: 5px;
+padding: 10px;
+margin-bottom: 10px;
+position:relative;
+">
+  <div style="
+  position: absolute;
+  top: calc(-0.5em - 5px);
+  background-color: #fff;
+  text-align: center;
+  padding: 5px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  border: 1px black solid;
+">Existing Reminders</div>
+  <div id="reminders" style="
+  padding-top: 10px;
+">
+<div class="existing-reminder">
+  <span></span>
+</div>
+  </div>
+</div> -->
 
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=013"></script>
+    <script src="../js/utils.js?v=014"></script>
     <script src="../js/env.js"></script>
     <script>
 const remindersDiv = document.getElementById('reminders');
 
+applyEmulators();
+
+// function exclusivityCallback(event) {
+//   let radioGroupName = event.target.getAttribute('radio-group');
+//   let allRadios = document.querySelectorAll(`[radio-group="${radioGroupName}"]`);
+//   for (let radio of allRadios) {
+//     if (radio == event.target) {
+//     for (let item of Array.from(radio.parentElement.children)) {
+//       item.removeAttribute('disabled');
+//     }
+//       continue;
+//     }
+//     radio.checked = false;
+//     for (let item of Array.from(radio.parentElement.children)) {
+//       if (item == radio) {
+//         continue;
+//       }
+//       item.setAttribute('disabled', 'true');
+//     }
+//   }
+//   checkIfValid(event);
+// }
+
+const createButton = document.getElementById('create-button');
+const reminderDate = document.getElementById('reminder-date');
+const reminderTime = document.getElementById('reminder-time');
+const reminderText = document.getElementById('reminder-text');
+
+const status = document.getElementById('status');
+
+function checkIfValid(event) {
+  if (!reminderDate.value || !reminderTime.value) {
+    createButton.setAttribute('disabled', 'true');
+    return false;
+  }
+
+  let selectedDateUnixTimeMs = Date.parse(`${reminderDate.value}T${reminderTime.value}:00`);
+  let currentTimeUnixTimeMs = Date.now();
+
+  if (selectedDateUnixTimeMs < currentTimeUnixTimeMs) {
+    createButton.setAttribute('disabled', 'true');
+    return false;
+  }
+
+  if (!reminderText.value) {
+    createButton.setAttribute('disabled', 'true');
+    return false;
+  }
+
+  createButton.removeAttribute('disabled');
+  return true;
+}
+
 function createReminder(event) {
-  let payload = { csrf: csrfToken };
-  let url = API_DOMAIN + "/scheduler/set";
-  xmlHttp = new XMLHttpRequest();
-  xmlHttp.open("POST", url, true);
+  if (!checkIfValid(event)) {
+    return;
+  }
+  let submissionTime = (new Date(Date.parse(`${reminderDate.value}T${reminderTime.value}:00`))).toISOString().substring(0, 19);
+  let submissionMessage = reminderText.value;
+  // clear before sending
+  reminderDate.value = '';
+  reminderTime.value = '';
+  reminderText.value = '';
+  checkIfValid(event);
+
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/scheduler/set", true);
   xmlHttp.withCredentials = true;
   xmlHttp.onload = handleCreateReminder;
-  xmlHttp.onerror = handleCreateReminder;
-  xmlHttp.send(JSON.stringify(payload));
+  xmlHttp.send(
+    JSON.stringify({
+      csrf: csrfToken,
+      time: submissionTime,
+      message: submissionMessage
+    })
+  );
 }
 
 function handleCreateReminder(event) {
-  while (resultsDiv.firstElementChild) {
-    resultsDiv.firstElementChild.remove();
-  }
   let result = defaultHandler(event);
-  console.log(result.responseJson);
-  const allItems = result.responseJson.results.results;
-  let firstDiv = undefined;
-  for (let item of allItems) {
-    let div = document.createElement('div');
-    let a = document.createElement('a');
-    a.classList.add('search-result');
-    a.href = "sms://?&body=" + encodeURIComponent(item.url); 
-    a.setAttribute('input-group-name', 'search');
-    let img = document.createElement('img');
-    img.src = item.media_formats.nanogif.url;
-    a.appendChild(img);
-    div.appendChild(a);
-    resultsDiv.appendChild(div);
-    if (!firstDiv) {
-      firstDiv = div;
-    }
+  status.parentElement.style.display = 'block';
+  status.parentElement.classList.remove('error');
+  status.parentElement.classList.remove('success');
+  if (result.statusCode == 200) {
+    status.innerText = 'Successfully created a reminder';
+    status.parentElement.classList.add('success');
+  } else {
+    status.innerText = 'Failed due to internal server error';
+    status.parentElement.classList.add('error');
   }
-  let div = document.createElement('div');
-  let button = document.createElement('button');
-  button.addEventListener('click', runSearch);
-  button.setAttribute('pos', result.responseJson.results.next);
-  button.innerText = "Load next 5";
-  button.setAttribute('input-group-name', 'search');
-  div.appendChild(button);
-  resultsDiv.appendChild(div);
-  applyEmulators(enterCallback);
-  let invisibleBox = firstDiv.getElementsByClassName('invisible-input')[0];
-  invisibleBox.focus();
-  let itemToHighlight = firstDiv.getElementsByClassName('selectable')[0];
-  itemToHighlight.classList.add('selected');
-  itemToHighlight.scrollIntoView({behavior: 'instant', block: 'start'});
 }
-
-applyEmulators(enterCallback);
     </script>
   </body>
 </html>

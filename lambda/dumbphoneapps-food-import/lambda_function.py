@@ -104,21 +104,12 @@ def import_diary_v3():
                         python_item = dynamo_obj_to_python_obj(item)
                         # print(python_item)
                         for food_id_thing in python_item["food_ids"]:
-                            if (
-                                re.sub(
-                                    "\\s+", " ", food_id_thing["name"].lower().strip()
-                                )
-                                == token
-                            ):
+                            if re.sub("\\s+", " ", food_id_thing["name"].lower().strip()) == token:
                                 response = dynamo.get_item(
                                     TableName=TABLE_NAME,
-                                    Key=python_obj_to_dynamo_obj(
-                                        {"key1": "food", "key2": food_id_thing["hash"]}
-                                    ),
+                                    Key=python_obj_to_dynamo_obj({"key1": "food", "key2": food_id_thing["hash"]}),
                                 )
-                                food_map[token] = dynamo_obj_to_python_obj(
-                                    response["Item"]
-                                )
+                                food_map[token] = dynamo_obj_to_python_obj(response["Item"])
                                 break
                 found_item = food_map.get(token)
                 if not found_item:
@@ -148,9 +139,7 @@ def import_diary_v3():
                         continue
 
                 calories = (
-                    float(multiplier)
-                    * float(found_serving["multiplier"])
-                    * float(found_item["metadata"]["calories"])
+                    float(multiplier) * float(found_serving["multiplier"]) * float(found_item["metadata"]["calories"])
                 )
 
                 date_string = time.strftime("%Y-%m-%d", time_value)
@@ -480,9 +469,7 @@ def query_foods_legacy():
     dynamo = boto3.client("dynamodb")
     response = dynamo.query(
         TableName=TABLE_NAME,
-        KeyConditions={
-            "key1": {"AttributeValueList": [{"S": "food"}], "ComparisonOperator": "EQ"}
-        },
+        KeyConditions={"key1": {"AttributeValueList": [{"S": "food"}], "ComparisonOperator": "EQ"}},
         QueryFilter={
             "name": {
                 "AttributeValueList": [{"S": "chicken"}],
@@ -697,7 +684,4 @@ def python_obj_to_dynamo_obj(python_obj: dict) -> dict:
 
 
 def create_id(length):
-    return "".join(
-        secrets.choice(digits + lowercase_letters + uppercase_letters)
-        for i in range(length)
-    )
+    return "".join(secrets.choice(digits + lowercase_letters + uppercase_letters) for i in range(length))

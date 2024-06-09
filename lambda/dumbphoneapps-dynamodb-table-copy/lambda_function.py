@@ -26,9 +26,7 @@ def lambda_handler(event, context):
         for item in response["Items"]:
             items.append({"PutRequest": {"Item": item}})
             if len(items) >= 25:
-                response = dynamo.batch_write_item(
-                    RequestItems={DESTINATION_TABLE: items}
-                )
+                response = dynamo.batch_write_item(RequestItems={DESTINATION_TABLE: items})
                 items = []
                 print(response)
         if len(items) > 0:

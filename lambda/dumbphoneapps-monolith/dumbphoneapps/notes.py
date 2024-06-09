@@ -15,9 +15,7 @@ def parse_message_as_note(msg_text, user_data, from_number):
     phone = user_data["key2"]
     dynamo.put_item(
         TableName=TABLE_NAME,
-        Item=python_obj_to_dynamo_obj(
-            {"key1": f"note_{phone}", "key2": current_date_with_dots, "note": msg_text}
-        ),
+        Item=python_obj_to_dynamo_obj({"key1": f"note_{phone}", "key2": current_date_with_dots, "note": msg_text}),
     )
     return {
         "phone": from_number,
@@ -60,9 +58,7 @@ def set_note_route(event, user_data, body):
     phone = user_data["key2"]
     response = dynamo.put_item(
         TableName=TABLE_NAME,
-        Item=python_obj_to_dynamo_obj(
-            {"key1": f"note_{phone}", "key2": note_id, "note": body["note"]}
-        ),
+        Item=python_obj_to_dynamo_obj({"key1": f"note_{phone}", "key2": note_id, "note": body["note"]}),
     )
 
     return format_response(

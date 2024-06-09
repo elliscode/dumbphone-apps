@@ -234,9 +234,7 @@ def parse_message_as_grocery_items(msg_text, from_number):
         event["headers"] = {}
         event["headers"]["origin"] = ""
 
-        add_response = additem(
-            event, {"key2": from_number}, {"name": group, "item": item}
-        )
+        add_response = additem(event, {"key2": from_number}, {"name": group, "item": item})
 
         print(add_response)
 

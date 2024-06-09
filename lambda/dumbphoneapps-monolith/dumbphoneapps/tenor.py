@@ -42,9 +42,7 @@ def tenor_search_route(event, user_data, body):
             },
         )
 
-    uri = (
-        f"https://tenor.googleapis.com/v2/search?q={query}&key={TENOR_API_KEY}&limit=5"
-    )
+    uri = f"https://tenor.googleapis.com/v2/search?q={query}&key={TENOR_API_KEY}&limit=5"
     if body.get("pos"):
         uri = uri + f"&pos={body.get('pos')}"
     print(uri)

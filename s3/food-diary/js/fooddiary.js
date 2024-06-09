@@ -1110,7 +1110,17 @@ function servingsArrowCallback(event) {
     select.selectedIndex = newIndex;
   }
 }
-
+function numberPadListener(event) {
+  let content = document.getElementById('content');
+  if (event.key === '*' && content.style.display != 'none') {
+    let totalsModal = document.getElementById('totals-modal');
+    if (totalsModal.style.display != 'none') {
+      closeModalIfApplicable( { target: findParentWithClass(totalsModal, 'modal-bg') } );
+    } else {
+      showTotalsModal();
+    }
+  }
+}
+document.addEventListener('keyup',numberPadListener);
 const loader = document.getElementById("loading");
-
 applyEmulators();

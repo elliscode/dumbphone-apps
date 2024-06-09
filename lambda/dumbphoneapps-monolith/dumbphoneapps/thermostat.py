@@ -55,8 +55,8 @@ def get_token_from_code_route(event, user_data, body):
             event=event,
             http_code=google_token_response.status,
             body={
-                "access_token": google_token_response_json['access_token'],
-                "expires_in": google_token_response_json['expires_in'],
+                "access_token": google_token_response_json["access_token"],
+                "expires_in": google_token_response_json["expires_in"],
             },
         )
     else:
@@ -94,8 +94,8 @@ def get_token_from_existing_refresh_token_route(event, user_data, body):
             event=event,
             http_code=google_token_response.status,
             body={
-                "access_token": google_token_response_json['access_token'],
-                "expires_in": google_token_response_json['expires_in'],
+                "access_token": google_token_response_json["access_token"],
+                "expires_in": google_token_response_json["expires_in"],
             },
         )
     else:
