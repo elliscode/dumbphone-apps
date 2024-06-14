@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SMS Reminders</title>
+    <title>Timestamp Logger</title>
     <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
     <link rel="stylesheet" href="../css/loader.css?v=015" />
     <link rel="icon" type="image/png" href="../img/alarm.favicon.png?v=015" />
@@ -12,47 +12,44 @@
 
   <body>
     <div>
-      <b><a href="../index.html">Home</a></b> &gt; <b>sms-reminders</b>
+      <b><a href="../index.html">Home</a></b> &gt; <b>timestamp-logger</b>
+    </div>
+
+    <div class="controls">
+      <button onclick="openReport(event)">Report</button>
+      <button onclick="openSettings(event)">Edit</button>
+      <button onclick="logOut(event)">Log out</button>
+    </div>
+
+    <div style="display: inline">
+      <input onchange="getAnswers(event)" id="date-picker" type="date" />
     </div>
 
     <div class="rounded-block">
       <div class="rounded-title">How it works</div>
-    <p style="
-    margin-bottom:0px;
-">Send yourself an SMS in the future, to remind you of something important</p>
-  </div>
-    <div class="rounded-block">
-      <div class="rounded-title">Step 1: Set Time</div>
-      <div style="
-      padding-top: 10px;
-  ">
-        <label>
-          Date and time:
-          <input onchange="checkIfValid(event)" id="reminder-date" type="date"/>
-          <input onchange="checkIfValid(event)" id="reminder-time" type="time"/>
-        </label>
+      <ol style="margin-bottom:0px;">
+        <li>Create timestamps by pressing the "Edit" button</li>
+        <li>Press the "Log" button to set a value for a timestmp</li>
+      </ol>
+    </div>
+
+    <div id="loading">
+      <div class="lds-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
       </div>
     </div>
-    <div class="rounded-block">
-      <div class="rounded-title">Step 2: Set Message</div>
-      <div style="padding-top: 15px;">
-        <input oninput="checkIfValid(event)" id="reminder-text" style="box-sizing:border-box; width:100%;" type="text"/>
-      </div>
-    </div>
 
-
-
-    <div class="rounded-block-without-title" style="display:none;">
-      <p style="margin:0px;" id="status"></p>
-    </div>
-
-    <div style="display:flex; justify-content: flex-start;">
-      <button id="create-button" disabled onclick="createReminder(event)" class="rounded-button">Step 3: Create Reminder</button>
-    </div>
-
-    <div class="logout">
-      <button onclick="logOut(event)">Log out</button>
-    </div>
     <script src="../js/utils.js?v=015"></script>
     <script src="../js/env.js"></script>
     <script>

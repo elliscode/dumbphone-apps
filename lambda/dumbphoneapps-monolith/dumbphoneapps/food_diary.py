@@ -313,7 +313,7 @@ def set_serving_route(event, user_data, body):
     for value_key in ALL_VALUE_KEYS:
         serving_item["calculated_values"][value_key] = f"{determined_multiplier * float(food['metadata'][value_key])}"
     serving_item["calculated_values"]["serving_amount"] = f"{body_amount}"
-    serving_item["calculated_values"]["serving_name"] = f"{found_food_serving['name']}"
+    serving_item["calculated_values"]["serving_name"] = f"{found_food_serving['name']}".strip()
     serving_item["multiplier"] = f"{determined_multiplier}"
     serving_item["unit"] = body_unit
     diary_entry["entries"][body["timestamp"]] = serving_item
@@ -487,7 +487,7 @@ def add_route(event, user_data, body):
             float(actual_serving["amount"]) * float(serving_entry["multiplier"]) / float(actual_serving["multiplier"])
         )
         calculated_values["serving_amount"] = f"{serving_amount:g}"
-        calculated_values["serving_name"] = f"{serving_entry['unit']}"
+        calculated_values["serving_name"] = f"{serving_entry['unit']}".strip()
 
         new_diary_entry = {
             "name": f'{food_item["name"]}',
