@@ -80,7 +80,7 @@ def get_values_route(event, user_data, body):
         return format_response(
             event=event,
             http_code=200,
-            body={"values": {}},
+            body={"timestamp": 0, "values": {}},
         )
 
     values = dynamo_obj_to_python_obj(response["Item"])
@@ -89,13 +89,13 @@ def get_values_route(event, user_data, body):
         return format_response(
             event=event,
             http_code=200,
-            body={"values": {}},
+            body={"timestamp": 0, "values": {}},
         )
 
     return format_response(
         event=event,
         http_code=200,
-        body={"values": values["values"]},
+        body={"timestamp": values.get("timestamp", 0), "values": values["values"]},
     )
 
 
@@ -149,6 +149,15 @@ def get_report_data_route(event, user_data, body):
 def set_values_route(event, user_data, body):
     phone = user_data["key2"]
 
+    if "timestamp" not in body or not str(body["timestamp"]).isnumeric():
+        return format_response(
+            event=event,
+            http_code=400,
+            body="You need to provide an integer timestamp which the update was made",
+        )
+
+    timestamp = str(body["timestamp"])
+
     if "values" not in body or not body["values"]:
         return format_response(
             event=event,
@@ -166,6 +175,7 @@ def set_values_route(event, user_data, body):
     python_data = {
         "key1": f"timestamp_values_{phone}",
         "key2": date,
+        "timestamp": timestamp,
         "values": values,
     }
     dynamo_data = python_obj_to_dynamo_obj(python_data)
@@ -178,4 +188,55 @@ def set_values_route(event, user_data, body):
         event=event,
         http_code=201,
         body="Successfully wrote all values to the database",
+    )
+
+
+@authenticate
+def set_relationships_route(event, user_data, body):
+    phone = user_data["key2"]
+
+    timestamps_entry = {
+        "key1": f"timestamp_relationships_{phone}",
+        "key2": f"{int(time.time())}",
+        "relationships": body["relationships"],
+    }
+
+    dynamo.put_item(
+        TableName=TABLE_NAME,
+        Item=python_obj_to_dynamo_obj(timestamps_entry),
+    )
+
+    return format_response(
+        event=event,
+        http_code=201,
+        body="Successfully wrote timestamp events to database",
+    )
+
+
+@authenticate
+def get_relationships_route(event, user_data, body):
+    phone = user_data["key2"]
+
+    response = dynamo.query(
+        TableName=TABLE_NAME,
+        KeyConditions={
+            "key1": {
+                "AttributeValueList": [{"S": f"timestamp_relationships_{phone}"}],
+                "ComparisonOperator": "EQ",
+            },
+        },
+        ScanIndexForward=False,
+    )
+
+    latest_timestamps = []
+    for item in response["Items"]:
+        python_item = dynamo_obj_to_python_obj(item)
+        print(python_item)
+        latest_timestamps = python_item["relationships"]
+        break
+
+    return format_response(
+        event=event,
+        http_code=200,
+        body={"relationships": latest_timestamps},
     )
