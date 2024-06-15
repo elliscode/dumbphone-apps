@@ -97,9 +97,6 @@ const loader = document.getElementById("loading");
 const notes = document.getElementById("notes");
 const noteNameSpan = document.getElementById('note-name');
 const confirmModal = document.getElementById('confirm');
-if (!csrfToken) {
-  window.location.replace("../signup.html");
-}
 if (
   !navigator.userAgent.includes("Chrome") &&
   navigator.userAgent.includes("Safari")

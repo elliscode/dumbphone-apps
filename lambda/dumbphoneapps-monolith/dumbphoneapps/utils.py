@@ -290,7 +290,7 @@ def otp_route(event):
 
 
 def alert_admin_of_new_user(phone):
-    # generate and send message if you are creating a new otp
+    # generate and send message if you are creating a new user
     message = {
         "phone": ADMIN_PHONE,
         "message": f"A new user has joined dumbphoneapps!\n\nPhone: {phone}",
@@ -409,3 +409,12 @@ def generate_query_parameters(params):
         output += separator + urllib.parse.quote(str(key)) + "=" + urllib.parse.quote(str(value))
         separator = "&"
     return output
+
+
+@authenticate
+def logged_in_check_route(event, user_data, body):
+    return format_response(
+        event=event,
+        http_code=200,
+        body="You are logged in",
+    )

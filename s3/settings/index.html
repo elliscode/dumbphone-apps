@@ -68,15 +68,13 @@ function logoutAll(event) {
 function handle(event) {
   logOut(event);
 }
-if (!csrfToken) {
-  window.location.replace("../signup.html");
-}
 if (
   !navigator.userAgent.includes("Chrome") &&
   navigator.userAgent.includes("Safari")
 ) {
   iosCookieRefresh();
 }
+checkIfLoggedIn();
 loader.style.display = "none";
     </script>
   </body>

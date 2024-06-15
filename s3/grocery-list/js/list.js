@@ -401,9 +401,6 @@ function setStylesheet(uri) {
 
   head.appendChild(link);
 }
-if (!csrfToken) {
-  window.location.replace("../signup.html");
-}
 if (
   !navigator.userAgent.includes("Chrome") &&
   navigator.userAgent.includes("Safari")

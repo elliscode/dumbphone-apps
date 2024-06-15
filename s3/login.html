@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dumbphone Apps</title>
     <link rel="stylesheet" href="css/stylesheet.css?v=015" />
+    <link rel="stylesheet" href="css/loader.css?v=015" />
     <link rel="icon" type="image/png" href="img/phone.favicon.png?v=015" />
     <style>
       body {
@@ -32,52 +33,74 @@
         <label for="otp">OTP:</label>
         <input style="width:calc(100vw - 24px)" class="big" type="tel" id="otp" name="otp" />
       </p>
-      <button type="submit">Log In</button>
+      <button id="log-in-button" type="submit">Log In</button>
     </form>
     <div style="display: none" id="message" class="spacing error"></div>
+    <div id="loading" style="display:none;">
+      <div class="lds-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
     <script src="js/utils.js?v=015"></script>
     <script src="js/env.js"></script>
     <script>
-      const messageDiv = document.getElementById("message");
-      let xmlHttp = undefined;
-      function sendOtp(event) {
-        event.preventDefault();
-        const phone = document.getElementById("phone").value;
-        const otp = document.getElementById("otp").value;
+const loader = document.getElementById("loading");
+const signInButton = document.getElementById("log-in-button");
+const messageDiv = document.getElementById("message");
+let xmlHttp = undefined;
+function sendOtp(event) {
+  signInButton.setAttribute('disabled', 'true');
+  loader.style.display = 'block';
+  event.preventDefault();
+  const phone = document.getElementById("phone").value;
+  const otp = document.getElementById("otp").value;
 
-        let url = API_DOMAIN + "/login";
-        xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("POST", url, true); // false for synchronous request
-        xmlHttp.withCredentials = true;
-        xmlHttp.onload = handle;
-        xmlHttp.send(JSON.stringify({ phone: phone, otp: otp }));
+  let url = API_DOMAIN + "/login";
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true); // false for synchronous request
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handle;
+  xmlHttp.send(JSON.stringify({ phone: phone, otp: otp }));
+}
+function handle(event) {
+  let xmlHttp = event.target;
+  if (xmlHttp.status == 200) {
+    const csrfToken = xmlHttp.getResponseHeader("x-csrf-token");
+    localStorage.setItem("dumbphoneapps-csrf-token", csrfToken);
+    window.location.replace("index.html");
+  } else {
+    let result = JSON.parse(xmlHttp.responseText);
+    if (result.hasOwnProperty("message")) {
+      messageDiv.style.display = "block";
+      messageDiv.textContent = result.message;
+      if (result.message.includes("expired")) {
+        setTimeout(function () {
+          window.location.replace("/signup.html");
+        }, 2000);
       }
-      function handle(event) {
-        let xmlHttp = event.target;
-        if (xmlHttp.status == 200) {
-          const csrfToken = xmlHttp.getResponseHeader("x-csrf-token");
-          localStorage.setItem("dumbphoneapps-csrf-token", csrfToken);
-          window.location.replace("index.html");
-        } else {
-          let result = JSON.parse(xmlHttp.responseText);
-          if (result.hasOwnProperty("message")) {
-            messageDiv.style.display = "block";
-            messageDiv.textContent = result.message;
-            if (result.message.includes("expired")) {
-              setTimeout(function () {
-                window.location.replace("/signup.html");
-              }, 2000);
-            }
-          }
-        }
-      }
-      function fillOutPhoneNumberBoxWithSearchParam() {
-        const username = getParameterByName("username");
-        if (!!username) {
-          document.getElementById("phone").value = username;
-        }
-      }
-      fillOutPhoneNumberBoxWithSearchParam();
+    }
+    signInButton.removeAttribute('disabled');
+    loader.style.display = 'none';
+  }
+}
+function fillOutPhoneNumberBoxWithSearchParam() {
+  const username = getParameterByName("username");
+  if (!!username) {
+    document.getElementById("phone").value = username;
+  }
+}
+fillOutPhoneNumberBoxWithSearchParam();
     </script>
   </body>
 </html>

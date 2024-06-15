@@ -59,6 +59,7 @@ from dumbphoneapps.utils import (
     ios_cookie_refresh_route,
     path_starts_with,
     clear_all_tokens_route,
+    logged_in_check_route,
 )
 from dumbphoneapps.weather import get_forecast_route
 from dumbphoneapps.tenor import (
@@ -107,6 +108,8 @@ def route(event):
         return login_route(event)
     if path_equals(event=event, method="POST", path="/logout-all"):
         return clear_all_tokens_route(event)
+    if path_equals(event=event, method="POST", path="/logged-in-check"):
+        return logged_in_check_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/get-list"):
         return getlist_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/add-item"):

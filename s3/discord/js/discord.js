@@ -856,9 +856,6 @@ function renderHistory() {
   historyElement.scrollTo(historyElement.scrollWidth, 0);
 }
 
-if (!csrfToken) {
-  window.location.replace("../signup.html");
-}
 if (
   !navigator.userAgent.includes("Chrome") &&
   navigator.userAgent.includes("Safari")

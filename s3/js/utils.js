@@ -68,6 +68,20 @@ function getParameterByName(name, url = window.location.href) {
   if (!results[2]) return "";
   return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
+function checkIfLoggedIn(event) {
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/logged-in-check", true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleCheckIfLoggedIn;
+  xmlHttp.send(
+    JSON.stringify({
+      csrf: csrfToken
+    })
+  );
+}
+function handleCheckIfLoggedIn(event) {
+  const result = defaultHandler(event);
+}
 function iosCookieRefresh(event) {
   let cookieRefreshTime = localStorage.getItem(
     "dumbphoneapps-cookie-refresh-time"

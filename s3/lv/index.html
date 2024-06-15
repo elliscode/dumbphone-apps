@@ -51,164 +51,164 @@
     <script src="../js/utils.js?v=015"></script>
     <script src="../js/env.js"></script>
     <script>
-      if (!!csrfToken) {
-        document.getElementsByClassName("logout")[0].style.display = "block";
-      }
+if (!!csrfToken) {
+  document.getElementsByClassName("logout")[0].style.display = "block";
+}
 
-      const locationToken = getParameterByName("id");
-      const json = document.getElementById("json");
-      const info = document.getElementById("info");
-      const TIME_LIMIT = 60 * 60;
-      let locationTimeout = undefined;
+const locationToken = getParameterByName("id");
+const json = document.getElementById("json");
+const info = document.getElementById("info");
+const TIME_LIMIT = 60 * 60;
+let locationTimeout = undefined;
 
-      let resumeButton = document.getElementById("resume");
+let resumeButton = document.getElementById("resume");
 
-      function resumeLocation(event) {
-        resumeButton.style.display = "none";
-        if (locationTimeout) {
-          return;
-        }
-        previousValues = [];
-        info.innerText = "Resuming location...";
-        info.style.display = 'block';
-        getCurrentLocation();
-      }
+function resumeLocation(event) {
+  resumeButton.style.display = "none";
+  if (locationTimeout) {
+    return;
+  }
+  previousValues = [];
+  info.innerText = "Resuming location...";
+  info.style.display = 'block';
+  getCurrentLocation();
+}
 
-      function getMapsApiKey() {
-        locationTimeout = undefined;
+function getMapsApiKey() {
+  locationTimeout = undefined;
 
-        let url = API_DOMAIN + "/one-offs/get-maps-key";
-        let xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("POST", url, true); // false for synchronous request
-        xmlHttp.onload = handleToken;
-        if (!locationToken) {
-          return;
-        }
-        xmlHttp.send(JSON.stringify({ locationToken: locationToken }));
-      }
+  let url = API_DOMAIN + "/one-offs/get-maps-key";
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true); // false for synchronous request
+  xmlHttp.onload = handleToken;
+  if (!locationToken) {
+    return;
+  }
+  xmlHttp.send(JSON.stringify({ locationToken: locationToken }));
+}
 
-      function handleToken(event) {
-        let xmlHttp = event.target;
+function handleToken(event) {
+  let xmlHttp = event.target;
 
-        if (xmlHttp.status != 200) {
-          json.innerText = "No location found for the token provided";
-        } else {
-          let responseJson = JSON.parse(xmlHttp.responseText);
-          apiKey = responseJson.key;
-          if (window.isES6) {
-            let scriptTag = document.createElement("script");
-            scriptTag.src = "js/map.js";
-            document.body.appendChild(scriptTag);
-          }
-        }
-      }
+  if (xmlHttp.status != 200) {
+    json.innerText = "No location found for the token provided";
+  } else {
+    let responseJson = JSON.parse(xmlHttp.responseText);
+    apiKey = responseJson.key;
+    if (window.isES6) {
+      let scriptTag = document.createElement("script");
+      scriptTag.src = "js/map.js";
+      document.body.appendChild(scriptTag);
+    }
+  }
+}
 
-      function getCurrentLocation() {
-        locationTimeout = undefined;
+function getCurrentLocation() {
+  locationTimeout = undefined;
 
-        let url = API_DOMAIN + "/one-offs/get-location";
-        let xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("POST", url, true); // false for synchronous request
-        xmlHttp.onload = handleShare;
-        if (!locationToken) {
-          return;
-        }
-        xmlHttp.send(JSON.stringify({ locationToken: locationToken }));
-      }
+  let url = API_DOMAIN + "/one-offs/get-location";
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true); // false for synchronous request
+  xmlHttp.onload = handleShare;
+  if (!locationToken) {
+    return;
+  }
+  xmlHttp.send(JSON.stringify({ locationToken: locationToken }));
+}
 
-      let previousValues = [];
+let previousValues = [];
 
-      function handleShare(event) {
-        if (locationTimeout) {
-          return;
-        }
+function handleShare(event) {
+  if (locationTimeout) {
+    return;
+  }
 
-        let xmlHttp = event.target;
+  let xmlHttp = event.target;
 
-        if (xmlHttp.status != 200) {
-          json.innerText = "No location found for the token provided";
-        } else {
-          let responseJson = JSON.parse(xmlHttp.responseText);
-          lat = responseJson.lat;
-          lon = responseJson.lon;
+  if (xmlHttp.status != 200) {
+    json.innerText = "No location found for the token provided";
+  } else {
+    let responseJson = JSON.parse(xmlHttp.responseText);
+    lat = responseJson.lat;
+    lon = responseJson.lon;
 
-          let value = `${lat},${lon}`;
+    let value = `${lat},${lon}`;
 
-          let timestamp = new Date();
+    let timestamp = new Date();
 
-          json.innerHTML =
-            '<a href="https://www.google.com/maps/search/?api=1&query=' +
-            value +
-            '">Click here for directions</a>';
-          info.innerText = `last updated ${timestamp.toLocaleString()}`;
-          info.style.display = 'none';
-          if (window.isES6) {
-            moveMarker();
-          }
+    json.innerHTML =
+      '<a href="https://www.google.com/maps/search/?api=1&query=' +
+      value +
+      '">Click here for directions</a>';
+    info.innerText = `last updated ${timestamp.toLocaleString()}`;
+    info.style.display = 'none';
+    if (window.isES6) {
+      moveMarker();
+    }
 
-          previousValues.push(value);
-          if (previousValues.length > 6) {
-            previousValues.shift();
-          }
+    previousValues.push(value);
+    if (previousValues.length > 6) {
+      previousValues.shift();
+    }
 
-          if (
-            previousValues.length == 6 &&
-            previousValues.every((val) => val === previousValues[0])
-          ) {
-            info.innerText =
-              "Reported position hasn't changed for the last 60 seconds, assuming the user stopped sharing...";
-            info.style.display = 'block';
-            resumeButton.style.display = "block";
-            return;
-          }
+    if (
+      previousValues.length == 6 &&
+      previousValues.every((val) => val === previousValues[0])
+    ) {
+      info.innerText =
+        "Reported position hasn't changed for the last 60 seconds, assuming the user stopped sharing...";
+      info.style.display = 'block';
+      resumeButton.style.display = "block";
+      return;
+    }
 
-          locationTimeout = setTimeout(getCurrentLocation, 10000);
-        }
-      }
+    locationTimeout = setTimeout(getCurrentLocation, 10000);
+  }
+}
 
-      const loader = document.getElementById("loading");
-      loader.style.display = "none";
+const loader = document.getElementById("loading");
+loader.style.display = "none";
 
-      let map;
-      let marker;
-      let apiKey;
-      let lat;
-      let lon;
+let map;
+let marker;
+let apiKey;
+let lat;
+let lon;
 
-      let moveMarker = function () {};
+let moveMarker = function () {};
 
-      getMapsApiKey();
-      getCurrentLocation();
+getMapsApiKey();
+getCurrentLocation();
     </script>
     <script>
-      // checking if the browser has es6 capability, and only then will
-      // i run the google map display code. This is for compatibility with
-      // KaiOS 2.5.2 and earlier, as the maps code uses ES6 stuff that I
-      // cannot remove, see here https://stackoverflow.com/a/64818146
+// checking if the browser has es6 capability, and only then will
+// i run the google map display code. This is for compatibility with
+// KaiOS 2.5.2 and earlier, as the maps code uses ES6 stuff that I
+// cannot remove, see here https://stackoverflow.com/a/64818146
 
-      // Arrow functions support
-      () => {};
+// Arrow functions support
+() => {};
 
-      // Class support
-      class __ES6FeatureDetectionTest {}
+// Class support
+class __ES6FeatureDetectionTest {}
 
-      // Object initializer property and method shorthands
-      let a = true;
-      let b = {
-        a,
-        c() {
-          return true;
-        },
-        d: [1, 2, 3]
-      };
+// Object initializer property and method shorthands
+let a = true;
+let b = {
+  a,
+  c() {
+    return true;
+  },
+  d: [1, 2, 3]
+};
 
-      // Object destructuring
-      let { c, d } = b;
+// Object destructuring
+let { c, d } = b;
 
-      // Spread operator
-      let e = [...d, 4];
+// Spread operator
+let e = [...d, 4];
 
-      window.isES6 = true;
+window.isES6 = true;
     </script>
   </body>
 </html>

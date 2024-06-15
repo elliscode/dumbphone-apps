@@ -2,7 +2,7 @@ function addToList(event) {
   const caller = event.target;
 
   const hash = caller.getAttribute("hash");
-  const date = document.getElementById("date-picker").value;
+  const date = datePicker.value;
 
   if (!hash) {
     // print something like "hey you need to pick a food" or 
@@ -556,7 +556,7 @@ function saveFood(event) {
     document.activeElement.blur();
   }
   const key = event.target.getAttribute("key");
-  const date = document.getElementById("date-picker").value;
+  const date = datePicker.value;
   const timestamp = event.target.getAttribute("timestamp");
   let payload = {
     key: key,
@@ -681,7 +681,7 @@ function createServing(event) {
 function saveRecipe(event) {
   const timestamp = undefined;
   const hash = currentFood.hash;
-  const date = document.getElementById("date-picker").value;
+  const date = datePicker.value;
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/food-diary/set-food", true);
   xmlHttp.withCredentials = true;
@@ -728,7 +728,7 @@ function setDate(event) {
   const textBox = textBoxParent.firstElementChild;
   textBox.value = "";
 
-  const date = document.getElementById("date-picker").value;
+  const date = datePicker.value;
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/food-diary/get-day", true);
   xmlHttp.withCredentials = true;
@@ -879,34 +879,6 @@ function forceToDecimal(event) {
   textBox.value = textBox.value.replace(/[^\d]+/g, ".");
 }
 
-const today = new Date();
-const year = today.getFullYear();
-let month = (today.getMonth() + 1).toString();
-if (month.length < 2) {
-  month = "0" + month;
-}
-let day = today.getDate().toString();
-if (day.length < 2) {
-  day = "0" + day;
-}
-
-document.getElementById("date-picker").value = year + "-" + month + "-" + day;
-
-const DEBUG = false;
-
-if (!csrfToken) {
-  window.location.replace("../signup.html");
-}
-
-if (
-  !navigator.userAgent.includes("Chrome") &&
-  navigator.userAgent.includes("Safari")
-) {
-  iosCookieRefresh();
-}
-
-setDate();
-
 document.addEventListener(
   "keydown",
   function (e) {
@@ -1055,7 +1027,7 @@ function searchKeyCallback(event, type) {
         } else {
           let idsToAdd = [selected.getAttribute('hash')];
           idsToAdd = idsToAdd.concat(Array.from(searchList.getElementsByClassName('checked')).map(x=>x.getAttribute('hash')));
-          const date = document.getElementById("date-picker").value;
+          const date = datePicker.value;
           let payload = {
             hashes: idsToAdd,
             date: date,
@@ -1121,6 +1093,16 @@ function numberPadListener(event) {
     }
   }
 }
-document.addEventListener('keyup',numberPadListener);
+const DEBUG = false;
 const loader = document.getElementById("loading");
+const datePicker = document.getElementById("date-picker");
+if (
+  !navigator.userAgent.includes("Chrome") &&
+  navigator.userAgent.includes("Safari")
+) {
+  iosCookieRefresh();
+}
+document.addEventListener('keyup',numberPadListener);
+datePicker.value = getTodayOrUrlParam();
+setDate();
 applyEmulators();

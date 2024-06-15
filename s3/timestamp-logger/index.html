@@ -33,26 +33,10 @@
       </ol>
     </div>
 
-    <div id="loading">
-      <div class="lds-spinner">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-      </div>
-    </div>
-
     <script src="../js/utils.js?v=015"></script>
     <script src="../js/env.js"></script>
     <script>
+checkIfLoggedIn();
 const remindersDiv = document.getElementById('reminders');
 
 applyEmulators();
@@ -125,6 +109,9 @@ function handleCreateReminder(event) {
     status.parentElement.classList.add('error');
   }
 }
+
+const datePicker = document.getElementById("date-picker");
+datePicker.value = getTodayOrUrlParam();
     </script>
   </body>
 </html>

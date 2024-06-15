@@ -634,9 +634,6 @@ function deleteAnswer(event) {
   triggerSave(event);
 }
 
-if (!csrfToken) {
-  window.location.replace("../signup.html");
-}
 if (
   !navigator.userAgent.includes("Chrome") &&
   navigator.userAgent.includes("Safari")
