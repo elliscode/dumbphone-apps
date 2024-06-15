@@ -113,7 +113,9 @@ def get_report_data_route(event, user_data, body):
     keys = []
     for i in range(-6, 1):
         new_date_obj = date_obj + datetime.timedelta(days=i)
-        keys.append(python_obj_to_dynamo_obj({"key1": f"timestamp_values_{phone}", "key2": new_date_obj.strftime("%Y-%m-%d")}))
+        keys.append(
+            python_obj_to_dynamo_obj({"key1": f"timestamp_values_{phone}", "key2": new_date_obj.strftime("%Y-%m-%d")})
+        )
         keys.append(
             python_obj_to_dynamo_obj(
                 {
