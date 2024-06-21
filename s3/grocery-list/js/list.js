@@ -69,28 +69,28 @@ function deleteFromList(event) {
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", url, true); // false for synchronous request
   xmlHttp.withCredentials = true;
-  xmlHttp.onload = handleDeleteList;
+  xmlHttp.onload = handleDeleteFromList;
   xmlHttp.send(
     JSON.stringify({ name: groupName, item: text, csrf: csrfToken })
   );
 }
-function handleDeleteList(event) {
+function handleDeleteFromList(event) {
   const result = defaultHandlerV1(event);
 }
 const listName = document.getElementById('list-name');
 function openShareWindow(event) {
-  const groupId = event.target.getAttribute('list-id');
+  const groupId = event.target.getAttribute('group-id');
   const groupElement = document.querySelector(`div.group[group-id="${groupId}"]`);
   const titleElement = groupElement.querySelector('span.name');
   listName.innerText = titleElement.innerText;
+  listName.setAttribute('group-id', groupId);
   showPanel('share');
   event.stopPropagation();
 }
 function sendShareRequest(event) {
   let userToShareWithBox = document.getElementById("user-to-share-with");
   let user = userToShareWithBox.value;
-  let listName = document.getElementById("list-name");
-  let group_hash = listName.getAttribute("hash");
+  let group_hash = listName.getAttribute("group-id");
 
   let url = API_DOMAIN + "/grocery-list/send-share-list";
   let xmlHttp = new XMLHttpRequest();
@@ -124,6 +124,19 @@ function handleShareResponse(event) {
   } else {
     openInfoWindow("Something went wrong...");
   }
+}
+const deleteListName = document.getElementById('delete-list-name');
+function openDeleteWindow(event) {
+  const groupId = event.target.getAttribute('group-id');
+  const groupElement = document.querySelector(`div.group[group-id="${groupId}"]`);
+  const titleElement = groupElement.querySelector('span.name');
+  deleteListName.innerText = titleElement.innerText;
+  deleteListName.setAttribute('group-id', groupId);
+  showPanel('delete');
+  event.stopPropagation();
+}
+function deleteList() {
+
 }
 function findParentWithClass(element, className) {
   let current = element;
@@ -312,15 +325,15 @@ function addItem(group, item) {
     {
       let button = document.createElement("button");
       button.innerText = "Share list";
-      button.setAttribute('list-id',groupId);
+      button.setAttribute('group-id',groupId);
       button.addEventListener("click", openShareWindow);
       managerDiv.appendChild(button);
     }
     {
       let button = document.createElement("button");
       button.innerText = "Delete list";
-      button.setAttribute('list-id',groupId);
-      button.addEventListener("click", ()=>{showPanel('content-full')});
+      button.setAttribute('group-id',groupId);
+      button.addEventListener("click", openDeleteWindow);
       managerDiv.appendChild(button);
     }
     listManagerList.appendChild(managerDiv);

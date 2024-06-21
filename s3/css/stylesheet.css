@@ -58,20 +58,6 @@ th,
 td {
   border: 1px solid;
 }
-#share {
-  position: fixed;
-  bottom: 0px;
-  left: 0px;
-  box-sizing: border-box;
-  width: 100%;
-  background-color: #ccc;
-  z-index: 12;
-  padding: 20px;
-  border-radius: 20px 20px 0px 0px;
-}
-#share p {
-  margin-top: 0px;
-}
 #info {
   position: fixed;
   bottom: 0px;
@@ -121,8 +107,12 @@ a.selected, input.selected, button.selected, div.selected {
   margin-top: 15px;
   position:relative;
 }
-.rounded-block>*:nth-child(2) {
+.rounded-block>* {
+  margin-top:5px;
+  margin-bottom:5px;
   display:inline-block;
+}
+.rounded-block>*:nth-child(2) {
   margin-top:16px;
 }
 .rounded-block>*:last-child {

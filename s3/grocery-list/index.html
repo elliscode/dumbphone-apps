@@ -67,17 +67,26 @@
     </div>
 
     <div class="panel" style="display: none" id="share">
-      <p>Share &ldquo;<span id="list-name">this</span>&rdquo; list with:</p>
-      <div class="share-enterer">
-        <label for="user-to-share-with">Phone Number:&nbsp;</label
-        ><input class="big" type="tel" id="user-to-share-with" /><button
-          id="share-button"
-          onclick="sendShareRequest(event)"
-        >
-          Share
-        </button>
+      <div class="rounded-block">
+        <div class="rounded-title">Share</div>
+        <p>Share &ldquo;<span id="list-name">this</span>&rdquo; list with:</p>
+        <label for="user-to-share-with">Phone Number: <input type="tel" id="user-to-share-with" /></label>
+        <div>
+          <button id="share-button" onclick="sendShareRequest(event)">Share</button>
+          <button onclick="showPanel('list-manager')">Cancel</button>
+        </div>
       </div>
-      <button onclick="showPanel('list-manager')" class="delete">&times;</button>
+    </div>
+
+    <div class="panel" style="display: none" id="delete">
+      <div class="rounded-block">
+        <div class="rounded-title">Delete</div>
+        <p>Are you sure you want to delete &ldquo;<span id="delete-list-name">this</span>&rdquo;?</p>
+        <div>
+          <button id="share-button" onclick="deleteList(event)">Delete</button>
+          <button onclick="showPanel('list-manager')">Cancel</button>
+        </div>
+      </div>
     </div>
 
     <div id="loading">

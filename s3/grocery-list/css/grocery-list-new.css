@@ -145,13 +145,6 @@ button {
 .modal .delete::before {
   content: "Close ";
 }
-.share-enterer {
-  display: flex;
-  align-items: center;
-}
-.share-enterer label {
-  white-space: nowrap;
-}
 .crossed-off {
   text-decoration: line-through;
 }
