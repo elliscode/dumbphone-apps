@@ -237,7 +237,7 @@ function applyEmulators(customCallback) {
     if (item.hasAttribute('generated')) {
       continue;
     }
-    if (item.tagName.toLowerCase() == 'input' && ['tel','number','text'].includes(item.type.toLowerCase())) {
+    if (item.tagName.toLowerCase() == 'textarea' || (item.tagName.toLowerCase() == 'input' && ['tel','number','text'].includes(item.type.toLowerCase()))) {
       item.addEventListener('keydown', (e)=>{arrowKeyEmulator(e, customCallback)});
       item.addEventListener('keyup', (e)=>{arrowKeyEmulator(e, customCallback)});
       item.setAttribute('generated', true);
@@ -311,6 +311,13 @@ function showPanel(id) {
   } else if (selected.classList.contains('modal')) {
     let modalBg = findParentWithClass(selected, 'modal-bg');
     modalBg.style.display = 'flex';
+  }
+}
+function scrollToItem(domItem) {
+  domItem.scrollIntoView({beharior: 'instant', block: 'nearest'});
+  let diff = domItem.getBoundingClientRect().bottom - (window.innerHeight - 40);
+  if (diff > 0) {
+    window.scrollBy(0, diff);
   }
 }
 // allows for clicking the background of the modal to exit the modal

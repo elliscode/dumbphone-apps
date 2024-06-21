@@ -24,7 +24,7 @@ function determineAddUrl(json) {
   }
 }
 function addToList(event) {
-  hidePopups(event);
+  showPanel('content-full');
   const caller = event.target;
   const input = caller.parentElement.getElementsByTagName("input")[0];
   let groupName = undefined;
@@ -56,7 +56,7 @@ function findFirstChildWithClass(element, className) {
   return results[0];
 }
 function deleteFromList(event) {
-  hidePopups(event);
+  showPanel('content-full');
   let groupElement = findParentWithClass(event.target, "group");
   const groupNameElement = findFirstChildWithClass(groupElement, "name");
   const groupName = groupNameElement.innerText;
@@ -77,25 +77,14 @@ function deleteFromList(event) {
 function handleDeleteList(event) {
   const result = defaultHandlerV1(event);
 }
+const listName = document.getElementById('list-name');
 function openShareWindow(event) {
-  hidePopups();
-  let share = document.getElementById("share");
-  let listName = document.getElementById("list-name");
-  let groupElement = findParentWithClass(event.target, "group");
-  listName.innerText = groupElement
-    .getElementsByTagName("h2")[0]
-    .innerText.trim();
-  listName.setAttribute("hash", groupElement.id);
-  share.style.display = "block";
+  const groupId = event.target.getAttribute('list-id');
+  const groupElement = document.querySelector(`div.group[group-id="${groupId}"]`);
+  const titleElement = groupElement.querySelector('span.name');
+  listName.innerText = titleElement.innerText;
+  showPanel('share');
   event.stopPropagation();
-}
-function hidePopups(event) {
-  let share = document.getElementById("share");
-  share.style.display = "none";
-  let info = document.getElementById("info");
-  info.style.display = "none";
-  let modalBg = document.getElementById("modal-bg");
-  modalBg.style.display = "none";
 }
 function sendShareRequest(event) {
   let userToShareWithBox = document.getElementById("user-to-share-with");
@@ -127,7 +116,7 @@ function openInfoWindow(text) {
   infoP.innerText = text;
 }
 function handleShareResponse(event) {
-  hidePopups();
+  showPanel('content-full');
   const result = defaultHandlerV1(event);
   if (result.hasOwnProperty("message")) {
     openInfoWindow(result.message);
@@ -147,10 +136,10 @@ function findParentWithClass(element, className) {
   return current;
 }
 function clearCrossedOffItems(event) {
-  hidePopups(event);
+  showPanel('content-full');
   const caller = event.target;
   let groupElement = findParentWithClass(caller, "group");
-  let groupId = groupElement.id;
+  let groupId = groupElement.getAttribute('group-id');
 
   let crossedOffItems = Array.from(
     groupElement.getElementsByClassName("crossed-off")
@@ -171,32 +160,37 @@ function clearCrossedOffItems(event) {
   event.stopPropagation();
 }
 function moveUp(event) {
-  hidePopups(event);
   const caller = event.target;
-  let groupElement = findParentWithClass(caller, "group");
-  let groupId = groupElement.id;
-  let sibling = findParentWithClass(groupElement, 'group-parent').previousElementSibling;
+  let groupElement = findParentWithClass(caller, "rounded-block");
+  let groupId = groupElement.getAttribute('group-id');
+  let sibling = groupElement.previousElementSibling;
   if (sibling) {
-    let otherGroup = sibling.getElementsByClassName('group')[0];
-    swapGroups(groupId, otherGroup.id);
-    runOrderCall();
-    groupElement.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+    let otherGroupId = sibling.getAttribute('group-id');
+    swapGroups(groupId, otherGroupId);
+    queueOrderCall();
+    scrollToItem(groupElement);
   }
   event.stopPropagation();
 }
 function moveDown(event) {
-  hidePopups(event);
   const caller = event.target;
-  let groupElement = findParentWithClass(caller, "group");
-  let groupId = groupElement.id;
-  let sibling = findParentWithClass(groupElement, 'group-parent').nextElementSibling;
+  let groupElement = findParentWithClass(caller, "rounded-block");
+  let groupId = groupElement.getAttribute('group-id');
+  let sibling = groupElement.nextElementSibling;
   if (sibling) {
-    let otherGroup = sibling.getElementsByClassName('group')[0];
-    swapGroups(otherGroup.id, groupId);
-    runOrderCall();
-    groupElement.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+    let otherGroupId = sibling.getAttribute('group-id');
+    swapGroups(otherGroupId, groupId);
+    queueOrderCall();
+    scrollToItem(groupElement);
   }
   event.stopPropagation();
+}
+
+let orderCallTimeout = undefined;
+function queueOrderCall() {
+  clearTimeout(orderCallTimeout);
+
+  orderCallTimeout = setTimeout(runOrderCall, 2000)
 }
 
 function runOrderCall() {
@@ -205,7 +199,7 @@ function runOrderCall() {
   let group_hashes = [];
   for (let index = 0; index < groups.length; index++) {
     let group = groups[index];
-    group_hashes.push(group.id);
+    group_hashes.push(group.getAttribute('group-id'));
   }
   let body = { list_ids: group_hashes, csrf: csrfToken };
   let xmlHttp = new XMLHttpRequest();
@@ -220,34 +214,38 @@ function handleOrderCall(event) {
 }
 
 function swapGroups(groupOneId, groupTwoId) {
-  let mainList = document.getElementById("content");
-  let groupOneLi = findParentWithClass(document.getElementById(groupOneId), 'group-parent');
-  let groupTwoLi = findParentWithClass(document.getElementById(groupTwoId), 'group-parent');
-
-  mainList.insertBefore(groupOneLi, groupTwoLi);
+  {
+    let mainList = document.getElementById("content");
+    const groupOne = findParentWithClass(document.querySelector(`div.group[group-id="${groupOneId}"]`), 'group-parent');
+    const groupTwo = findParentWithClass(document.querySelector(`div.group[group-id="${groupTwoId}"]`), 'group-parent');
+    mainList.insertBefore(groupOne, groupTwo);
+  }
+  {
+    let mainList = document.getElementById("manage-list-content");
+    const groupOne = document.querySelector(`div.rounded-block[group-id="${groupOneId}"]`);
+    const groupTwo = document.querySelector(`div.rounded-block[group-id="${groupTwoId}"]`);
+    mainList.insertBefore(groupOne, groupTwo);
+  }
 }
 
 function addItem(group, item) {
   let mainList = document.getElementById("content");
+  let listManagerList = document.getElementById('manage-list-content');
 
   const groupId = group.hash;
-  let groupLi = document.getElementById(groupId);
+  let groupLi = document.querySelector(`div.group[group-id="${groupId}"]`);
   if (!groupLi) {
     let parent = document.createElement("div");
     parent.style.display = 'flex';
     parent.classList.add('group-parent');
     groupLi = document.createElement("div");
-    groupLi.id = groupId;
+    groupLi.setAttribute('group-id', groupId);
     groupLi.classList.add("group");
     groupLi.setAttribute('input-group-name','list');
     groupLi.style.flexGrow = '1';
 
     let itemsList = document.createElement("h2");
     itemsList.addEventListener('click', focusList);
-    let blankItem = document.createElement("span");
-    blankItem.classList.add("blank-item");
-    blankItem.style.width = "114px";
-    itemsList.appendChild(blankItem);
     let nameSpan = document.createElement("span");
     nameSpan.classList.add("name");
     nameSpan.innerText = group.name;
@@ -259,27 +257,6 @@ function addItem(group, item) {
     broomButton.appendChild(broomButtonImg);
     broomButton.addEventListener("click", clearCrossedOffItems);
     controlsDiv.appendChild(broomButton);
-
-    let upButton = document.createElement("button");
-    let upButtonImg = document.createElement("img");
-    upButtonImg.src = "img/up.png";
-    upButton.appendChild(upButtonImg);
-    upButton.addEventListener("click", moveUp);
-    controlsDiv.appendChild(upButton);
-
-    let downButton = document.createElement("button");
-    let downButtonImg = document.createElement("img");
-    downButtonImg.src = "img/down.png";
-    downButton.appendChild(downButtonImg);
-    downButton.addEventListener("click", moveDown);
-    controlsDiv.appendChild(downButton);
-
-    let shareButton = document.createElement("button");
-    let shareButtonImg = document.createElement("img");
-    shareButtonImg.src = "img/share.png";
-    shareButton.appendChild(shareButtonImg);
-    shareButton.addEventListener("click", openShareWindow);
-    controlsDiv.appendChild(shareButton);
 
     itemsList.appendChild(controlsDiv);
 
@@ -293,6 +270,60 @@ function addItem(group, item) {
     groupLi.appendChild(ulInIt);
     parent.appendChild(groupLi);
     mainList.appendChild(parent);
+
+    // also add it to the list manager pane
+    let managerDiv = document.createElement('div');
+    managerDiv.classList.add('rounded-block');
+    managerDiv.setAttribute('group-id', groupId);
+
+    let title = document.createElement('div');
+    title.classList.add('rounded-title');
+    title.innerText = group.name;
+    managerDiv.appendChild(title);
+    {
+      let button = document.createElement("button");
+      button.classList.add('up');
+      let image = document.createElement("img");
+      image.src = "img/up.png";
+      button.appendChild(image);
+      button.addEventListener("click", moveUp);
+      managerDiv.appendChild(button);
+    }
+    {
+      let button = document.createElement("button");
+      button.classList.add('down');
+      let image = document.createElement("img");
+      image.src = "img/down.png";
+      button.appendChild(image);
+      button.addEventListener("click", moveDown);
+      managerDiv.appendChild(button);
+    }
+    {
+      let label = document.createElement("label");
+      let input = document.createElement("input");
+      input.type = 'checkbox';
+      input.checked=true;
+      label.appendChild(input);
+      let span = document.createElement("span");
+      span.innerText = 'Show list';
+      label.appendChild(span);
+      managerDiv.appendChild(label);
+    }
+    {
+      let button = document.createElement("button");
+      button.innerText = "Share list";
+      button.setAttribute('list-id',groupId);
+      button.addEventListener("click", openShareWindow);
+      managerDiv.appendChild(button);
+    }
+    {
+      let button = document.createElement("button");
+      button.innerText = "Delete list";
+      button.setAttribute('list-id',groupId);
+      button.addEventListener("click", ()=>{showPanel('content-full')});
+      managerDiv.appendChild(button);
+    }
+    listManagerList.appendChild(managerDiv);
   }
 
   let itemUl = groupLi.getElementsByClassName("ui-list")[0];
@@ -346,7 +377,7 @@ function crossToggle(event) {
   let listItem = findParentWithClass(div, "list-item");
   let deleteButton = listItem.querySelector("button.delete");
   let groupElement = findParentWithClass(event.target, "group");
-  let list_hash = groupElement.id;
+  let list_hash = groupElement.getAttribute('group-id');
   let newValue = undefined;
   if (div.classList.contains("crossed-off")) {
     div.classList.remove("crossed-off");
@@ -357,6 +388,20 @@ function crossToggle(event) {
     deleteButton.style.display = "block";
     newValue = true;
   }
+  queueCross({
+    list_id: list_hash,
+    item: div.innerText.trim(),
+    crossed_off: newValue,
+  });
+}
+let crossOffTimeout = undefined;
+let crossOffPayloads = {};
+function queueCross(payload) {
+  clearTimeout(crossOffTimeout);
+  crossOffPayloads[payload.list_id + "_" + payload.item] = payload;
+  crossOffTimeout = setTimeout(runCrossOffs, 2000);
+}
+function runCrossOffs(event) {
   let url = API_DOMAIN + "/grocery-list/set-crossed-off";
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", url, true);
@@ -364,12 +409,11 @@ function crossToggle(event) {
   xmlHttp.onload = handleToggle;
   xmlHttp.send(
     JSON.stringify({
-      list_id: list_hash,
-      item: div.innerText.trim(),
-      crossed_off: newValue,
+      data: Object.values(crossOffPayloads),
       csrf: csrfToken
     })
   );
+  crossOffPayloads = {};
 }
 
 function handleToggle(event) {
@@ -377,7 +421,7 @@ function handleToggle(event) {
 }
 
 function askToDeleteGroup(event) {
-  hidePopups(event);
+  showPanel('content-full');
   let modalBg = document.getElementById("modal-bg");
   modalBg.style.display = "block";
 }
@@ -401,20 +445,19 @@ function setStylesheet(uri) {
 
   head.appendChild(link);
 }
+let oldUi = true;
 if (
   !navigator.userAgent.includes("Chrome") &&
   navigator.userAgent.includes("Safari")
 ) {
+  oldUi = false;
   iosCookieRefresh();
-  setStylesheet("css/grocery-list-new.css?v=015");
+  setStylesheet("css/grocery-list-new.css?v=017");
   document.getElementById("item-text-box").addEventListener("blur", startHide);
 } else {
-  setStylesheet("css/grocery-list-old.css?v=015");
+  setStylesheet("css/grocery-list-old.css?v=017");
 }
 const loader = document.getElementById("loading");
-const dontDisplayWhileLoading = document.getElementById(
-  "dont-display-while-loading"
-);
 function handleGetList(event) {
   const result = defaultHandlerV1(event);
   let groups = Object.keys(result);
@@ -427,8 +470,7 @@ function handleGetList(event) {
     }
   }
   loader.style.display = "none";
-  dontDisplayWhileLoading.style.display = "block";
-
+  hideSubmit();
   applyEmulators(sideKeyListener);
 }
 function loadList(event) {
@@ -449,23 +491,24 @@ function stopHide() {
 }
 function startHide(event) {
   stopHide();
-  hideTimeout = setTimeout(hideSubmit, 1000);
+  hideTimeout = setTimeout(hideSubmit, 1500);
 }
 function focusEvent(event) {
   stopHide();
-  hidePopups(event);
+  showPanel('content-full');
 }
 const textBox = document.getElementById("item-text-box");
-const toolBar = document.getElementById("tool-bar");
 const submitBar = document.getElementById("submit-bar");
 function showSubmit(event) {
-  toolBar.style.display = "none";
+  Array.from(document.getElementsByClassName('section-header')).forEach(x=>{x.style.top='72px';});
   submitBar.style.display = "flex";
   textBox.focus();
 }
 function hideSubmit(event) {
-  toolBar.style.display = "flex";
-  submitBar.style.display = "none";
+  Array.from(document.getElementsByClassName('section-header')).forEach(x=>{x.style.top='38px';});
+  if (!oldUi) {
+    submitBar.style.display = "none";
+  }
 }
 function enterKeyListener(event) {
   if (event.keyCode === 13 && event.type == 'keyup') {
@@ -493,9 +536,7 @@ function sideKeyListener(event) {
     if (element.hasAttribute('linked-item')) {
       element = element.parentElement.getElementsByClassName('selectable')[0];
     }
-    if (element.getBoundingClientRect().top < 0 || element.getBoundingClientRect().bottom > (window.innerHeight - 40)) {
-      element.scrollIntoView({behavior: 'instant', block: 'start'});
-    }
+    scrollToItem(element);
   }
 }
 function focusList(event) {
@@ -506,6 +547,9 @@ function focusList(event) {
   let checkbox = item.parentElement.getElementsByClassName('selectable')[0];
   checkbox.classList.add('selected');
 }
+function showListsManager(event) {
+  showPanel('list-manager');
+}
 loadList();
 let sharedGroupId = getParameterByName("share");
 if (sharedGroupId) {
@@ -513,7 +557,7 @@ if (sharedGroupId) {
 }
 function closeOnClick(event) {
   if (event.target.classList.contains("modal-bg")) {
-    hidePopups(event);
+    showPanel('content-full');
   }
 }
 let modalBgs = document.getElementsByClassName("modal-bg");

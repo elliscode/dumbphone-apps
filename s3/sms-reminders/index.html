@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SMS Reminders</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
-    <link rel="stylesheet" href="../css/loader.css?v=015" />
-    <link rel="icon" type="image/png" href="../img/alarm.favicon.png?v=015" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
+    <link rel="stylesheet" href="../css/loader.css?v=017" />
+    <link rel="icon" type="image/png" href="../img/alarm.favicon.png?v=017" />
     <style>
     </style>
   </head>
@@ -17,15 +17,11 @@
 
     <div class="rounded-block">
       <div class="rounded-title">How it works</div>
-    <p style="
-    margin-bottom:0px;
-">Send yourself an SMS in the future, to remind you of something important</p>
+    <p>Send yourself an SMS in the future, to remind you of something important</p>
   </div>
     <div class="rounded-block">
       <div class="rounded-title">Step 1: Set Time</div>
-      <div style="
-      padding-top: 10px;
-  ">
+      <div>
         <label>
           Date and time:
           <input onchange="checkIfValid(event)" id="reminder-date" type="date"/>
@@ -35,7 +31,7 @@
     </div>
     <div class="rounded-block">
       <div class="rounded-title">Step 2: Set Message</div>
-      <div style="padding-top: 15px;">
+      <div>
         <input oninput="checkIfValid(event)" id="reminder-text" style="box-sizing:border-box; width:100%;" type="text"/>
       </div>
     </div>
@@ -53,7 +49,7 @@
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=015"></script>
+    <script src="../js/utils.js?v=017"></script>
     <script src="../js/env.js"></script>
     <script>
 const remindersDiv = document.getElementById('reminders');

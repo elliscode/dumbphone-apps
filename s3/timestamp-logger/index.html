@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Timestamp Logger</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
-    <link rel="stylesheet" href="../css/loader.css?v=015" />
-    <link rel="icon" type="image/png" href="../img/alarm.favicon.png?v=015" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
+    <link rel="stylesheet" href="../css/loader.css?v=017" />
+    <link rel="icon" type="image/png" href="../img/alarm.favicon.png?v=017" />
     <style>
     </style>
   </head>
@@ -15,103 +15,41 @@
       <b><a href="../index.html">Home</a></b> &gt; <b>timestamp-logger</b>
     </div>
 
-    <div class="controls">
-      <button onclick="openReport(event)">Report</button>
-      <button onclick="openSettings(event)">Edit</button>
-      <button onclick="logOut(event)">Log out</button>
+    <div class="panel" id="Main">
+      <div class="controls">
+        <button onclick="openReport(event)">Report</button>
+        <button onclick="showPanel('Edit')">Edit</button>
+        <button onclick="logOut(event)">Log out</button>
+      </div>
+
+      <div style="display: inline">
+        <input onchange="getAnswers(event)" id="date-picker" type="date" />
+      </div>
+
+      <div class="rounded-block">
+        <div class="rounded-title">How it works</div>
+        <ol style="margin-bottom:0px;">
+          <li>Create timestamps by pressing the "Edit" button</li>
+          <li>Press the "Log" button to set a value for a timestmp</li>
+        </ol>
+      </div>
     </div>
 
-    <div style="display: inline">
-      <input onchange="getAnswers(event)" id="date-picker" type="date" />
+    <div class="panel" id="Edit" style="display:none;">
+      <div class="controls">
+        <button onclick="showPanel('Main')">&times;</button>
+      </div>
     </div>
 
-    <div class="rounded-block">
-      <div class="rounded-title">How it works</div>
-      <ol style="margin-bottom:0px;">
-        <li>Create timestamps by pressing the "Edit" button</li>
-        <li>Press the "Log" button to set a value for a timestmp</li>
-      </ol>
-    </div>
-
-    <script src="../js/utils.js?v=015"></script>
+    <script src="../js/utils.js?v=017"></script>
     <script src="../js/env.js"></script>
     <script>
 checkIfLoggedIn();
-const remindersDiv = document.getElementById('reminders');
-
-applyEmulators();
-
-const createButton = document.getElementById('create-button');
-const reminderDate = document.getElementById('reminder-date');
-const reminderTime = document.getElementById('reminder-time');
-const reminderText = document.getElementById('reminder-text');
-
-const status = document.getElementById('status');
-
-function checkIfValid(event) {
-  if (!reminderDate.value || !reminderTime.value) {
-    createButton.setAttribute('disabled', 'true');
-    return false;
-  }
-
-  let selectedDateUnixTimeMs = Date.parse(`${reminderDate.value}T${reminderTime.value}:00`);
-  let currentTimeUnixTimeMs = Date.now();
-
-  if (selectedDateUnixTimeMs < currentTimeUnixTimeMs) {
-    createButton.setAttribute('disabled', 'true');
-    return false;
-  }
-
-  if (!reminderText.value) {
-    createButton.setAttribute('disabled', 'true');
-    return false;
-  }
-
-  createButton.removeAttribute('disabled');
-  return true;
-}
-
-function createReminder(event) {
-  if (!checkIfValid(event)) {
-    return;
-  }
-  let submissionTime = (new Date(Date.parse(`${reminderDate.value}T${reminderTime.value}:00`))).toISOString().substring(0, 19);
-  let submissionMessage = reminderText.value;
-  // clear before sending
-  reminderDate.value = '';
-  reminderTime.value = '';
-  reminderText.value = '';
-  checkIfValid(event);
-
-  let xmlHttp = new XMLHttpRequest();
-  xmlHttp.open("POST", API_DOMAIN + "/scheduler/set", true);
-  xmlHttp.withCredentials = true;
-  xmlHttp.onload = handleCreateReminder;
-  xmlHttp.send(
-    JSON.stringify({
-      csrf: csrfToken,
-      time: submissionTime,
-      message: submissionMessage
-    })
-  );
-}
-
-function handleCreateReminder(event) {
-  let result = defaultHandler(event);
-  status.parentElement.style.display = 'block';
-  status.parentElement.classList.remove('error');
-  status.parentElement.classList.remove('success');
-  if (result.statusCode == 200) {
-    status.innerText = 'Successfully created a reminder';
-    status.parentElement.classList.add('success');
-  } else {
-    status.innerText = 'Failed due to internal server error';
-    status.parentElement.classList.add('error');
-  }
-}
 
 const datePicker = document.getElementById("date-picker");
 datePicker.value = getTodayOrUrlParam();
+
+applyEmulators();
     </script>
   </body>
 </html>

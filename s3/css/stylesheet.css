@@ -33,8 +33,10 @@ input.big {
 }
 .logout {
   position: absolute;
-  top: 0px;
+  top: 8px;
   right: 8px;
+  display:flex;
+  align-items: center;
 }
 .add-to-group {
   width: 100%;
@@ -85,38 +87,6 @@ td {
 #info p {
   margin: 0px;
 }
-#modal-bg {
-  z-index: 3;
-  position: fixed;
-  top: 0px;
-  left: 0px;
-  width: 100%;
-  height: 100%;
-  background-color: #aaaaaa88;
-}
-#modal-popup {
-  z-index: 4;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 20px;
-  position: relative;
-  max-width: 400px;
-  top: 50%;
-  transform: translateX(-50%) translateY(-50%);
-  left: 50%;
-}
-.modal-bg {
-  background-color: #fffe;
-  display: flex;
-  position: fixed;
-  top: 0px;
-  left: 0px;
-  width: 100%;
-  height: 100%;
-  z-index: 3;
-  align-items: center;
-  justify-content: center;
-}
 .modal {
   background-color: #fff;
   padding: 5px;
@@ -125,6 +95,7 @@ td {
   height: fit-content;
   max-width: 100%;
   max-height: 100%;
+  position:relative;
 }
 li.selected {
   background-color: rgb(209 233 255)!important;
@@ -149,6 +120,13 @@ a.selected, input.selected, button.selected, div.selected {
   margin-bottom: 3px;
   margin-top: 15px;
   position:relative;
+}
+.rounded-block>*:nth-child(2) {
+  display:inline-block;
+  margin-top:16px;
+}
+.rounded-block>*:last-child {
+  margin-bottom:0px;
 }
 .rounded-block-without-title {
   border: 1px solid black;
@@ -195,4 +173,11 @@ a.selected, input.selected, button.selected, div.selected {
   position: absolute;
   top: 8px;
   right: 8px;
+}
+.giant-button {
+  width: calc(100vw - 16px);
+  max-width: 250px;
+  height: calc(100vw - 16px);
+  max-height: 250px;
+  font-size: 20px;
 }

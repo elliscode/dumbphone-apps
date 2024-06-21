@@ -15,7 +15,8 @@ function addToList(event) {
     date: date,
     csrf: csrfToken
   };
-
+  
+  previousSearch = undefined;
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/food-diary/add", true);
   xmlHttp.withCredentials = true;
@@ -173,23 +174,14 @@ function changeQuantity(event) {
   );
 }
 function closeServings(event) {
-  let servings = document.getElementById("servings");
-  servings.style.display = "none";
-  let modalBg = findParentWithClass(servings, "modal-bg");
-  modalBg.style.display = "none";
+  showPanel('content')
 }
 function closeRecipeServings(event) {
-  let servings = document.getElementById("recipe-servings");
-  servings.style.display = "none";
-  let modalBg = findParentWithClass(servings, "modal-bg");
-  modalBg.style.display = "none";
+  showPanel('content')
 }
 function displayServing(event) {
   let item = defaultHandlerV1(event);
-  let servings = document.getElementById("servings");
-  servings.style.display = "block";
-  let modalBg = findParentWithClass(servings, "modal-bg");
-  modalBg.style.display = "flex";
+  showPanel('servings')
   let textBox = document.getElementById("servings-amount");
   let select = document.getElementById("servings-name");
   let edit = document.getElementById("servings-edit");
@@ -238,10 +230,7 @@ function displayServing(event) {
 let recipeFood = undefined;
 function displayRecipeServing(event) {
   recipeFood = defaultHandlerV1(event);
-  let servings = document.getElementById("recipe-servings");
-  servings.style.display = "block";
-  let modalBg = findParentWithClass(servings, "modal-bg");
-  modalBg.style.display = "flex";
+  showPanel('recipe-servings');
   let textBox = document.getElementById("recipe-servings-amount");
   let select = document.getElementById("recipe-servings-name");
   let servingsSave = document.getElementById("recipe-servings-save");
@@ -718,10 +707,7 @@ function addToRecipe(event) {
   redrawRows();
 }
 function showTotalsModal(event) {
-  let totalsModal = document.getElementById('totals-modal');
-  totalsModal.style.display = 'block';
-  let modalBg = findParentWithClass(totalsModal, "modal-bg");
-  modalBg.style.display = "flex";
+  showPanel('totals-modal')
 }
 function setDate(event) {
   const textBoxParent = document.getElementsByClassName("search-bar")[0];
@@ -1006,7 +992,7 @@ function searchKeyCallback(event, type) {
           selected.classList.remove('selected');
         }
         items[newIndex].classList.add('selected');
-        window.scrollBy({ top: items[newIndex].getBoundingClientRect().top - 40, behavior: "instant" });
+        scrollToItem(items[newIndex]);
       } else if (['SoftLeft'].includes(event.key)) {
         if (selected.hasAttribute('hash')) {
           if (currentTime - previousSoftLeftTime > 200) {
@@ -1037,6 +1023,7 @@ function searchKeyCallback(event, type) {
           while (suggestions.firstChild) {
             suggestions.removeChild(suggestions.firstChild);
           }
+          previousSearch = undefined;
           let xmlHttp = new XMLHttpRequest();
           xmlHttp.open("POST", API_DOMAIN + "/food-diary/add", true);
           xmlHttp.withCredentials = true;
@@ -1084,16 +1071,15 @@ function servingsArrowCallback(event) {
 }
 function numberPadListener(event) {
   let content = document.getElementById('content');
-  if (event.key === '*' && content.style.display != 'none') {
-    let totalsModal = document.getElementById('totals-modal');
-    if (totalsModal.style.display != 'none') {
-      closeModalIfApplicable( { target: findParentWithClass(totalsModal, 'modal-bg') } );
-    } else {
+  let totalsModal = document.getElementById('totals-modal');
+  if (event.key === '*') {
+    if (totalsModal.style.display != 'none' && content.style.display == 'none') {
+      showPanel('content')
+    } else if (totalsModal.style.display == 'none' && content.style.display != 'none') {
       showTotalsModal();
     }
   }
 }
-const DEBUG = false;
 const loader = document.getElementById("loading");
 const datePicker = document.getElementById("date-picker");
 if (

@@ -13,6 +13,9 @@ h1 {
   padding: 5px;
   border-radius: 20px;
   font-size: 16px;
+  background-color: #ddd;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
 }
 
 .ui-list div.name {
@@ -46,12 +49,6 @@ h1 {
   font-weight: normal;
 }
 
-.ui-list li {
-  background-color: #ddd;
-  margin-top: 5px;
-  overflow-wrap: anywhere;
-}
-
 li {
   position: relative;
 }
@@ -77,12 +74,6 @@ input.big {
   width: 30px;
   height: 30px;
   border-radius: 20px;
-}
-
-.logout {
-  position: absolute;
-  top: 0;
-  right: 0;
 }
 
 .add-to-group {
@@ -185,18 +176,10 @@ td {
   flex-grow: 1;
   min-width: 10px;
 }
-#tool-bar {
-  display: none;
-}
 #title-bar {
   display: none;
 }
-.logout {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-#breadcrumb {
+.old-ui {
   display: inline;
 }
 .crossed-off {
@@ -204,4 +187,7 @@ td {
 }
 h2 button {
   padding: 1px 0px;
+}
+.new-ui {
+  display:none;
 }

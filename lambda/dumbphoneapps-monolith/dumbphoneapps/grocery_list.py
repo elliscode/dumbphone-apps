@@ -128,47 +128,43 @@ def acceptsharelist_route(event, user_data, body):
 @authenticate
 def setcrossedoff_route(event, user_data, body):
     phone = user_data["key2"]
-    item = body["item"].strip()
-
     userlist_data = get_userlist_data(phone)
     if userlist_data is None:
         userlist_data = create_userlist_data(phone)
 
     list_data = get_list_data(userlist_data["lists"])
 
-    found_list = None
+    found_lists = {}
+    for data_item in body["data"]:
 
-    for this_list in list_data:
-        if this_list["key2"] == body["list_id"]:
-            found_list = this_list
-            break
-    if found_list is None:
-        return format_response(
-            event=event,
-            http_code=404,
-            body="Provided list does not exist",
-        )
+        item = data_item["item"].strip()
 
-    items = found_list["items"]
+        found_list = None
 
-    if items is None:
-        items = {}
+        for this_list in list_data:
+            if this_list["key2"] == data_item["list_id"]:
+                found_list = this_list
+                break
 
-    if item not in items:
-        return format_response(
-            event=event,
-            http_code=200,
-            body="Item already exists",
-        )
+        if found_list is None:
+            continue
 
-    items[item] = body["crossed_off"]
+        if found_list["items"] is None:
+            found_list["items"] = {}
 
-    set_list_data(found_list["key2"], found_list["name"], items)
+        if item not in found_list["items"]:
+            continue
+
+        found_list["items"][item] = data_item["crossed_off"]
+
+        found_lists[data_item["list_id"]] = found_list
+
+    set_list_data_multiple(found_lists)
 
     return format_response(
         event=event,
         http_code=200,
-        body="Item successfully crossed off",
+        body=f"Successfully toggled {len(body["data"])} items on {len(found_lists.keys())} lists",
     )
 
 
@@ -437,3 +433,11 @@ def set_list_data(list_id, name, items):
         TableName=TABLE_NAME,
         Item=dynamo_data,
     )
+
+
+def set_list_data_multiple(lists):
+    items = []
+    for whole_list in lists.values():
+        items.append({"PutRequest": {"Item": python_obj_to_dynamo_obj(whole_list)}})
+
+    return dynamo.batch_write_item(RequestItems={TABLE_NAME: items})

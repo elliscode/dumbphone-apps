@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>File Sharer</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
-    <link rel="stylesheet" href="../css/loader.css?v=015" />
-    <link rel="icon" type="image/png" href="../img/share.favicon.png?v=015" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
+    <link rel="stylesheet" href="../css/loader.css?v=017" />
+    <link rel="icon" type="image/png" href="../img/share.favicon.png?v=017" />
     <style>
       body {
         padding-bottom: 30px;
@@ -24,8 +24,8 @@
     <div id="loading"></div>
 
     <form onsubmit="runFileUpload(event)" id="form">
-      <input type="file" id="file" name="filename" primary-button/>
-      <input type="submit" id="submit" value="Upload file" />
+      <input onchange="checkFileValid(event)" type="file" id="file" name="filename" primary-button/>
+      <input type="submit" id="submit" value="Upload file" disabled/>
     </form>
 
     <div id="link-div" style="display: none">
@@ -37,7 +37,7 @@
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=015"></script>
+    <script src="../js/utils.js?v=017"></script>
     <script src="../js/env.js"></script>
     <script>
 if (
@@ -47,16 +47,25 @@ if (
   iosCookieRefresh();
 }
 const loader = document.getElementById("loading");
+const submitButton = document.getElementById("submit");
 loader.style.display = "none";
 
 let fileName = undefined;
 let fileType = undefined;
 
+function checkFileValid(event) {
+  const valid = event.target.files.length == 1;
+  if (valid) {
+    submitButton.removeAttribute('disabled');
+  } else {
+    submitButton.setAttribute('disabled','true');
+  }
+}
+
 function runFileUpload(event) {
   event.preventDefault();
   const fileInput = document.getElementById("file");
   fileInput.disabled = true;
-  const submitButton = document.getElementById("submit");
   submitButton.disabled = true;
   submitButton.value = "Uploading...";
 

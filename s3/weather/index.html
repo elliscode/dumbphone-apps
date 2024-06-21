@@ -3,17 +3,10 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Weather</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
-    <link rel="stylesheet" href="../css/loader.css?v=015" />
-    <link rel="icon" type="image/png" href="../img/weather.favicon.png?v=015" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
+    <link rel="stylesheet" href="../css/loader.css?v=017" />
+    <link rel="icon" type="image/png" href="../img/weather.favicon.png?v=017" />
     <style>
-      button#get-weather {
-        width: calc(100vw - 16px);
-        max-width: 250px;
-        height: calc(100vw - 16px);
-        max-height: 250px;
-        font-size: 20px;
-      }
       pre#json {
         white-space: pre-wrap;
       }
@@ -141,7 +134,7 @@
       <b><a href="../index.html">Home</a></b> &gt; <b>weather</b>
     </div>
 
-    <button id="get-weather" onclick="getCurrentLocation(event)" primary-button>
+    <button id="get-weather" class="giant-button" onclick="getCurrentLocation(event)" primary-button>
       Get weather for your location
     </button>
 
@@ -340,8 +333,8 @@
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=015"></script>
+    <script src="../js/utils.js?v=017"></script>
     <script src="../js/env.js"></script>
-    <script src="js/weather.js?v=015"></script>
+    <script src="js/weather.js?v=017"></script>
   </body>
 </html>

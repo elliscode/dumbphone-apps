@@ -100,54 +100,6 @@ def get_values_route(event, user_data, body):
 
 
 @authenticate
-def get_report_data_route(event, user_data, body):
-    phone = user_data["key2"]
-
-    if "date" not in body:
-        return format_response(
-            event=event,
-            http_code=400,
-            body="You need to supply a date in your POST body",
-        )
-    date_obj = datetime.datetime.strptime(body["date"], "%Y-%m-%d")
-    keys = []
-    for i in range(-6, 1):
-        new_date_obj = date_obj + datetime.timedelta(days=i)
-        keys.append(
-            python_obj_to_dynamo_obj({"key1": f"timestamp_values_{phone}", "key2": new_date_obj.strftime("%Y-%m-%d")})
-        )
-        keys.append(
-            python_obj_to_dynamo_obj(
-                {
-                    "key1": f"timestamp_events_{user_data['key2']}",
-                    "key2": new_date_obj.strftime("%Y-%m-%d"),
-                }
-            )
-        )
-    response = dynamo.batch_get_item(
-        RequestItems={
-            TABLE_NAME: {
-                "Keys": keys,
-            }
-        }
-    )
-    responses = response["Responses"][TABLE_NAME]
-    output_values = []
-    output_diary = []
-    for response_item in responses:
-        python_item = dynamo_obj_to_python_obj(response_item)
-        if "values" in python_item:
-            output_values.append({"date": python_item["key2"], "values": python_item["values"]})
-        elif "entries" in python_item:
-            output_diary.append({"date": python_item["key2"], "entries": python_item["entries"]})
-    return format_response(
-        event=event,
-        http_code=200,
-        body={"values": output_values, "foodDiary": output_diary},
-    )
-
-
-@authenticate
 def set_values_route(event, user_data, body):
     phone = user_data["key2"]
 
@@ -241,4 +193,41 @@ def get_relationships_route(event, user_data, body):
         event=event,
         http_code=200,
         body={"relationships": latest_timestamps},
+    )
+
+
+@authenticate
+def get_timestamp_report_data_route(event, user_data, body):
+    phone = user_data["key2"]
+
+    if "date" not in body:
+        return format_response(
+            event=event,
+            http_code=400,
+            body="You need to supply a date in your POST body",
+        )
+    date_obj = datetime.datetime.strptime(body["date"], "%Y-%m-%d")
+    keys = []
+    for i in range(-6, 1):
+        new_date_obj = date_obj + datetime.timedelta(days=i)
+        keys.append(
+            python_obj_to_dynamo_obj({"key1": f"timestamp_values_{phone}", "key2": new_date_obj.strftime("%Y-%m-%d")})
+        )
+    response = dynamo.batch_get_item(
+        RequestItems={
+            TABLE_NAME: {
+                "Keys": keys,
+            }
+        }
+    )
+    responses = response["Responses"][TABLE_NAME]
+    output_values = []
+    for response_item in responses:
+        python_item = dynamo_obj_to_python_obj(response_item)
+        if "values" in python_item:
+            output_values.append({"date": python_item["key2"], "values": python_item["values"]})
+    return format_response(
+        event=event,
+        http_code=200,
+        body={"values": output_values},
     )

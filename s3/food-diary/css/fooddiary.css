@@ -1,13 +1,4 @@
-body {
-  margin:0px;
-}
-.panel {
-  margin:8px;
-}
 .search-bar {
-  position:fixed;
-  top:0px;
-  left:0px;
   display:flex;
   background-color: #fff;
   width:100%;
@@ -27,7 +18,7 @@ label {
   background-color: #fff;
   width:100%;
   padding: 0px;
-  margin: 40px 0px 40px 0px;
+  margin: 0px 0px 40px 0px;
   overflow-y: auto;
   overflow-x: none;
   z-index: 2;
