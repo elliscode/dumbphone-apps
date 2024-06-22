@@ -89,7 +89,11 @@ function openShareWindow(event) {
 }
 function sendShareRequest(event) {
   let userToShareWithBox = document.getElementById("user-to-share-with");
-  let user = userToShareWithBox.value;
+  let user = userToShareWithBox.value.replace(/[^\d]/g,'');
+  if (!/^\d{10}$/.test(user) || user[0] == '1') {
+    openInfoWindow(`${user} is not a valid 10 digit phone number`);
+    return;
+  }
   let group_hash = listName.getAttribute("group-id");
 
   let url = API_DOMAIN + "/grocery-list/send-share-list";
@@ -108,12 +112,6 @@ function acceptShare(group_hash) {
   xmlHttp.withCredentials = true;
   xmlHttp.onload = handleShareResponse;
   xmlHttp.send(JSON.stringify({ csrf: csrfToken, list_id: group_hash }));
-}
-function openInfoWindow(text) {
-  let info = document.getElementById("info");
-  info.style.display = "block";
-  let infoP = document.getElementById("info-p");
-  infoP.innerText = text;
 }
 function handleShareResponse(event) {
   showPanel('content-full');
@@ -136,7 +134,19 @@ function openDeleteWindow(event) {
   event.stopPropagation();
 }
 function deleteList() {
-
+  const groupId = deleteListName.getAttribute('group-id');
+  const groupElement = document.querySelector(`div.group[group-id="${groupId}"]`);
+  findParentWithClass(groupElement,'group-parent').remove();
+  const groupSettingsElement = document.querySelector(`div.rounded-block[group-id="${groupId}"]`);
+  groupSettingsElement.remove();
+  let url = API_DOMAIN + "/grocery-list/delete-list";
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true); // false for synchronous request
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleShareResponse;
+  xmlHttp.send(
+    JSON.stringify({ csrf: csrfToken, list_id: groupId })
+  );
 }
 function findParentWithClass(element, className) {
   let current = element;
@@ -163,14 +173,13 @@ function clearCrossedOffItems(event) {
     removeItem(listItem);
   }
 
-  let url = API_DOMAIN + "/grocery-list/clean-up-list";
-  let body = { list_id: groupId, csrf: csrfToken };
-  let xmlHttp = new XMLHttpRequest();
-  xmlHttp.open("POST", url, true); // false for synchronous request
-  xmlHttp.withCredentials = true;
-  xmlHttp.onload = handleToggle;
-  xmlHttp.send(JSON.stringify(body));
-  event.stopPropagation();
+  queueListCleanUp(groupId);
+}
+let cleanUpQueue = {};
+function queueListCleanUp(groupId) {
+  clearTimeout(crossOffTimeout);
+  cleanUpQueue[groupId] = groupId;
+  crossOffTimeout = setTimeout(runCrossOffs, 1000);
 }
 function moveUp(event) {
   const caller = event.target;
@@ -199,20 +208,33 @@ function moveDown(event) {
   event.stopPropagation();
 }
 
+function setVisible(event) {
+  const caller = event.target;
+  let groupElement = findParentWithClass(caller, "rounded-block");
+  let groupId = groupElement.getAttribute('group-id');
+  const group = findParentWithClass(document.querySelector(`div.group[group-id="${groupId}"]`), 'group-parent');
+  group.style.display = caller.checked && group.querySelector('li') ? 'flex' : 'none';
+  queueOrderCall();
+}
+
 let orderCallTimeout = undefined;
 function queueOrderCall() {
   clearTimeout(orderCallTimeout);
 
-  orderCallTimeout = setTimeout(runOrderCall, 2000)
+  orderCallTimeout = setTimeout(runOrderCall, 1000)
 }
 
 function runOrderCall() {
   let url = API_DOMAIN + "/grocery-list/set-list-order";
-  const groups = document.querySelectorAll("div.group");
+  const groups = document.querySelectorAll("div.rounded-block[group-id]");
   let group_hashes = [];
   for (let index = 0; index < groups.length; index++) {
     let group = groups[index];
-    group_hashes.push(group.getAttribute('group-id'));
+    group_hashes.push({
+      id: group.getAttribute('group-id'),
+      cluster: "General",
+      visible: group.querySelector("input[type='checkbox']").checked
+    });
   }
   let body = { list_ids: group_hashes, csrf: csrfToken };
   let xmlHttp = new XMLHttpRequest();
@@ -240,16 +262,14 @@ function swapGroups(groupOneId, groupTwoId) {
     mainList.insertBefore(groupOne, groupTwo);
   }
 }
-
-function addItem(group, item) {
+function addGroupToList(group) {
   let mainList = document.getElementById("content");
-  let listManagerList = document.getElementById('manage-list-content');
-
   const groupId = group.hash;
+
   let groupLi = document.querySelector(`div.group[group-id="${groupId}"]`);
   if (!groupLi) {
     let parent = document.createElement("div");
-    parent.style.display = 'flex';
+    parent.style.display = 'none';
     parent.classList.add('group-parent');
     groupLi = document.createElement("div");
     groupLi.setAttribute('group-id', groupId);
@@ -283,9 +303,16 @@ function addItem(group, item) {
     groupLi.appendChild(ulInIt);
     parent.appendChild(groupLi);
     mainList.appendChild(parent);
-
-    // also add it to the list manager pane
-    let managerDiv = document.createElement('div');
+  }
+  return groupLi;
+}
+function addGroupToListManager(group) {
+  let listManagerList = document.getElementById('manage-list-content');
+  const groupId = group.hash;
+  
+  let managerDiv = document.querySelector(`div.rounded-block[group-id="${groupId}"]`);
+  if (!managerDiv) {
+    managerDiv = document.createElement('div');
     managerDiv.classList.add('rounded-block');
     managerDiv.setAttribute('group-id', groupId);
 
@@ -315,7 +342,8 @@ function addItem(group, item) {
       let label = document.createElement("label");
       let input = document.createElement("input");
       input.type = 'checkbox';
-      input.checked=true;
+      input.checked = group.visible;
+      input.addEventListener('change',setVisible);
       label.appendChild(input);
       let span = document.createElement("span");
       span.innerText = 'Show list';
@@ -329,6 +357,13 @@ function addItem(group, item) {
       button.addEventListener("click", openShareWindow);
       managerDiv.appendChild(button);
     }
+    // {
+    //   let button = document.createElement("button");
+    //   button.innerText = "Change group";
+    //   button.setAttribute('group-id',groupId);
+    //   button.addEventListener("click", openGroupChangeWindow);
+    //   managerDiv.appendChild(button);
+    // }
     {
       let button = document.createElement("button");
       button.innerText = "Delete list";
@@ -338,8 +373,19 @@ function addItem(group, item) {
     }
     listManagerList.appendChild(managerDiv);
   }
+  return managerDiv;
+}
+
+function addItem(group, item) {
+  const groupId = group.hash;
+  let groupLi = addGroupToList(group);
+  let managerDiv = addGroupToListManager(group);
 
   let itemUl = groupLi.getElementsByClassName("ui-list")[0];
+
+  if (group.visible) {
+    findParentWithClass(itemUl, 'group-parent').style.display = 'flex';
+  }
 
   const itemId = item.hash;
   let itemLi = document.getElementById(itemId);
@@ -384,7 +430,9 @@ function addItem(group, item) {
     itemUl.appendChild(itemMap[key]);
   }
 }
+function openGroupChangeWindow(event) {
 
+}
 function crossToggle(event) {
   let div = event.target;
   let listItem = findParentWithClass(div, "list-item");
@@ -412,7 +460,7 @@ let crossOffPayloads = {};
 function queueCross(payload) {
   clearTimeout(crossOffTimeout);
   crossOffPayloads[payload.list_id + "_" + payload.item] = payload;
-  crossOffTimeout = setTimeout(runCrossOffs, 2000);
+  crossOffTimeout = setTimeout(runCrossOffs, 1000);
 }
 function runCrossOffs(event) {
   let url = API_DOMAIN + "/grocery-list/set-crossed-off";
@@ -431,6 +479,21 @@ function runCrossOffs(event) {
 
 function handleToggle(event) {
   const result = defaultHandlerV1(event);
+  if (Object.keys(cleanUpQueue).length > 0) {
+    let url = API_DOMAIN + "/grocery-list/clean-up-list";
+    let body = { list_ids: Object.keys(cleanUpQueue), csrf: csrfToken };
+    cleanUpQueue = {};
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true); // false for synchronous request
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleCleanup;
+    xmlHttp.send(JSON.stringify(body));
+    event.stopPropagation();
+  } 
+}
+
+function handleCleanup(event) {
+  const result = defaultHandlerV1(event);
 }
 
 function askToDeleteGroup(event) {
@@ -445,7 +508,8 @@ function removeItem(item) {
 
   let itemUl = groupLi.getElementsByClassName("ui-list")[0];
   if (!itemUl.firstElementChild) {
-    groupLi.remove();
+    let groupParent = findParentWithClass(groupLi, 'group-parent');
+    groupParent.style.display = 'none';
   }
 }
 function setStylesheet(uri) {
@@ -470,24 +534,25 @@ if (
 } else {
   setStylesheet("css/grocery-list-old.css?v=017");
 }
-const loader = document.getElementById("loading");
 function handleGetList(event) {
   const result = defaultHandlerV1(event);
   let groups = Object.keys(result);
   for (let i = 0; i < groups.length; i++) {
     let group = result[groups[i]];
+    addGroupToList(group);
+    addGroupToListManager(group);
     let items = result[groups[i]].items;
     for (let j = 0; j < items.length; j++) {
       let item = items[j];
       addItem(group, item);
     }
   }
-  loader.style.display = "none";
+  hideLoader();
   hideSubmit();
   applyEmulators(sideKeyListener);
 }
 function loadList(event) {
-  loader.style.display = "block";
+  showLoader();
   let url = API_DOMAIN + "/grocery-list/get-list";
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", url, true);

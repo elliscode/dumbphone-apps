@@ -171,3 +171,11 @@ a.selected, input.selected, button.selected, div.selected {
   max-height: 250px;
   font-size: 20px;
 }
+.fade-out {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s 2s, opacity 2s linear;
+}
+.hide-while-loading {
+  opacity:0;
+}

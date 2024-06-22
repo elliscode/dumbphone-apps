@@ -34,6 +34,8 @@
       <a id="sms-link">Click here to send as SMS</a>
     </div>
 
+    <div id="upload-links"></div>
+
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
@@ -48,6 +50,7 @@ if (
 }
 const loader = document.getElementById("loading");
 const submitButton = document.getElementById("submit");
+const uploadLinksDiv = document.getElementById('upload-links');
 loader.style.display = "none";
 
 let fileName = undefined;
@@ -115,7 +118,6 @@ function handleUpload(event) {
   const fileInput = document.getElementById("file");
   fileInput.disabled = false;
   const submitButton = document.getElementById("submit");
-  submitButton.disabled = false;
   submitButton.value = "Upload file";
   const form = document.getElementById("form");
   form.reset();
@@ -136,6 +138,8 @@ function handleUpload(event) {
 
     statusText.innerText =
       "Share your file! Send this link to your friends!";
+
+    createUploadEntry(fileName, Date.now());
 
     sendAcknowledgement(fileName);
   } else {
@@ -169,32 +173,31 @@ function handleGetFiles(event) {
   if (xmlHttp.status >= 200 && xmlHttp.status < 300) {
     results = {};
     let responseJson = JSON.parse(xmlHttp.responseText);
-    let sortedArray = responseJson.files.sort(
-      (x, y) => y.uploadDate - x.uploadDate
-    );
+    let sortedArray = responseJson.files;
     if (sortedArray.length > 0) {
       let title = document.createElement("p");
       title.innerText = "Previously uploaded items:";
       document.body.appendChild(title);
       for (let i = 0; i < sortedArray.length; i++) {
         let item = sortedArray[i];
-        let paragraph = document.createElement("p");
-        let timeSpan = document.createElement("span");
-        timeSpan.innerText = new Date(
-          parseInt(item.uploadDate) * 1000
-        ).toLocaleString();
-        paragraph.appendChild(timeSpan);
-        let spaceSpan = document.createElement("span");
-        spaceSpan.innerHTML = " &mdash; ";
-        paragraph.appendChild(spaceSpan);
-        let link = document.createElement("a");
-        link.href = UI_DOMAIN + "/fs/?id=" + item.name;
-        link.innerText = item.name;
-        paragraph.appendChild(link);
-        document.body.appendChild(paragraph);
+        createUploadEntry(item.name, parseInt(item.uploadDate) * 1000);
       }
     }
   }
+}
+function createUploadEntry(name, date) {
+  let paragraph = document.createElement("p");
+  let timeSpan = document.createElement("span");
+  timeSpan.innerText = new Date(date).toLocaleString();
+  paragraph.appendChild(timeSpan);
+  let spaceSpan = document.createElement("span");
+  spaceSpan.innerHTML = " &mdash; ";
+  paragraph.appendChild(spaceSpan);
+  let link = document.createElement("a");
+  link.href = UI_DOMAIN + "/fs/?id=" + name;
+  link.innerText = name;
+  paragraph.appendChild(link);
+  uploadLinksDiv.insertBefore(paragraph, uploadLinksDiv.firstElementChild);
 }
 setTimeout(getFiles, 100);
     </script>

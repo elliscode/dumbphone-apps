@@ -173,3 +173,13 @@ button {
 .old-ui {
   display: none!important;
 }
+#info {
+  background-color:#fff;
+  border:2px solid blue;
+  border-bottom-width:0px;
+}
+.rounded-block {
+  background-color:#fff;
+  margin-left:5px;
+  margin-right:5px;
+}

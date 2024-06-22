@@ -14,7 +14,7 @@
       <b><a href="..">Home</a></b> &gt; <b>grocery-list</b>
     </div>
 
-    <div id="content-full" class="panel">
+    <div id="content-full" class="panel hide-while-loading">
       <div class="top-bar">
         <div class="logout">
           <div class="new-ui">
@@ -82,11 +82,17 @@
       <div class="rounded-block">
         <div class="rounded-title">Delete</div>
         <p>Are you sure you want to delete &ldquo;<span id="delete-list-name">this</span>&rdquo;?</p>
+        <p>If this is a shared list, it will only delete from your account, the other accounts will still have access.</p>
         <div>
-          <button id="share-button" onclick="deleteList(event)">Delete</button>
+          <button id="delete-button" onclick="deleteList(event)">Delete</button>
           <button onclick="showPanel('list-manager')">Cancel</button>
         </div>
       </div>
+    </div>
+
+    <div id="info" style="display:none;">
+      <p id="info-p"></p>
+      <button onclick="closeInfoWindow(event)" class="delete">&times;</button>
     </div>
 
     <div id="loading">

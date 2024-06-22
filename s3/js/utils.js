@@ -179,7 +179,7 @@ function closeModal(event) {
 let previousValue = undefined;
 let previousArrowTime = new Date();
 function arrowKeyEmulator(event, functionHandle) {
-  if (preventDefaultKeys.includes(event.key) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
+  if ((event.target.tagName.toLowerCase() != 'textarea' && preventDefaultKeys.includes(event.key)) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
     event.preventDefault();
   }
   if (event.type == 'keydown' && event.target.type == 'number' && preventDefaultOnNumberInput.includes(event.key)) {
@@ -217,7 +217,7 @@ function arrowKeyEmulator(event, functionHandle) {
       previousArrowTime = new Date();
     }
   }
-  if (event.type === 'keydown' && (event.target.hasAttribute('linked-item')) && ['Enter'].includes(event.key)) {
+  if (event.target.tagName.toLowerCase() != 'textarea' && event.type === 'keydown' && (event.target.hasAttribute('linked-item')) && ['Enter'].includes(event.key)) {
     let button = event.target.parentElement.getElementsByClassName('selectable')[0];
     button.click();
   }
@@ -312,6 +312,35 @@ function showPanel(id) {
     let modalBg = findParentWithClass(selected, 'modal-bg');
     modalBg.style.display = 'flex';
   }
+  closeInfoWindow();
+}
+let infoWindowCloseTimeout = undefined;
+let infoWindowFadeTimeout = undefined;
+function openInfoWindow(text, disableFade=false) {
+  clearTimeout(infoWindowCloseTimeout);
+  clearTimeout(infoWindowFadeTimeout);
+  let info = document.getElementById("info");
+  info.classList.remove('fade-out');
+  info.style.display = "block";
+  let infoP = document.getElementById("info-p");
+  infoP.innerText = text;
+  if (!disableFade) {
+    infoWindowCloseTimeout = setTimeout(startInfoWindowFade, 2000);
+  }
+}
+function startInfoWindowFade() {
+  let info = document.getElementById('info');
+  if (info) {
+    info.classList.add('fade-out');
+  }
+  infoWindowFadeTimeout = setTimeout(closeInfoWindow, 2000);
+}
+function closeInfoWindow() {
+  let info = document.getElementById('info');
+  if (info) {
+    info.style.display = 'none';
+    info.classList.remove('fade-out');
+  }
 }
 function scrollToItem(domItem) {
   domItem.scrollIntoView({beharior: 'instant', block: 'nearest'});
@@ -319,6 +348,19 @@ function scrollToItem(domItem) {
   if (diff > 0) {
     window.scrollBy(0, diff);
   }
+}
+function showLoader() {
+  let loader = document.getElementById('loading');
+  if (loader) {
+    loader.style.display = 'block';
+  }
+}
+function hideLoader() {
+  let loader = document.getElementById('loading');
+  if (loader) {
+    loader.style.display = "none";
+  }
+  Array.from(document.getElementsByClassName('hide-while-loading')).forEach(x=>x.classList.remove('hide-while-loading'));
 }
 // allows for clicking the background of the modal to exit the modal
 let modalBackgrounds = document.getElementsByClassName("modal-bg");

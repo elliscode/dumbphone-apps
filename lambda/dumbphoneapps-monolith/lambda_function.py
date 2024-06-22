@@ -28,6 +28,7 @@ from dumbphoneapps.grocery_list import (
     sendsharelist_route,
     acceptsharelist_route,
     cleanuplist_route,
+    deletelist_route
 )
 from dumbphoneapps.notes import (
     get_notes_route,
@@ -128,6 +129,8 @@ def route(event):
         return acceptsharelist_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/clean-up-list"):
         return cleanuplist_route(event)
+    if path_equals(event=event, method="POST", path="/grocery-list/delete-list"):
+        return deletelist_route(event)
     if path_equals(event=event, method="POST", path="/food-diary/get-day"):
         return get_day_route(event)
     if path_equals(event=event, method="POST", path="/food-diary/search"):

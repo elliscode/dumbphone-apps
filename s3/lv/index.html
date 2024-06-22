@@ -18,12 +18,15 @@
     <div>
       <b><a href="../index.html">Home</a></b> &gt; <b>location-sharer</b>
     </div>
-    <p id="json"></p>
-    <p id="info"></p>
-
+    <p style="display:inline-block;" id="json"></p>
     <button onclick="resumeLocation(event)" id="resume" style="display: none">
       Resume
     </button>
+    <div id="info" style="display:none;">
+      <p id="info-p"></p>
+      <button onclick="closeInfoWindow(event)" class="delete">&times;</button>
+    </div>
+
 
     <div id="map" style="width: 100%; height: calc(100vh - 85px);"></div>
 
@@ -57,7 +60,6 @@ if (!!csrfToken) {
 
 const locationToken = getParameterByName("id");
 const json = document.getElementById("json");
-const info = document.getElementById("info");
 const TIME_LIMIT = 60 * 60;
 let locationTimeout = undefined;
 
@@ -69,8 +71,7 @@ function resumeLocation(event) {
     return;
   }
   previousValues = [];
-  info.innerText = "Resuming location...";
-  info.style.display = 'block';
+  openInfoWindow("Resuming location...");
   getCurrentLocation();
 }
 
@@ -140,8 +141,7 @@ function handleShare(event) {
       '<a href="https://www.google.com/maps/search/?api=1&query=' +
       value +
       '">Click here for directions</a>';
-    info.innerText = `last updated ${timestamp.toLocaleString()}`;
-    info.style.display = 'none';
+    // openInfoWindow(`last updated ${timestamp.toLocaleString()}`);
     if (window.isES6) {
       moveMarker();
     }
@@ -155,10 +155,8 @@ function handleShare(event) {
       previousValues.length == 6 &&
       previousValues.every((val) => val === previousValues[0])
     ) {
-      info.innerText =
-        "Reported position hasn't changed for the last 60 seconds, assuming the user stopped sharing...";
-      info.style.display = 'block';
-      resumeButton.style.display = "block";
+      openInfoWindow("Reported position hasn't changed for the last 60 seconds, assuming the user stopped sharing...", true);
+      resumeButton.style.display = "inline-block";
       return;
     }
 
