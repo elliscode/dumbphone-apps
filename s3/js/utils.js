@@ -205,10 +205,12 @@ function arrowKeyEmulator(event, functionHandle) {
         inputs = inputs.filter(x=>x.getAttribute('input-group-name') == currentTarget);
       }
       let index = inputs.indexOf(event.target);
-      index = index + (event.key === 'ArrowUp' ? -1 : 1);
-      index = index < 0 ? inputs.length - 1 : index;
-      index = index > inputs.length - 1 ? 0 : index;
-      inputs[index].focus();
+      do {
+        index = index + (event.key === 'ArrowUp' ? -1 : 1);
+        index = index < 0 ? inputs.length - 1 : index;
+        index = index > inputs.length - 1 ? 0 : index;
+      } while (!noParentsWithDisplayNone(inputs[index]))
+      inputs[index].focus()
       if (event.type === 'keydown' && 
           (inputs[index].hasAttribute('linked-item'))) {
         let checkbox = inputs[index].parentElement.getElementsByClassName('selectable')[0];
@@ -225,6 +227,15 @@ function arrowKeyEmulator(event, functionHandle) {
     functionHandle(event);
   }
   previousValue = event.target.value;
+}
+function noParentsWithDisplayNone(current) {
+  while(current) {
+    if (current.style.display == 'none') {
+      return false;
+    }
+    current = current.parentElement;
+  }
+  return true;
 }
 function blurEmulator(event) {
   let selecteds = Array.from(document.getElementsByClassName('selected'));
@@ -344,9 +355,14 @@ function closeInfoWindow() {
 }
 function scrollToItem(domItem) {
   domItem.scrollIntoView({beharior: 'instant', block: 'nearest'});
-  let diff = domItem.getBoundingClientRect().bottom - (window.innerHeight - 40);
-  if (diff > 0) {
-    window.scrollBy(0, diff);
+  let topDiff = domItem.getBoundingClientRect().top - 40;
+  if (topDiff < 0) {
+    window.scrollBy(0, topDiff);
+  } else {
+    let bottomDiff = domItem.getBoundingClientRect().bottom - (window.innerHeight - 40);
+    if (bottomDiff > 0) {
+      window.scrollBy(0, bottomDiff);
+    }
   }
 }
 function showLoader() {

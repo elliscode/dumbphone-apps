@@ -1,7 +1,9 @@
 .search-bar {
   display:flex;
+  position:fixed;
+  top:0px;
   background-color: #fff;
-  width:100%;
+  width:calc(100% - 16px);
   height:40px;
   padding: 0px;
   margin: 0px;
@@ -18,7 +20,7 @@ label {
   background-color: #fff;
   width:100%;
   padding: 0px;
-  margin: 0px 0px 40px 0px;
+  margin: 40px 0px 40px 0px;
   overflow-y: auto;
   overflow-x: none;
   z-index: 2;

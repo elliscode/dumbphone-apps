@@ -4,10 +4,10 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Food Diary</title>
-  <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
-  <link rel="stylesheet" href="css/fooddiary.css?v=017" />
-  <link rel="stylesheet" href="../css/loader.css?v=017" />
-  <link rel="icon" type="image/png" href="../img/food.favicon.png?v=017" />
+  <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
+  <link rel="stylesheet" href="css/fooddiary.css?v=015" />
+  <link rel="stylesheet" href="../css/loader.css?v=015" />
+  <link rel="icon" type="image/png" href="../img/food.favicon.png?v=015" />
 </head>
 
 <body>
@@ -27,10 +27,6 @@
       <div></div>
       <div></div>
     </div>
-  </div>
-
-  <div>
-    <b><a href="..">Home</a></b> &gt; <b>food-diary</b>
   </div>
 
   <div class="search-blob" id="food-search" style="display:none;">
@@ -119,6 +115,10 @@
   </div>
 
   <div class="panel" id="content">
+    <div>
+      <b><a href="..">Home</a></b> &gt; <b>food-diary</b>
+    </div>
+
     <div style="display: inline">
       <input onchange="setDate(event)" id="date-picker" type="date" />
     </div>
@@ -135,9 +135,9 @@
       <button onclick="logOut(event)">Log out</button>
     </div>
   </div>
-  <script src="../js/utils.js?v=017"></script>
+  <script src="../js/utils.js?v=015"></script>
   <script src="../js/env.js"></script>
-  <script src="js/fooddiary.js?v=017"></script>
+  <script src="js/fooddiary.js?v=015"></script>
 </body>
 
 </html>

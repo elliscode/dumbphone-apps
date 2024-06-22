@@ -45,8 +45,9 @@ function handleAddList(event) {
   if (result.hasOwnProperty("group") && result.hasOwnProperty("item")) {
     addItem(result.group, result.item);
   }
-
-  applyEmulators(sideKeyListener);
+  if (!(!navigator.userAgent.includes("Chrome") && navigator.userAgent.includes("Safari"))) {
+    applyEmulators(sideKeyListener);
+  }
 }
 function findFirstChildWithClass(element, className) {
   const results = element.getElementsByClassName(className);
@@ -278,7 +279,9 @@ function addGroupToList(group) {
     groupLi.style.flexGrow = '1';
 
     let itemsList = document.createElement("h2");
-    itemsList.addEventListener('click', focusList);
+    if (!(!navigator.userAgent.includes("Chrome") && navigator.userAgent.includes("Safari"))) {
+      itemsList.addEventListener('click', focusList);
+    }
     let nameSpan = document.createElement("span");
     nameSpan.classList.add("name");
     nameSpan.innerText = group.name;
@@ -523,10 +526,7 @@ function setStylesheet(uri) {
   head.appendChild(link);
 }
 let oldUi = true;
-if (
-  !navigator.userAgent.includes("Chrome") &&
-  navigator.userAgent.includes("Safari")
-) {
+if (!navigator.userAgent.includes("Chrome") && navigator.userAgent.includes("Safari")) {
   oldUi = false;
   iosCookieRefresh();
   setStylesheet("css/grocery-list-new.css?v=017");
@@ -549,7 +549,9 @@ function handleGetList(event) {
   }
   hideLoader();
   hideSubmit();
-  applyEmulators(sideKeyListener);
+  if (!(!navigator.userAgent.includes("Chrome") && navigator.userAgent.includes("Safari"))) {
+    applyEmulators(sideKeyListener);
+  }
 }
 function loadList(event) {
   showLoader();
@@ -608,6 +610,7 @@ function sideKeyListener(event) {
     item.focus();
     let checkbox = item.parentElement.getElementsByClassName('selectable')[0];
     checkbox.classList.add('selected');
+    scrollToItem(item);
   }
   if (event.type == 'keyup' && ['ArrowUp','ArrowDown'].includes(event.key)) {
     let element = event.target;
