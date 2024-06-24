@@ -3,10 +3,10 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Discord Client</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
-    <link rel="stylesheet" href="../css/loader.css?v=015" />
-    <link rel="stylesheet" href="css/discord.css?v=015" />
-    <link rel="icon" type="image/png" href="../img/discord.favicon.png?v=015" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
+    <link rel="stylesheet" href="../css/loader.css?v=017" />
+    <link rel="stylesheet" href="css/discord.css?v=017" />
+    <link rel="icon" type="image/png" href="../img/discord.favicon.png?v=017" />
   </head>
 
   <body>
@@ -14,21 +14,32 @@
       <b><a href="../index.html">Home</a></b> &gt; <b>discord</b>
     </div>
 
-    <hr />
+    <div class="panel" id="content">
+      <div class="logout" style="top:0px;">
+        <button onclick="logOut(event)">Log out</button>
+      </div>
 
-    <div class="history-container">
-      <p id="history"></p>
+      <hr />
+
+      <div class="history-container">
+        <p id="history"></p>
+      </div>
+
+      <div class="top-right-buttons">
+        <button class="dms" onclick="getDms(event)">DMs</button>
+        <button class="settings" onclick="openSettings(event)">
+          Settings
+        </button>
+      </div>
+      <button class="back" onclick="goBack(event)">&lt; Back</button>
+
+      <hr />
+
+      <div id="dynamic-content"></div>
+      
     </div>
 
-    <div class="top-right-buttons">
-      <button class="dms" onclick="getDms(event)">DMs</button>
-      <button class="settings" for="settings-div" onclick="openSettings(event)">
-        Settings
-      </button>
-    </div>
-    <button class="back" onclick="goBack(event)">&lt; Back</button>
-
-    <div style="display: none" id="settings-div" class="modal-bg">
+    <div style="display: none" id="settings-div" class="panel">
       <div class="modal">
         <label>Discord Token:</label>
         <input id="token" type="text" />
@@ -39,8 +50,6 @@
         </button>
       </div>
     </div>
-
-    <hr />
 
     <div id="loading">
       <div class="lds-spinner">
@@ -58,12 +67,8 @@
         <div></div>
       </div>
     </div>
-
-    <div class="logout">
-      <button onclick="logOut(event)">Log out</button>
-    </div>
-    <script src="../js/utils.js?v=015"></script>
+    <script src="../js/utils.js?v=017"></script>
     <script src="../js/env.js"></script>
-    <script src="js/discord.js?v=015"></script>
+    <script src="js/discord.js?v=017"></script>
   </body>
 </html>

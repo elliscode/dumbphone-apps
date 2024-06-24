@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Location Sharer</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
-    <link rel="stylesheet" href="../css/loader.css?v=015" />
-    <link rel="icon" type="image/png" href="../img/pin.favicon.png?v=015" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
+    <link rel="stylesheet" href="../css/loader.css?v=017" />
+    <link rel="icon" type="image/png" href="../img/pin.favicon.png?v=017" />
     <style>
       body {
         padding-bottom: 30px;
@@ -21,7 +21,7 @@
       <b><a href="../index.html">Home</a></b> &gt; <b>location-sharer</b>
     </div>
 
-    <button id="share-button" onclick="getCurrentLocation(event)">
+    <button class="giant-button" id="share-button" onclick="getCurrentLocation(event)" primary-button>
       Share location
     </button>
 
@@ -53,21 +53,19 @@
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=015"></script>
+    <script src="../js/utils.js?v=017"></script>
     <script src="../js/env.js"></script>
-    <script src="js/location-sharer.js?v=015"></script>
+    <script src="js/location-sharer.js?v=017"></script>
     <script>
-      if (!csrfToken) {
-        window.location.replace("../signup.html");
-      }
-      if (
-        !navigator.userAgent.includes("Chrome") &&
-        navigator.userAgent.includes("Safari")
-      ) {
-        iosCookieRefresh();
-      }
-      const loader = document.getElementById("loading");
-      loader.style.display = "none";
+if (
+  !navigator.userAgent.includes("Chrome") &&
+  navigator.userAgent.includes("Safari")
+) {
+  iosCookieRefresh();
+}
+checkIfLoggedIn();
+const loader = document.getElementById("loading");
+loader.style.display = "none";
     </script>
   </body>
 </html>

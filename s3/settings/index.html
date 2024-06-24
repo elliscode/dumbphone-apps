@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Quiz Diary</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
-    <link rel="stylesheet" href="../css/loader.css?v=015" />
-    <link rel="icon" type="image/png" href="../img/phone.favicon.png?v=015" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
+    <link rel="stylesheet" href="../css/loader.css?v=017" />
+    <link rel="icon" type="image/png" href="../img/phone.favicon.png?v=017" />
     <style>
     </style>
   </head>
@@ -13,6 +13,20 @@
   <body>
     <div>
       <b><a href="../index.html">Home</a></b> &gt; <b>settings</b>
+    </div>
+
+    <div class="panel" id="content">
+      <button onclick="confirmLogoutAll()">Log out of all devices</button>
+      <div class="logout">
+        <button onclick="logOut(event)">Log out</button>
+      </div>
+    </div>
+
+    <div id="logout-all-confirm" style="display:none;" class="panel">
+      <div class="modal">
+        <p>Are you sure you want to log out of all devices?</p>
+        <button onclick="logoutAll(event)">Yes</button><button onclick="closeModals(event)">Cancel</button>
+      </div>
     </div>
 
     <div id="loading">
@@ -31,31 +45,15 @@
         <div></div>
       </div>
     </div>
-
-    <button onclick="confirmLogoutAll()">Log out of all devices</button>
-
-    <div id="logout-all-confirm" style="display:none;" class="modal-bg">
-      <div class="modal">
-        <p>Are you sure you want to log out of all devices?</p>
-        <button onclick="logoutAll(event)">Yes</button><button onclick="closeModals(event)">Cancel</button>
-      </div>
-    </div>
-
-
-    <div class="logout">
-      <button onclick="logOut(event)">Log out</button>
-    </div>
-    <script src="../js/utils.js?v=015"></script>
+    <script src="../js/utils.js?v=017"></script>
     <script src="../js/env.js"></script>
     <script>
 let loader = document.getElementById("loading");
 function confirmLogoutAll(event) {
-  closeModals(event);
-  document.getElementById('logout-all-confirm').style.display = 'flex';
+  showPanel('logout-all-confirm')
 }
 function closeModals(event) {
-  let modals = Array.from(document.getElementsByClassName('modal-bg'));
-  modals.forEach(m=>m.style.display='none')
+  showPanel('content');
 }
 function logoutAll(event) {
   let url = API_DOMAIN + "/logout-all";
@@ -68,15 +66,13 @@ function logoutAll(event) {
 function handle(event) {
   logOut(event);
 }
-if (!csrfToken) {
-  window.location.replace("../signup.html");
-}
 if (
   !navigator.userAgent.includes("Chrome") &&
   navigator.userAgent.includes("Safari")
 ) {
   iosCookieRefresh();
 }
+checkIfLoggedIn();
 loader.style.display = "none";
     </script>
   </body>

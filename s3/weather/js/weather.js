@@ -1,6 +1,4 @@
-if (!csrfToken) {
-  window.location.replace("../signup.html");
-}
+checkIfLoggedIn();
 if (
   !navigator.userAgent.includes("Chrome") &&
   navigator.userAgent.includes("Safari")

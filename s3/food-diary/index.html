@@ -39,16 +39,20 @@
   </div>
 
   <div class="panel" id="food-edit" style="display:none;">
-    <label>Name:<input input-group-name="food-edit" id="food-edit-name" type="text" /></label>
-    <label>Calories:<input input-group-name="food-edit" id="food-edit-calories" type="tel" onkeydown="forceToDecimal(event)" /></label>
-    <label>Fat:<input input-group-name="food-edit" id="food-edit-fat" type="tel" onkeydown="forceToDecimal(event)" />g</label>
-    <label>Carbs:<input input-group-name="food-edit" id="food-edit-carbs" type="tel" onkeydown="forceToDecimal(event)" />g</label>
-    <label>Protein:<input input-group-name="food-edit" id="food-edit-protein" type="tel" onkeydown="forceToDecimal(event)" />g</label>
-    <label>Alcohol:<input input-group-name="food-edit" id="food-edit-alcohol" type="tel" onkeydown="forceToDecimal(event)" />g</label>
-    <label>Caffeine:<input input-group-name="food-edit" id="food-edit-caffeine" type="tel" onkeydown="forceToDecimal(event)" />mg</label>
-    <!-- <button id="food-edit-recipe" onclick="displayRecipe(event)">Edit Recipe</button> -->
-    <div><button input-group-name="food-edit" id="food-edit-save" onclick="saveFood(event)">Save</button></div>
-    <div><button input-group-name="food-edit" onclick="closeFood(event)">&times;</button></div>
+    <div class="modal">
+      <label>Name:<input input-group-name="food-edit" id="food-edit-name" type="text" /></label>
+      <label>Calories:<input input-group-name="food-edit" id="food-edit-calories" type="tel" onkeydown="forceToDecimal(event)" /></label>
+      <label>Fat:<input input-group-name="food-edit" id="food-edit-fat" type="tel" onkeydown="forceToDecimal(event)" />g</label>
+      <label>Carbs:<input input-group-name="food-edit" id="food-edit-carbs" type="tel" onkeydown="forceToDecimal(event)" />g</label>
+      <label>Protein:<input input-group-name="food-edit" id="food-edit-protein" type="tel" onkeydown="forceToDecimal(event)" />g</label>
+      <label>Alcohol:<input input-group-name="food-edit" id="food-edit-alcohol" type="tel" onkeydown="forceToDecimal(event)" />g</label>
+      <label>Caffeine:<input input-group-name="food-edit" id="food-edit-caffeine" type="tel" onkeydown="forceToDecimal(event)" />mg</label>
+      <!-- <button id="food-edit-recipe" onclick="displayRecipe(event)">Edit Recipe</button> -->
+      <div><button input-group-name="food-edit" id="food-edit-save" onclick="saveFood(event)">Save</button></div>
+      <div class="logout">
+        <button input-group-name="food-edit" onclick="closeFood(event)">&times;</button>
+      </div>
+    </div>
   </div>
 
   <div class="panel" id="recipe-edit" style="display:none;">
@@ -63,40 +67,44 @@
     </div>
   </div>
 
-  <div class="modal-bg" style="display:none;">
-    <div class="modal" id="servings">
-      <input id="servings-amount" type="tel" placeholder="amount" onkeydown="forceToDecimal(event)" />
-      <select id="servings-name" onchange="servingChange(event)">
-        <option>Test One</option>
-        <option>Test Two</option>
-      </select>
-      <button style="display: none" id="servings-edit" onclick="editServing(event)">
-        &#x270E;
-      </button>
-      <input type="text" id="servings-text" placeholder="serving name" />
-      <input type="tel" id="calories-text" placeholder="calories" onkeydown="forceToDecimal(event)" />
-      <button id="servings-save" onclick="saveServing(event)">Save</button>
-      <button id="servings-create" onclick="createServing(event)">
-        Create
-      </button>
-      <button onclick="closeServings(event)">&times;</button>
-    </div>
+  <div class="panel" id="servings">
+    <input id="servings-amount" type="tel" placeholder="amount" onkeydown="forceToDecimal(event)" />
+    <select id="servings-name" onchange="servingChange(event)">
+      <option>Test One</option>
+      <option>Test Two</option>
+    </select>
+    <button style="display: none" id="servings-edit" onclick="editServing(event)">
+      &#x270E;
+    </button>
+    <input type="text" id="servings-text" placeholder="serving name" />
+    <input type="tel" id="calories-text" placeholder="calories" onkeydown="forceToDecimal(event)" />
+    <button id="servings-save" onclick="saveServing(event)">Save</button>
+    <button id="servings-create" onclick="createServing(event)">
+      Create
+    </button>
+    <button onclick="closeServings(event)">&times;</button>
   </div>
-  <div class="modal-bg" style="display:none;">
-    <div class="modal" id="recipe-servings">
-      <input id="recipe-servings-amount" type="tel" onkeydown="forceToDecimal(event)" placeholder="amount" />
-      <select id="recipe-servings-name" onchange="servingRecipeChange(event)">
-        <option>Test One</option>
-        <option>Test Two</option>
-      </select>
-      <button id="recipe-servings-save" onclick="alterRecipeServing(event)">
-        Save
-      </button>
+
+  <div class="panel" id="recipe-servings">
+    <input id="recipe-servings-amount" type="tel" onkeydown="forceToDecimal(event)" placeholder="amount" />
+    <select id="recipe-servings-name" onchange="servingRecipeChange(event)">
+      <option>Test One</option>
+      <option>Test Two</option>
+    </select>
+    <button id="recipe-servings-save" onclick="alterRecipeServing(event)">
+      Save
+    </button>
+    <div class="logout">
       <button onclick="closeRecipeServings(event)">&times;</button>
     </div>
   </div>
-  <div class="modal-bg" style="display:none;">
-    <div class="modal" id="totals-modal" style="display:none;">
+
+  <div class="panel" id="totals-modal" style="display:none;">
+    <div class="modal" style="min-width:150px;">
+      <p>Totals:</p>
+      <div class="logout">
+        <button onclick="showPanel('content')">&times;</button>
+      </div>
       <p>Calories: <span><span id="total-calories"></span> kcal</span></p>
       <p>Caffeine: <span><span id="total-caffeine"></span> mg</span></p>
       <p>Protein: <span><span id="total-protein"></span> g</span></p>
@@ -107,9 +115,10 @@
   </div>
 
   <div class="panel" id="content">
-    <div style="display: inline">
+    <div>
       <b><a href="..">Home</a></b> &gt; <b>food-diary</b>
     </div>
+
     <div style="display: inline">
       <input onchange="setDate(event)" id="date-picker" type="date" />
     </div>

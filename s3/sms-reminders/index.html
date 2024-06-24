@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SMS Reminders</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
-    <link rel="stylesheet" href="../css/loader.css?v=015" />
-    <link rel="icon" type="image/png" href="../img/alarm.favicon.png?v=015" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
+    <link rel="stylesheet" href="../css/loader.css?v=017" />
+    <link rel="icon" type="image/png" href="../img/alarm.favicon.png?v=017" />
     <style>
     </style>
   </head>
@@ -15,205 +15,46 @@
       <b><a href="../index.html">Home</a></b> &gt; <b>sms-reminders</b>
     </div>
 
-    <div style="
-    border: 1px solid black;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 10px;
-    margin-top: 15px;
-    position:relative;
-">
-      <div style="
-      position: absolute;
-      top: calc(-0.5em - 5px);
-      background-color: #fff;
-      text-align: center;
-      padding: 5px;
-      box-sizing: border-box;
-      border-radius: 5px;
-      border: 1px black solid;
-  ">How it works</div>
-    <p style="
-    margin-bottom:0px;
-">Send yourself an SMS in the future, to remind you of something important</p>
+    <div class="rounded-block">
+      <div class="rounded-title">How it works</div>
+    <p>Send yourself an SMS in the future, to remind you of something important</p>
   </div>
-    <div style="
-    border: 1px solid black;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 10px;
-    margin-top: 20px;
-    position:relative;
-">
-      <div style="
-      position: absolute;
-      top: calc(-0.5em - 5px);
-      background-color: #fff;
-      text-align: center;
-      padding: 5px;
-      box-sizing: border-box;
-      border-radius: 5px;
-      border: 1px black solid;
-  ">Step 1: Set Time</div>
-      <!-- <div style="
-      padding-top: 10px;
-  ">
-        <label><input radio-group="time-group" onchange="exclusivityCallback(event)" type="radio"/>
-          Relative Time:
-          <select>
-            <option>Select a relative time</option>
-            <option>1 hour from now</option>
-            <option>3 hours from now</option>
-            <option>6 hours from now</option>
-            <option>12 hours from now</option>
-            <option>1 day from now</option>
-            <option>3 days from now</option>
-            <option>1 week from now</option>
-            <option>1 month from now</option>
-            <option>3 months from now</option>
-            <option>1 year from now</option>
-            <option>2 years from now</option>
-          </select>
-        </label>
-      </div>
-      <div style="position:relative;">
-        <hr style="
-        margin: 15px 0px;
-    ">
-        <div style="
-        position: absolute;
-        top: calc(-0.5em - 5px);
-        left: calc(1.5em);
-        width: 40px;
-        background-color: #fff;
-        text-align: center;
-        padding: 5px;
-        box-sizing: border-box;
-        border-radius: 5px;
-        border: 1px black solid;
-    ">OR</div>
-      </div> -->
-      <div style="
-      padding-top: 10px;
-  ">
+    <div class="rounded-block">
+      <div class="rounded-title">Step 1: Set Time</div>
+      <div>
         <label>
-          <!-- <input radio-group="time-group" onchange="exclusivityCallback(event)" type="radio"/> -->
           Date and time:
           <input onchange="checkIfValid(event)" id="reminder-date" type="date"/>
           <input onchange="checkIfValid(event)" id="reminder-time" type="time"/>
         </label>
       </div>
     </div>
-    <div style="
-    margin-top:20px;
-    border: 1px solid black;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 10px;
-    position:relative;
-">
-      <div style="
-      position: absolute;
-      top: calc(-0.5em - 5px);
-      background-color: #fff;
-      text-align: center;
-      padding: 5px;
-      box-sizing: border-box;
-      border-radius: 5px;
-      border: 1px black solid;
-  ">Step 2: Set Message</div>
-      <div style="
-      padding-top: 15px;
-  ">
-        <input oninput="checkIfValid(event)" id="reminder-text" style="
-        box-sizing:border-box;
-        width:100%;
-" type="text"/>
+    <div class="rounded-block">
+      <div class="rounded-title">Step 2: Set Message</div>
+      <div>
+        <input oninput="checkIfValid(event)" id="reminder-text" style="box-sizing:border-box; width:100%;" type="text"/>
       </div>
     </div>
 
 
 
-    <div style="
-    display:none;
-    margin-top:0px;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 10px;
-    position:relative;
-">
+    <div class="rounded-block-without-title" style="display:none;">
       <p style="margin:0px;" id="status"></p>
     </div>
 
-    <div style="
-    display:flex;
-    justify-content: flex-start;
-">
-      <button id="create-button" disabled onclick="createReminder(event)" style="
-      border-radius: 5px;
-      padding: 10px;
-      margin-bottom: 10px;
-      position:relative;
-  ">Step 3: Create Reminder</button>
+    <div style="display:flex; justify-content: flex-start;">
+      <button id="create-button" disabled onclick="createReminder(event)" class="rounded-button">Step 3: Create Reminder</button>
     </div>
-
-<!-- <div style="
-margin-top:10px;
-border: 1px solid black;
-border-radius: 5px;
-padding: 10px;
-margin-bottom: 10px;
-position:relative;
-">
-  <div style="
-  position: absolute;
-  top: calc(-0.5em - 5px);
-  background-color: #fff;
-  text-align: center;
-  padding: 5px;
-  box-sizing: border-box;
-  border-radius: 5px;
-  border: 1px black solid;
-">Existing Reminders</div>
-  <div id="reminders" style="
-  padding-top: 10px;
-">
-<div class="existing-reminder">
-  <span></span>
-</div>
-  </div>
-</div> -->
 
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=015"></script>
+    <script src="../js/utils.js?v=017"></script>
     <script src="../js/env.js"></script>
     <script>
 const remindersDiv = document.getElementById('reminders');
 
 applyEmulators();
-
-// function exclusivityCallback(event) {
-//   let radioGroupName = event.target.getAttribute('radio-group');
-//   let allRadios = document.querySelectorAll(`[radio-group="${radioGroupName}"]`);
-//   for (let radio of allRadios) {
-//     if (radio == event.target) {
-//     for (let item of Array.from(radio.parentElement.children)) {
-//       item.removeAttribute('disabled');
-//     }
-//       continue;
-//     }
-//     radio.checked = false;
-//     for (let item of Array.from(radio.parentElement.children)) {
-//       if (item == radio) {
-//         continue;
-//       }
-//       item.setAttribute('disabled', 'true');
-//     }
-//   }
-//   checkIfValid(event);
-// }
 
 const createButton = document.getElementById('create-button');
 const reminderDate = document.getElementById('reminder-date');

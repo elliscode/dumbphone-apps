@@ -13,6 +13,9 @@ h1 {
   padding: 5px;
   border-radius: 20px;
   font-size: 16px;
+  background-color: #ddd;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
 }
 
 .ui-list div.name {
@@ -46,12 +49,6 @@ h1 {
   font-weight: normal;
 }
 
-.ui-list li {
-  background-color: #ddd;
-  margin-top: 5px;
-  overflow-wrap: anywhere;
-}
-
 li {
   position: relative;
 }
@@ -79,12 +76,6 @@ input.big {
   border-radius: 20px;
 }
 
-.logout {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
 .add-to-group {
   width: 100%;
   padding-right: 0px;
@@ -105,38 +96,6 @@ table,
 th,
 td {
   border: 1px solid;
-}
-
-#share {
-  position: fixed;
-  bottom: 0px;
-  left: 0px;
-  box-sizing: border-box;
-  width: 100%;
-  background-color: #ccc;
-  z-index: 12;
-  padding: 20px;
-  border-radius: 20px 20px 0px 0px;
-}
-
-#share p {
-  margin-top: 0px;
-}
-
-#info {
-  position: fixed;
-  bottom: 0px;
-  left: 0px;
-  box-sizing: border-box;
-  width: 100%;
-  background-color: #ccc;
-  z-index: 12;
-  padding: 20px;
-  border-radius: 20px 20px 0px 0px;
-}
-
-#info p {
-  margin: 0px;
 }
 
 .error {
@@ -185,18 +144,10 @@ td {
   flex-grow: 1;
   min-width: 10px;
 }
-#tool-bar {
-  display: none;
-}
 #title-bar {
   display: none;
 }
-.logout {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-#breadcrumb {
+.old-ui {
   display: inline;
 }
 .crossed-off {
@@ -204,4 +155,7 @@ td {
 }
 h2 button {
   padding: 1px 0px;
+}
+.new-ui {
+  display:none;
 }

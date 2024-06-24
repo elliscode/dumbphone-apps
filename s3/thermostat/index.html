@@ -3,10 +3,109 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Thermostat</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
-    <link rel="stylesheet" href="../css/loader.css?v=015" />
-    <link rel="icon" type="image/png" href="../img/thermometer.favicon.png?v=015" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
+    <link rel="stylesheet" href="../css/loader.css?v=017" />
+    <link rel="icon" type="image/png" href="../img/thermometer.favicon.png?v=017" />
     <style>
+.thermostat {
+  max-width: 600px;
+  box-sizing: border-box;
+  display: block;
+  position: relative;
+  background-color: #2A3038;
+  width: 100%;
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+.dial-parent {
+  margin-top: 1%;
+  margin-left: 10%;
+  max-width: calc(600px* 0.8);
+  max-height: calc(600px* 0.8);
+  box-sizing: border-box;
+  width: calc(80vw - 16px);
+  height: calc(80vw - 16px);
+  background-color: #fff5;
+  border-radius: 50%;
+  position: relative;
+}
+.dial {
+  box-sizing: border-box;
+  width: calc(100%);
+  height: calc(100%);
+  border-radius: 50%;
+  position: absolute;
+}
+.background {
+  top: calc(12%);
+  left: calc(12%);
+  background-color: #fff2;
+  width: calc(100% - (2 * 12%));
+  height: calc(100% - (2 * 12%));
+  border-radius: 50%;
+  position: absolute;
+}
+.temperature {
+  position: relative;
+  color: white;
+  text-align: center;
+  margin: 0px;
+  width: 100%;
+  font-size: 40vw;
+  top: 50%;
+  margin-top: -0.55em;
+  font-family: sans-serif;
+  display: inline-block;
+}
+.temperature-dot {
+  width: 12%;
+  height: 12%;
+  border-radius: 50%;
+  background-color: #fff;
+  position: absolute;
+  top: 0px;
+  left: calc(50% - (12% / 2));
+  display:none;
+}
+.setpoint {
+  background-color: #fff8;
+}
+.progress {
+  background-color: #fff2;
+}
+.mode {
+  position: absolute;
+  top: 15%;
+  text-align: center;
+  width: 100%;
+  font-family: sans-serif;
+  font-weight: bold;
+  color: #fff;
+  font-size: 7vw;
+  margin: 0px;
+}
+.bottom-text {
+  color: #fff;
+  width: 100%;
+  font-family: sans-serif;
+  font-size: 7vw;
+  display: flex;
+  justify-content: space-between;
+  padding: 0px calc(12% / 2);
+  box-sizing: border-box;
+  margin: calc(12% / 2) 0px;
+}
+@media screen and (min-width:616px) {
+  .temperature {
+    font-size: 246px;
+  }
+  .mode {
+    font-size: 43px;
+  }
+  .bottom-text {
+    font-size: 43px;
+  }
+}
     </style>
   </head>
 
@@ -15,11 +114,16 @@
       <b><a href="../index.html">Home</a></b> &gt; <b>thermostat</b>
     </div>
 
-    <a style="display:none;" id="auth-code-link" href="https://nestservices.google.com/partnerconnections/2d07542a-86b2-4edc-84e6-20004c25a42d/auth?redirect_uri=https://www.dumbphoneapps.com/thermostat/index.html&access_type=offline&prompt=consent&client_id=483860665172-4h3cvjgenh1177s8hp1p7bjhl92dufg8.apps.googleusercontent.com&response_type=code&scope=https://www.googleapis.com/auth/sdm.service">
+    <a style="display:none;" id="auth-code-link">
       Connect your Nest thermostat account
     </a>
 
     <div id="controls"></div>
+
+    <div id="info" style="display:none;">
+      <p id="info-p"></p>
+      <button onclick="closeInfoWindow(event)" class="delete">&times;</button>
+    </div>
 
     <div id="loading">
       <div class="lds-spinner">
@@ -41,7 +145,7 @@
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=015"></script>
+    <script src="../js/utils.js?v=017"></script>
     <script src="../js/env.js"></script>
     <script>
 const controlsDiv = document.getElementById('controls');
@@ -50,7 +154,6 @@ const authCodeLink = document.getElementById('auth-code-link');
 const loader = document.getElementById("loading");
 let authorizationCode = getParameterByName('code');
 let bearerToken = undefined;
-let deviceId = undefined;
 function getDevices() {
   let url = `https://smartdevicemanagement.googleapis.com/v1/enterprises/${projectId}/devices`;
   xmlHttp = new XMLHttpRequest();
@@ -66,24 +169,169 @@ function handleDevices(event) {
   }
   let data = defaultHandler(event);
   for (let device of data.responseJson.devices) {
-    {
-      let button = document.createElement('button');
-      button.innerText = "Set fan for 12 hours";
-      button.addEventListener('click', setFanForTwelveHours);
-      controlsDiv.appendChild(button);
+    if (device.type === 'sdm.devices.types.THERMOSTAT') {
+      buildThermostat(device.traits, controlsDiv);
+      {
+        let button = document.createElement('button');
+        button.innerText = "Set fan for 12 hours";
+        button.setAttribute('fan-time-in-seconds', '43200s');
+        button.setAttribute('device-id', device.name);
+        button.addEventListener('click', setFanForTime);
+        controlsDiv.appendChild(button);
+      }
+      {
+        let button = document.createElement('button');
+        button.innerText = "Set fan for 2 hours";
+        button.setAttribute('fan-time-in-seconds', '7200s');
+        button.setAttribute('device-id', device.name);
+        button.addEventListener('click', setFanForTime);
+        controlsDiv.appendChild(button);
+      }
+      {
+        let button = document.createElement('button');
+        button.innerText = "Turn off fan";
+        button.setAttribute('device-id', device.name);
+        button.addEventListener('click', turnOffFan);
+        controlsDiv.appendChild(button);
+      }
+      // let pre = document.createElement('pre');
+      // pre.innerText = JSON.stringify(device.traits, undefined, 2);
+      // controlsDiv.appendChild(pre);
     }
-    {
-      let button = document.createElement('button');
-      button.innerText = "Turn off fan";
-      button.addEventListener('click', turnOffFan);
-      controlsDiv.appendChild(button);
-    }
-    let pre = document.createElement('pre');
-    pre.innerText = JSON.stringify(device.traits, undefined, 2);
-    controlsDiv.appendChild(pre);
-    deviceId = device.name
+    break;
   }
   loader.style.display = "none";
+}
+function buildThermostat(deviceTraits, parentDiv) {
+  let thermostatDiv = document.createElement('div');
+  thermostatDiv.classList.add('thermostat');
+
+  let dialParentDiv = document.createElement('div');
+  dialParentDiv.classList.add('dial-parent');
+  thermostatDiv.appendChild(dialParentDiv);
+
+  let dialDiv = document.createElement('div');
+  dialDiv.classList.add('dial');
+  dialParentDiv.appendChild(dialDiv);
+
+  let backgroundDiv = document.createElement('div');
+  backgroundDiv.classList.add('background');
+  dialDiv.appendChild(backgroundDiv);
+
+  let tempC = deviceTraits['sdm.devices.traits.Temperature']['ambientTemperatureCelsius'];
+  let tempF = (tempC*9/5) + 32;
+  let roundedTempF = Math.round(tempF);
+
+  let temperatureDiv = document.createElement('p');
+  temperatureDiv.classList.add('temperature');
+  temperatureDiv.innerText = roundedTempF;
+  dialDiv.appendChild(temperatureDiv);
+
+  let temperatureDot = document.createElement('div');
+  temperatureDot.classList.add('temperature-dot');
+  dialDiv.appendChild(temperatureDot);
+
+  setDotPositionBasedOnTemperature(tempF, temperatureDot);
+
+  if (deviceTraits['sdm.devices.traits.ThermostatTemperatureSetpoint']
+    && deviceTraits['sdm.devices.traits.ThermostatTemperatureSetpoint']['coolCelsius'])
+  {
+    let tempSetPointC = deviceTraits['sdm.devices.traits.ThermostatTemperatureSetpoint']['coolCelsius'];
+    let tempSetPointF = (tempSetPointC*9/5) + 32;
+    let roundedTempSetPointF = Math.round(tempSetPointF);
+
+    let setPointDot = document.createElement('div');
+    setPointDot.classList.add('temperature-dot');
+    setPointDot.classList.add('setpoint');
+    dialDiv.appendChild(setPointDot);
+
+    setDotPositionBasedOnTemperature(tempSetPointF, setPointDot);
+
+    let min = Math.min(tempSetPointF, tempF);
+    let max = Math.max(tempSetPointF, tempF);
+
+    for (let i = min; i < max; i = i + 0.5) {
+      let progressDot = document.createElement('div');
+      progressDot.classList.add('temperature-dot');
+      progressDot.classList.add('progress');
+      dialDiv.appendChild(progressDot);
+
+      setDotPositionBasedOnTemperature(i, progressDot);
+    }
+  }
+
+  let mode = deviceTraits['sdm.devices.traits.ThermostatMode']['mode'];
+
+  let modeDiv = document.createElement('p')
+  modeDiv.classList.add('mode');
+  modeDiv.innerText = mode;
+  dialDiv.appendChild(modeDiv);
+
+  if (deviceTraits["sdm.devices.traits.ThermostatHvac"] 
+    && deviceTraits["sdm.devices.traits.ThermostatHvac"]['status']
+    && deviceTraits["sdm.devices.traits.ThermostatHvac"]['status'] === "COOLING")
+  {
+    thermostatDiv.style.backgroundColor = '#0760d7';
+  }
+
+  if (deviceTraits['sdm.devices.traits.Fan']
+    && deviceTraits['sdm.devices.traits.Fan']['timerMode']
+    && deviceTraits['sdm.devices.traits.Fan']['timerMode'] === 'ON')
+  {
+    let bottomText = document.createElement('div');
+    bottomText.classList.add('bottom-text');
+
+    {
+      let title = document.createElement('span');
+      title.classList.add('title');
+      title.innerText = 'Fan Running';
+      bottomText.appendChild(title);
+
+      let fanOffMs = Date.parse(deviceTraits['sdm.devices.traits.Fan']['timerTimeout']);
+      let distanceMs = fanOffMs - Date.now();
+      
+      let value = document.createElement('span');
+      value.classList.add('value')
+      value.innerText = formatTimeDistance(distanceMs);
+      bottomText.appendChild(value);
+    }
+
+    thermostatDiv.appendChild(bottomText);
+  }
+
+  if (deviceTraits['sdm.devices.traits.Humidity']
+    && deviceTraits['sdm.devices.traits.Humidity']['ambientHumidityPercent']) {
+    let bottomText = document.createElement('div');
+    bottomText.classList.add('bottom-text');
+
+    {
+      let title = document.createElement('span');
+      title.classList.add('title');
+      title.innerText = 'Inside Humidity';
+      bottomText.appendChild(title);
+      
+      let value = document.createElement('span');
+      value.classList.add('value')
+      value.innerText = `${deviceTraits['sdm.devices.traits.Humidity']['ambientHumidityPercent']}%`;
+      bottomText.appendChild(value);
+    }
+
+    thermostatDiv.appendChild(bottomText);
+  }
+
+  parentDiv.appendChild(thermostatDiv);
+}
+function formatTimeDistance(distanceMs) {
+  let seconds = distanceMs / 1000;
+  if (seconds < 60) {
+    return `${Math.round(seconds)} seconds`;
+  }
+  let minutes = seconds / 60;
+  if (minutes < 60) {
+    return `${Math.round(minutes)} minutes`;
+  }
+  let hours = minutes / 60;
+  return `${Math.round(hours)} hours`;
 }
 function checkIfYouHaveAuthCode(event) {
   // if you have a token already, and its not expired, just use that
@@ -130,6 +378,7 @@ function handleTokenResult(result) {
     bearerToken = result.responseJson.access_token;
     getDevices();
   } else {
+    authCodeLink.href = `https://nestservices.google.com/partnerconnections/2d07542a-86b2-4edc-84e6-20004c25a42d/auth?redirect_uri=${THERMOSTAT_URL}&access_type=offline&prompt=consent&client_id=483860665172-4h3cvjgenh1177s8hp1p7bjhl92dufg8.apps.googleusercontent.com&response_type=code&scope=https://www.googleapis.com/auth/sdm.service`;
     authCodeLink.style.display = 'block';
     loader.style.display = "none";
   }
@@ -140,18 +389,24 @@ function verifyResponse(event) {
     console.log(`Succcess ${result.statusCode}`);
     getDevices();
   } else if (result.statusCode == 401) {
-    console.log(`Unauthorized ${result.statusCode}, re-authorizing, try again`);
+    openInfoWindow(`Unauthorized ${result.statusCode}, re-authorizing, try again`);
     checkIfYouHaveAuthCode(event);
   } else {
-    console.log(`Error ${result.statusCode}, not sure what went wrong`);
+    openInfoWindow(`Error ${result.statusCode}, not sure what went wrong`);
   }
 }
-function setFanForTwelveHours(event) {
+const timeFormat = /^\d+s$/
+function setFanForTime(event) {
+  let fanTimeInSeconds = event.target.getAttribute('fan-time-in-seconds');
+  if (!timeFormat.test(fanTimeInSeconds)) {
+    fanTimeInSeconds = '43200s';
+  }
+  let deviceId = event.target.getAttribute('device-id');
   const payload = {
     "command" : "sdm.devices.commands.Fan.SetTimer",
     "params" : {
       "timerMode" : "ON",
-      "duration" : "43200s"
+      "duration" : fanTimeInSeconds
     }
   };
   let url = `https://smartdevicemanagement.googleapis.com/v1/${deviceId}:executeCommand`;
@@ -163,6 +418,7 @@ function setFanForTwelveHours(event) {
   xmlHttp.send(JSON.stringify(payload));
 }
 function turnOffFan(event) {
+  let deviceId = event.target.getAttribute('device-id');
   const payload = {
     "command" : "sdm.devices.commands.Fan.SetTimer",
     "params" : {
@@ -176,6 +432,26 @@ function turnOffFan(event) {
   xmlHttp.withCredentials = false;
   xmlHttp.onload = verifyResponse;
   xmlHttp.send(JSON.stringify(payload));
+}
+function setDotPositionBasedOnTemperature(tempF, dot) {
+  if (!dot) {
+    dot = document.getElementsByClassName('temperature-dot')[0];
+  }
+  let normalizedValue = (Math.min(Math.max((tempF), 50), 90) - 70) / 20;
+  let xComponent = Math.cos(normalizedValue * 5 * Math.PI / 6);
+  let yComponent = Math.sin(normalizedValue * 5 * Math.PI / 6);
+  let topPercent = ((((100-parseInt('12%'))/100) * (1 - xComponent)) + ((parseInt('12%'))/100)) * 50;
+  let leftPercent = (((100-parseInt('12%'))/100) * (( yComponent + 1) / 2) + ((parseInt('12%'))/2/100)) * 100;
+  dot.style.top = `calc(${topPercent}% - calc(12% / 2))`;
+  dot.style.left = `calc(${leftPercent}% - calc(12% / 2))`;
+  dot.style.display = 'block';
+  console.log(`${tempF} = (${xComponent},${yComponent})`);
+}
+function goFromFiftyToNinety() {
+  for(let i = 50; i <= 90; i++) {
+    let time = (i - 50) * 100;
+    setTimeout(()=>{setDotPositionBasedOnTemperature(i)}, time);
+  }
 }
 
 checkIfYouHaveAuthCode(event);

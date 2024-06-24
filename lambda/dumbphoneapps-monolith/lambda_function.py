@@ -28,6 +28,7 @@ from dumbphoneapps.grocery_list import (
     sendsharelist_route,
     acceptsharelist_route,
     cleanuplist_route,
+    deletelist_route
 )
 from dumbphoneapps.notes import (
     get_notes_route,
@@ -59,6 +60,7 @@ from dumbphoneapps.utils import (
     ios_cookie_refresh_route,
     path_starts_with,
     clear_all_tokens_route,
+    logged_in_check_route,
 )
 from dumbphoneapps.weather import get_forecast_route
 from dumbphoneapps.tenor import (
@@ -71,6 +73,15 @@ from dumbphoneapps.sms_scheduler import (
 from dumbphoneapps.thermostat import (
     get_token_from_code_route,
     get_token_from_existing_refresh_token_route,
+)
+from dumbphoneapps.timestamp_logger import (
+    set_timestamps_route,
+    get_timestamps_route,
+    get_values_route,
+    set_values_route,
+    get_timestamp_report_data_route,
+    get_relationships_route,
+    set_relationships_route,
 )
 
 
@@ -98,6 +109,8 @@ def route(event):
         return login_route(event)
     if path_equals(event=event, method="POST", path="/logout-all"):
         return clear_all_tokens_route(event)
+    if path_equals(event=event, method="POST", path="/logged-in-check"):
+        return logged_in_check_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/get-list"):
         return getlist_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/add-item"):
@@ -116,6 +129,8 @@ def route(event):
         return acceptsharelist_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/clean-up-list"):
         return cleanuplist_route(event)
+    if path_equals(event=event, method="POST", path="/grocery-list/delete-list"):
+        return deletelist_route(event)
     if path_equals(event=event, method="POST", path="/food-diary/get-day"):
         return get_day_route(event)
     if path_equals(event=event, method="POST", path="/food-diary/search"):
@@ -186,6 +201,20 @@ def route(event):
         return get_token_from_code_route(event)
     if path_equals(event=event, method="POST", path="/thermostat/get-token-from-existing-refresh-token"):
         return get_token_from_existing_refresh_token_route(event)
+    if path_equals(event=event, method="POST", path="/timestamps/set-timestamps"):
+        return set_timestamps_route(event)
+    if path_equals(event=event, method="POST", path="/timestamps/get-timestamps"):
+        return get_timestamps_route(event)
+    if path_equals(event=event, method="POST", path="/timestamps/set-values"):
+        return set_values_route(event)
+    if path_equals(event=event, method="POST", path="/timestamps/get-values"):
+        return get_values_route(event)
+    if path_equals(event=event, method="POST", path="/timestamps/set-relationships"):
+        return set_relationships_route(event)
+    if path_equals(event=event, method="POST", path="/timestamps/get-relationships"):
+        return get_relationships_route(event)
+    if path_equals(event=event, method="POST", path="/timestamps/get-report-data"):
+        return get_timestamp_report_data_route(event)
     if path_starts_with(event=event, method="POST", path="/discord/"):
         return discord_route(event)
 

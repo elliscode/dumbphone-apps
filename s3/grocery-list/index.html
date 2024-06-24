@@ -3,26 +3,34 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Shopping List</title>
-    <link rel="stylesheet" href="../css/loader.css?v=015" />
-    <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
-    <link rel="icon" type="image/png" href="../img/basket.favicon.png?v=015" />
+    <link rel="stylesheet" href="../css/loader.css?v=017" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
+    <link rel="stylesheet" href="css/grocery-list.css?v=017" />
+    <link rel="icon" type="image/png" href="../img/basket.favicon.png?v=017" />
   </head>
 
   <body>
-    <div id="top-bar">
-      <div id="breadcrumb">
-        <b><a href="..">Home</a></b> &gt; <b>grocery-list</b>
-      </div>
-      <div id="dont-display-while-loading" style="display: none">
-        <div id="title-bar">
-          <a href="../index.html"><button style="width: 30px">&lt;</button></a>
-          <h1>Grocery List</h1>
-          <span style="width: 30px"></span>
-        </div>
-        <div id="tool-bar">
-          <button onclick="showSubmit(event)" id="add-item">
-            <span>+</span>Add Item
-          </button>
+    <div class="old-ui">
+      <b><a href="..">Home</a></b> &gt; <b>grocery-list</b>
+    </div>
+
+    <div id="content-full" class="panel hide-while-loading">
+      <div class="top-bar">
+        <div class="logout">
+          <div class="new-ui">
+            <a href="../index.html"><button style="min-width: 30px">&lt;</button></a>
+          </div>
+          <div class="new-ui">
+            <button onclick="showSubmit(event)" id="add-item">
+              <span>+</span>Add Item
+            </button>
+          </div>
+          <div>
+            <button onclick="showPanel('list-manager')"><span class="new-ui"><img src="img/Gear-icon.png" /></span><span class="old-ui">Settings</span></button>
+          </div>
+          <div class="old-ui">
+            <button onclick="logOut(event)">Log out</button>
+          </div>
         </div>
         <div id="submit-bar">
           <input
@@ -36,9 +44,56 @@
           <button id="add" onclick="addToList(event)">+</button>
         </div>
       </div>
+      <div id="content"></div>
     </div>
 
-    <div id="content"></div>
+    <div id="list-manager" class="panel" style="display:none;">
+      <div class="top-bar">
+        <div class="logout">
+          <div>
+            <button onclick="showPanel('content-full')" style="min-width: 30px"><span class="new-ui">&lt;</span><span class="old-ui">Back</span></button>
+          </div>
+          <div class="new-ui">
+            <p style="margin: 0px; color: #0020c9;">Settings</p>
+          </div>
+          <div>
+            <button class="old-ui" onclick="logOut(event)">Log out</button>
+          </div>
+        </div>
+      </div>
+      <div class="parent-group" id="manage-list-content">
+
+      </div>
+    </div>
+
+    <div class="panel" style="display: none" id="share">
+      <div class="rounded-block">
+        <div class="rounded-title">Share</div>
+        <p>Share &ldquo;<span id="list-name">this</span>&rdquo; list with:</p>
+        <label for="user-to-share-with">Phone Number: <input type="tel" id="user-to-share-with" /></label>
+        <div>
+          <button id="share-button" onclick="sendShareRequest(event)">Share</button>
+          <button onclick="showPanel('list-manager')">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="display: none" id="delete">
+      <div class="rounded-block">
+        <div class="rounded-title">Delete</div>
+        <p>Are you sure you want to delete &ldquo;<span id="delete-list-name">this</span>&rdquo;?</p>
+        <p>If this is a shared list, it will only delete from your account, the other accounts will still have access.</p>
+        <div>
+          <button id="delete-button" onclick="deleteList(event)">Delete</button>
+          <button onclick="showPanel('list-manager')">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="info" style="display:none;">
+      <p id="info-p"></p>
+      <button onclick="closeInfoWindow(event)" class="delete">&times;</button>
+    </div>
 
     <div id="loading">
       <div class="lds-spinner">
@@ -56,42 +111,9 @@
         <div></div>
       </div>
     </div>
-
-    <div style="display: none" id="modal-bg">
-      <div id="modal-popup">
-        <div id="modal-content"></div>
-        <button onclick="hidePopups(event)" class="delete">&times;</button>
-      </div>
-    </div>
-
-    <div class="modal-bg" style="display: none" id="share">
-      <div class="modal">
-        <p>Share &ldquo;<span id="list-name">this</span>&rdquo; list with:</p>
-        <div class="share-enterer">
-          <label for="user-to-share-with">Phone Number:&nbsp;</label
-          ><input class="big" type="tel" id="user-to-share-with" /><button
-            id="share-button"
-            onclick="sendShareRequest(event)"
-          >
-            Share
-          </button>
-        </div>
-        <button onclick="hidePopups(event)" class="delete">&times;</button>
-      </div>
-    </div>
-
-    <div class="modal-bg" id="info" style="display: none">
-      <div class="modal">
-        <p id="info-p"></p>
-        <button onclick="hidePopups(event)" class="delete">&times;</button>
-      </div>
-    </div>
-    <div class="logout">
-      <button onclick="logOut(event)">Log out</button>
-    </div>
-    <script src="../js/utils.js?v=015"></script>
+    <script src="../js/utils.js?v=017009"></script>
     <script src="../js/env.js"></script>
-    <script src="js/list.js?v=015"></script>
+    <script src="js/list.js?v=017009"></script>
     <script></script>
   </body>
 </html>

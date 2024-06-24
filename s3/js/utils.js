@@ -68,6 +68,20 @@ function getParameterByName(name, url = window.location.href) {
   if (!results[2]) return "";
   return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
+function checkIfLoggedIn(event) {
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/logged-in-check", true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleCheckIfLoggedIn;
+  xmlHttp.send(
+    JSON.stringify({
+      csrf: csrfToken
+    })
+  );
+}
+function handleCheckIfLoggedIn(event) {
+  const result = defaultHandler(event);
+}
 function iosCookieRefresh(event) {
   let cookieRefreshTime = localStorage.getItem(
     "dumbphoneapps-cookie-refresh-time"
@@ -165,7 +179,7 @@ function closeModal(event) {
 let previousValue = undefined;
 let previousArrowTime = new Date();
 function arrowKeyEmulator(event, functionHandle) {
-  if (preventDefaultKeys.includes(event.key) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
+  if ((event.target.tagName.toLowerCase() != 'textarea' && preventDefaultKeys.includes(event.key)) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
     event.preventDefault();
   }
   if (event.type == 'keydown' && event.target.type == 'number' && preventDefaultOnNumberInput.includes(event.key)) {
@@ -191,10 +205,12 @@ function arrowKeyEmulator(event, functionHandle) {
         inputs = inputs.filter(x=>x.getAttribute('input-group-name') == currentTarget);
       }
       let index = inputs.indexOf(event.target);
-      index = index + (event.key === 'ArrowUp' ? -1 : 1);
-      index = index < 0 ? inputs.length - 1 : index;
-      index = index > inputs.length - 1 ? 0 : index;
-      inputs[index].focus();
+      do {
+        index = index + (event.key === 'ArrowUp' ? -1 : 1);
+        index = index < 0 ? inputs.length - 1 : index;
+        index = index > inputs.length - 1 ? 0 : index;
+      } while (!noParentsWithDisplayNone(inputs[index]))
+      inputs[index].focus()
       if (event.type === 'keydown' && 
           (inputs[index].hasAttribute('linked-item'))) {
         let checkbox = inputs[index].parentElement.getElementsByClassName('selectable')[0];
@@ -203,7 +219,7 @@ function arrowKeyEmulator(event, functionHandle) {
       previousArrowTime = new Date();
     }
   }
-  if (event.type === 'keydown' && (event.target.hasAttribute('linked-item')) && ['Enter'].includes(event.key)) {
+  if (event.target.tagName.toLowerCase() != 'textarea' && event.type === 'keydown' && (event.target.hasAttribute('linked-item')) && ['Enter'].includes(event.key)) {
     let button = event.target.parentElement.getElementsByClassName('selectable')[0];
     button.click();
   }
@@ -211,6 +227,15 @@ function arrowKeyEmulator(event, functionHandle) {
     functionHandle(event);
   }
   previousValue = event.target.value;
+}
+function noParentsWithDisplayNone(current) {
+  while(current) {
+    if (current.style.display == 'none') {
+      return false;
+    }
+    current = current.parentElement;
+  }
+  return true;
 }
 function blurEmulator(event) {
   let selecteds = Array.from(document.getElementsByClassName('selected'));
@@ -223,7 +248,7 @@ function applyEmulators(customCallback) {
     if (item.hasAttribute('generated')) {
       continue;
     }
-    if (item.tagName.toLowerCase() == 'input' && ['tel','number','text'].includes(item.type.toLowerCase())) {
+    if (item.tagName.toLowerCase() == 'textarea' || (item.tagName.toLowerCase() == 'input' && ['tel','number','text'].includes(item.type.toLowerCase()))) {
       item.addEventListener('keydown', (e)=>{arrowKeyEmulator(e, customCallback)});
       item.addEventListener('keyup', (e)=>{arrowKeyEmulator(e, customCallback)});
       item.setAttribute('generated', true);
@@ -298,6 +323,64 @@ function showPanel(id) {
     let modalBg = findParentWithClass(selected, 'modal-bg');
     modalBg.style.display = 'flex';
   }
+  closeInfoWindow();
+}
+let infoWindowCloseTimeout = undefined;
+let infoWindowFadeTimeout = undefined;
+function openInfoWindow(text, disableFade=false) {
+  clearTimeout(infoWindowCloseTimeout);
+  clearTimeout(infoWindowFadeTimeout);
+  let info = document.getElementById("info");
+  if (!info) {
+    console.log("No info div, so you will need to add one to the page you are calling this from");
+    return;
+  }
+  info.classList.remove('fade-out');
+  info.style.display = "block";
+  let infoP = document.getElementById("info-p");
+  infoP.innerText = text;
+  if (!disableFade) {
+    infoWindowCloseTimeout = setTimeout(startInfoWindowFade, 2000);
+  }
+}
+function startInfoWindowFade() {
+  let info = document.getElementById('info');
+  if (info) {
+    info.classList.add('fade-out');
+  }
+  infoWindowFadeTimeout = setTimeout(closeInfoWindow, 2000);
+}
+function closeInfoWindow() {
+  let info = document.getElementById('info');
+  if (info) {
+    info.style.display = 'none';
+    info.classList.remove('fade-out');
+  }
+}
+function scrollToItem(domItem) {
+  domItem.scrollIntoView({beharior: 'instant', block: 'nearest'});
+  let topDiff = domItem.getBoundingClientRect().top - 40;
+  if (topDiff < 0) {
+    window.scrollBy(0, topDiff);
+  } else {
+    let bottomDiff = domItem.getBoundingClientRect().bottom - (window.innerHeight - 40);
+    if (bottomDiff > 0) {
+      window.scrollBy(0, bottomDiff);
+    }
+  }
+}
+function showLoader() {
+  let loader = document.getElementById('loading');
+  if (loader) {
+    loader.style.display = 'block';
+  }
+}
+function hideLoader() {
+  let loader = document.getElementById('loading');
+  if (loader) {
+    loader.style.display = "none";
+  }
+  Array.from(document.getElementsByClassName('hide-while-loading')).forEach(x=>x.classList.remove('hide-while-loading'));
 }
 // allows for clicking the background of the modal to exit the modal
 let modalBackgrounds = document.getElementsByClassName("modal-bg");

@@ -40,6 +40,8 @@ let history = [];
 let channelToGuildMap = {};
 let guildToNameMap = {};
 
+const dynamicContentDiv = document.getElementById('dynamic-content');
+
 function setToken() {
   localStorage.removeItem("dumbphoneapps-discord-user");
   let url = API_DOMAIN + "/set-discord-token";
@@ -123,7 +125,7 @@ function setUserInUi(inputUserId) {
   loadGuildsButton.classList.add("discord");
   loadGuildsButton.onclick = getGuilds;
   loadGuildsButton.innerText = "Load Guilds";
-  document.body.appendChild(loadGuildsButton);
+  dynamicContentDiv.appendChild(loadGuildsButton);
   loader.style.display = "none";
 }
 let backMethod = function () {};
@@ -154,7 +156,7 @@ function handeGuilds(event) {
     guildButton.textContent = guild.name;
     guildButton.setAttribute("discord-id", guild.id);
     guildButton.onclick = getChannels;
-    document.body.appendChild(guildButton);
+    dynamicContentDiv.appendChild(guildButton);
     guildToNameMap[guild.id] = guild.name;
   }
   backMethod = function () {};
@@ -199,7 +201,7 @@ function handleChannels(event) {
     channelButton.textContent = channel.name;
     channelButton.setAttribute("discord-id", channel.id);
     channelButton.onclick = getMessages;
-    document.body.appendChild(channelButton);
+    dynamicContentDiv.appendChild(channelButton);
     channelToGuildMap[channel.id] = channel.guild_id;
   }
   backMethod = getGuilds;
@@ -316,7 +318,7 @@ function handleMessages(event) {
     div3.appendChild(submitButton);
     inputDiv.appendChild(div3);
 
-    document.body.appendChild(inputDiv);
+    dynamicContentDiv.appendChild(inputDiv);
   }
 
   let channelId = event.target.responseURL.replace(/.*\/channels\/(\d+)\/messages/, '$1');
@@ -327,7 +329,7 @@ function handleMessages(event) {
     lastMessageId = message.id;
     let p = document.createElement("p");
     buildMessage(p, message);
-    document.body.appendChild(p);
+    dynamicContentDiv.appendChild(p);
   }
   if (channelToGuildMap.hasOwnProperty(channelId)) {
     let thisGuildId = channelToGuildMap[channelId];
@@ -354,7 +356,7 @@ function handleMessages(event) {
     getMessages(e1, true);
   };
   reloadDiv.appendChild(reloadButton);
-  document.body.appendChild(reloadDiv);
+  dynamicContentDiv.appendChild(reloadDiv);
 
   applyEmulators();
 
@@ -703,17 +705,11 @@ function enterKeyListener(event) {
 }
 
 function hideAllModals() {
-  let modalBgs = Array.from(document.getElementsByClassName("modal-bg"));
-  for (let i = 0; i < modalBgs.length; i++) {
-    modalBgs[i].style.display = "none";
-  }
+  showPanel('content');
 }
 
 function openSettings(event) {
-  hideAllModals();
-  let forId = event.target.getAttribute("for");
-  let modalToShow = document.getElementById(forId);
-  modalToShow.style.display = "flex";
+  showPanel('settings-div');
 }
 
 function getDms(event) {
@@ -751,7 +747,7 @@ function handleDms(event) {
     dmButton.textContent = names.join(" & ");
     dmButton.setAttribute("discord-id", dmChannel.channel_id);
     dmButton.onclick = getMessages;
-    document.body.appendChild(dmButton);
+    dynamicContentDiv.appendChild(dmButton);
   }
   backMethod = getGuilds;
   loader.style.display = "none";
@@ -856,9 +852,6 @@ function renderHistory() {
   historyElement.scrollTo(historyElement.scrollWidth, 0);
 }
 
-if (!csrfToken) {
-  window.location.replace("../signup.html");
-}
 if (
   !navigator.userAgent.includes("Chrome") &&
   navigator.userAgent.includes("Safari")

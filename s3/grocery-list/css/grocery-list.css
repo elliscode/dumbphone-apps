@@ -1,0 +1,10 @@
+.rounded-block>* {
+    margin-left: 10px;
+}
+.rounded-block>*:nth-child(2) {
+    margin-left:0px;
+}
+button img {
+    height:16px;
+    padding: 0px 6px;
+}

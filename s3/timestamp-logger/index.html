@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Timestamp Logger</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
+    <link rel="stylesheet" href="../css/loader.css?v=017" />
+    <link rel="icon" type="image/png" href="../img/alarm.favicon.png?v=017" />
+    <style>
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>timestamp-logger</b>
+    </div>
+
+    <div class="panel" id="Main">
+      <div class="controls">
+        <button onclick="openReport(event)">Report</button>
+        <button onclick="showPanel('Edit')">Edit</button>
+        <button onclick="logOut(event)">Log out</button>
+      </div>
+
+      <div style="display: inline">
+        <input onchange="getAnswers(event)" id="date-picker" type="date" />
+      </div>
+
+      <div class="rounded-block">
+        <div class="rounded-title">How it works</div>
+        <ol style="margin-bottom:0px;">
+          <li>Create timestamps by pressing the "Edit" button</li>
+          <li>Press the "Log" button to set a value for a timestmp</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="panel" id="Edit" style="display:none;">
+      <div class="controls">
+        <button onclick="showPanel('Main')">&times;</button>
+      </div>
+    </div>
+
+    <script src="../js/utils.js?v=017"></script>
+    <script src="../js/env.js"></script>
+    <script>
+checkIfLoggedIn();
+
+const datePicker = document.getElementById("date-picker");
+datePicker.value = getTodayOrUrlParam();
+
+applyEmulators();
+    </script>
+  </body>
+</html>

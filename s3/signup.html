@@ -3,8 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dumbphone Apps</title>
-    <link rel="stylesheet" href="css/stylesheet.css?v=015" />
-    <link rel="icon" type="image/png" href="img/phone.favicon.png?v=015" />
+    <link rel="stylesheet" href="css/stylesheet.css?v=017" />
+    <link rel="stylesheet" href="css/loader.css?v=017" />
+    <link rel="icon" type="image/png" href="img/phone.favicon.png?v=017" />
     <style>
       body {
         margin:8px;
@@ -32,9 +33,9 @@
         <label for="phone">Telephone Number:</label>
         <input class="big" type="tel" id="phone" name="phone" />
       </p>
-      <button type="submit">Log In</button>
+      <button id="log-in-button" type="submit">Log In</button>
     </form>
-    <div style="display: none" id="message" class="error"></div>
+    <div style="display: none" id="message" class="spacing error"></div>
     <h2>Welcome to dumb phone apps!</h2>
     <p>This site was designed to add functionality to dumb phones with a web browser, such as those running KaiOS. There are no fancy graphics, ads, or trackers to hog your device's limited resources.</p>
     <p>Simply provide your cell phone number above to get a sign-in code via text message.</p>
@@ -58,46 +59,68 @@
     <h3>Discord</h3>
     <p>A discord client for discord bot accounts. You must log in with a discord bot token, not a username and password, and you must ensure your bot has the "Read Messages/View Channels" and "Send Messages" permissions in whichever server you add it to (permissions integer 3072).</p>
     <img src="img/discord.png" alt="A screenshot of the discord app" />
-    <script src="js/utils.js?v=015"></script>
+    <script src="js/utils.js?v=017"></script>
     <script src="js/env.js"></script>
+    <div id="loading" style="display:none;">
+      <div class="lds-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
     <script>
-      const messageDiv = document.getElementById("message");
-      function sendOtp(event) {
-        event.preventDefault();
-        const phone = document.getElementById("phone").value;
+const loader = document.getElementById("loading");
+const signInButton = document.getElementById("log-in-button");
+const messageDiv = document.getElementById("message");
+function sendOtp(event) {
+  signInButton.setAttribute('disabled', 'true');
+  loader.style.display = 'block';
+  event.preventDefault();
+  const phone = document.getElementById("phone").value;
 
-        let url = API_DOMAIN + "/otp";
-        let xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("POST", url, true); // false for synchronous request
-        xmlHttp.withCredentials = true;
-        xmlHttp.onload = handle;
-        xmlHttp.onerror = handleError;
-        xmlHttp.send(JSON.stringify({ phone: phone }));
-      }
-      function handleError(event) {
-        messageDiv.style.display = "block";
-        messageDiv.innerHTML =
-          'You may need to allow the certificate for our API, please visit <a href="' +
-          API_DOMAIN +
-          '">' +
-          API_DOMAIN +
-          "</a>";
-      }
-      function handle(event) {
-        let xmlHttp = event.target;
-        if (xmlHttp.status == 200) {
-          let result = JSON.parse(xmlHttp.responseText);
-          window.location.replace(
-            "login.html?username=" + encodeURIComponent(result.username)
-          );
-        } else {
-          let result = JSON.parse(xmlHttp.responseText);
-          if (result.hasOwnProperty("message")) {
-            messageDiv.style.display = "block";
-            messageDiv.textContent = result.message;
-          }
-        }
-      }
+  let url = API_DOMAIN + "/otp";
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true); // false for synchronous request
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handle;
+  xmlHttp.onerror = handleError;
+  xmlHttp.send(JSON.stringify({ phone: phone }));
+}
+function handleError(event) {
+  messageDiv.style.display = "block";
+  messageDiv.innerHTML =
+    'You may need to allow the certificate for our API, please visit <a href="' +
+    API_DOMAIN +
+    '">' +
+    API_DOMAIN +
+    "</a>";
+}
+function handle(event) {
+  let xmlHttp = event.target;
+  if (xmlHttp.status == 200) {
+    let result = JSON.parse(xmlHttp.responseText);
+    window.location.replace(
+      "login.html?username=" + encodeURIComponent(result.username)
+    );
+  } else {
+    let result = JSON.parse(xmlHttp.responseText);
+    if (result.hasOwnProperty("message")) {
+      messageDiv.style.display = "block";
+      messageDiv.textContent = result.message;
+    }
+    signInButton.removeAttribute('disabled');
+    loader.style.display = 'none';
+  }
+}
     </script>
   </body>
 </html>

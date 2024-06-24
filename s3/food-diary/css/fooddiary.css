@@ -1,16 +1,9 @@
-body {
-  margin:0px;
-}
-.panel {
-  margin:8px;
-}
 .search-bar {
+  display:flex;
   position:fixed;
   top:0px;
-  left:0px;
-  display:flex;
   background-color: #fff;
-  width:100%;
+  width:calc(100% - 16px);
   height:40px;
   padding: 0px;
   margin: 0px;

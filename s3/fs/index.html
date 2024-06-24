@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>File Sharer</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
-    <link rel="stylesheet" href="../css/loader.css?v=015" />
-    <link rel="icon" type="image/png" href="../img/share.favicon.png?v=015" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
+    <link rel="stylesheet" href="../css/loader.css?v=017" />
+    <link rel="icon" type="image/png" href="../img/share.favicon.png?v=017" />
     <style>
       .video {
         width: 100%;
@@ -18,86 +18,82 @@
 
   <body>
     <div>
-      <b><a href="../index.html">Home</a></b> &gt; <b>file-sharer</b>
+      <b><a href="../index.html">Home</a></b> &gt; <b><a href="../file-sharer/index.html">file-sharer</a></b> &gt; <b>file-viewer</b>
     </div>
 
     <div style="display: none" class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
 
-    <script src="../js/utils.js?v=015"></script>
+    <script src="../js/utils.js?v=017"></script>
     <script src="../js/env.js"></script>
     <script>
-      if (!!csrfToken) {
-        document.getElementsByClassName("logout")[0].style.display = "block";
-      }
+const urlParams = new URLSearchParams(window.location.search);
+const dataId = urlParams.get("id");
 
-      const urlParams = new URLSearchParams(window.location.search);
-      const dataId = urlParams.get("id");
+function loadFile(id) {
+  let url = API_DOMAIN + "/one-offs/generate-presigned-get";
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true); // false for synchronous request
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handlePresignedUrl;
+  xmlHttp.send(JSON.stringify({ id: id }));
+}
 
-      function loadFile(id) {
-        let url = API_DOMAIN + "/one-offs/generate-presigned-get";
-        xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("POST", url, true); // false for synchronous request
-        xmlHttp.withCredentials = true;
-        xmlHttp.onload = handlePresignedUrl;
-        xmlHttp.send(JSON.stringify({ id: id }));
-      }
+function handlePresignedUrl(event) {
+  let xmlHttp = event.target;
+  let responseJson = JSON.parse(xmlHttp.responseText);
 
-      function handlePresignedUrl(event) {
-        let xmlHttp = event.target;
-        let responseJson = JSON.parse(xmlHttp.responseText);
+  const link = document.createElement("a");
+  link.href = responseJson.download_url;
+  link.download = true;
+  link.innerText = "Download";
+  document.body.appendChild(link);
 
-        const link = document.createElement("a");
-        link.href = responseJson.download_url;
-        link.download = true;
-        link.innerText = "Download";
-        document.body.appendChild(link);
+  const hr = document.createElement("hr");
+  document.body.appendChild(hr);
 
-        const hr = document.createElement("hr");
-        document.body.appendChild(hr);
+  if (
+    dataId.endsWith("3gp") ||
+    dataId.endsWith("mp4") ||
+    dataId.endsWith("mov")
+  ) {
+    let type = undefined;
+    if (dataId.endsWith("3gp")) {
+      type = "3gpp";
+    } else if (dataId.endsWith("mp4")) {
+      type = "mp4";
+    } else if (dataId.endsWith("mov")) {
+      type = "quicktime";
+    }
+    let element = document.createElement("video");
+    element.classList.add("video");
+    element.controls = true;
+    element.src = responseJson.url;
+    element.type = `video/${type}`;
+    element.playsInline = true;
+    element.muted = true;
+    element.autoplay = true;
+    element.style.display = 'none';
+    element.oncanplay=function() {
+      element.style.maxWidth = `${element.videoWidth}px`;
+      element.style.display = 'block';
+    }
+    document.body.appendChild(element);
+  } else {
+    let element = document.createElement("img");
+    element.classList.add("image");
+    element.src = responseJson.url;
+    element.style.display = 'none';
+    element.onload=function() {
+      element.style.maxWidth = `${element.naturalWidth}px`;
+      element.style.display = 'block';
+    }
+    document.body.appendChild(element);
+  }
+}
 
-        if (
-          dataId.endsWith("3gp") ||
-          dataId.endsWith("mp4") ||
-          dataId.endsWith("mov")
-        ) {
-          let type = undefined;
-          if (dataId.endsWith("3gp")) {
-            type = "3gpp";
-          } else if (dataId.endsWith("mp4")) {
-            type = "mp4";
-          } else if (dataId.endsWith("mov")) {
-            type = "quicktime";
-          }
-          let element = document.createElement("video");
-          element.classList.add("video");
-          element.controls = true;
-          element.src = responseJson.url;
-          element.type = `video/${type}`;
-          element.playsInline = true;
-          element.muted = true;
-          element.autoplay = true;
-          element.style.display = 'none';
-          element.oncanplay=function() {
-            element.style.maxWidth = `${element.videoWidth}px`;
-            element.style.display = 'block';
-          }
-          document.body.appendChild(element);
-        } else {
-          let element = document.createElement("img");
-          element.classList.add("image");
-          element.src = responseJson.url;
-          element.style.display = 'none';
-          element.onload=function() {
-            element.style.maxWidth = `${element.naturalWidth}px`;
-            element.style.display = 'block';
-          }
-          document.body.appendChild(element);
-        }
-      }
-
-      loadFile(dataId);
+loadFile(dataId);
     </script>
   </body>
 </html>

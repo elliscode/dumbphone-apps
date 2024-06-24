@@ -2,7 +2,7 @@ function addToList(event) {
   const caller = event.target;
 
   const hash = caller.getAttribute("hash");
-  const date = document.getElementById("date-picker").value;
+  const date = datePicker.value;
 
   if (!hash) {
     // print something like "hey you need to pick a food" or 
@@ -15,7 +15,8 @@ function addToList(event) {
     date: date,
     csrf: csrfToken
   };
-
+  
+  previousSearch = undefined;
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/food-diary/add", true);
   xmlHttp.withCredentials = true;
@@ -173,23 +174,14 @@ function changeQuantity(event) {
   );
 }
 function closeServings(event) {
-  let servings = document.getElementById("servings");
-  servings.style.display = "none";
-  let modalBg = findParentWithClass(servings, "modal-bg");
-  modalBg.style.display = "none";
+  showPanel('content')
 }
 function closeRecipeServings(event) {
-  let servings = document.getElementById("recipe-servings");
-  servings.style.display = "none";
-  let modalBg = findParentWithClass(servings, "modal-bg");
-  modalBg.style.display = "none";
+  showPanel('content')
 }
 function displayServing(event) {
   let item = defaultHandlerV1(event);
-  let servings = document.getElementById("servings");
-  servings.style.display = "block";
-  let modalBg = findParentWithClass(servings, "modal-bg");
-  modalBg.style.display = "flex";
+  showPanel('servings')
   let textBox = document.getElementById("servings-amount");
   let select = document.getElementById("servings-name");
   let edit = document.getElementById("servings-edit");
@@ -238,10 +230,7 @@ function displayServing(event) {
 let recipeFood = undefined;
 function displayRecipeServing(event) {
   recipeFood = defaultHandlerV1(event);
-  let servings = document.getElementById("recipe-servings");
-  servings.style.display = "block";
-  let modalBg = findParentWithClass(servings, "modal-bg");
-  modalBg.style.display = "flex";
+  showPanel('recipe-servings');
   let textBox = document.getElementById("recipe-servings-amount");
   let select = document.getElementById("recipe-servings-name");
   let servingsSave = document.getElementById("recipe-servings-save");
@@ -556,7 +545,7 @@ function saveFood(event) {
     document.activeElement.blur();
   }
   const key = event.target.getAttribute("key");
-  const date = document.getElementById("date-picker").value;
+  const date = datePicker.value;
   const timestamp = event.target.getAttribute("timestamp");
   let payload = {
     key: key,
@@ -681,7 +670,7 @@ function createServing(event) {
 function saveRecipe(event) {
   const timestamp = undefined;
   const hash = currentFood.hash;
-  const date = document.getElementById("date-picker").value;
+  const date = datePicker.value;
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/food-diary/set-food", true);
   xmlHttp.withCredentials = true;
@@ -718,17 +707,14 @@ function addToRecipe(event) {
   redrawRows();
 }
 function showTotalsModal(event) {
-  let totalsModal = document.getElementById('totals-modal');
-  totalsModal.style.display = 'block';
-  let modalBg = findParentWithClass(totalsModal, "modal-bg");
-  modalBg.style.display = "flex";
+  showPanel('totals-modal')
 }
 function setDate(event) {
   const textBoxParent = document.getElementsByClassName("search-bar")[0];
   const textBox = textBoxParent.firstElementChild;
   textBox.value = "";
 
-  const date = document.getElementById("date-picker").value;
+  const date = datePicker.value;
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/food-diary/get-day", true);
   xmlHttp.withCredentials = true;
@@ -879,34 +865,6 @@ function forceToDecimal(event) {
   textBox.value = textBox.value.replace(/[^\d]+/g, ".");
 }
 
-const today = new Date();
-const year = today.getFullYear();
-let month = (today.getMonth() + 1).toString();
-if (month.length < 2) {
-  month = "0" + month;
-}
-let day = today.getDate().toString();
-if (day.length < 2) {
-  day = "0" + day;
-}
-
-document.getElementById("date-picker").value = year + "-" + month + "-" + day;
-
-const DEBUG = false;
-
-if (!csrfToken) {
-  window.location.replace("../signup.html");
-}
-
-if (
-  !navigator.userAgent.includes("Chrome") &&
-  navigator.userAgent.includes("Safari")
-) {
-  iosCookieRefresh();
-}
-
-setDate();
-
 document.addEventListener(
   "keydown",
   function (e) {
@@ -1034,7 +992,7 @@ function searchKeyCallback(event, type) {
           selected.classList.remove('selected');
         }
         items[newIndex].classList.add('selected');
-        window.scrollBy({ top: items[newIndex].getBoundingClientRect().top - 40, behavior: "instant" });
+        scrollToItem(items[newIndex]);
       } else if (['SoftLeft'].includes(event.key)) {
         if (selected.hasAttribute('hash')) {
           if (currentTime - previousSoftLeftTime > 200) {
@@ -1055,7 +1013,7 @@ function searchKeyCallback(event, type) {
         } else {
           let idsToAdd = [selected.getAttribute('hash')];
           idsToAdd = idsToAdd.concat(Array.from(searchList.getElementsByClassName('checked')).map(x=>x.getAttribute('hash')));
-          const date = document.getElementById("date-picker").value;
+          const date = datePicker.value;
           let payload = {
             hashes: idsToAdd,
             date: date,
@@ -1065,6 +1023,7 @@ function searchKeyCallback(event, type) {
           while (suggestions.firstChild) {
             suggestions.removeChild(suggestions.firstChild);
           }
+          previousSearch = undefined;
           let xmlHttp = new XMLHttpRequest();
           xmlHttp.open("POST", API_DOMAIN + "/food-diary/add", true);
           xmlHttp.withCredentials = true;
@@ -1112,15 +1071,24 @@ function servingsArrowCallback(event) {
 }
 function numberPadListener(event) {
   let content = document.getElementById('content');
-  if (event.key === '*' && content.style.display != 'none') {
-    let totalsModal = document.getElementById('totals-modal');
-    if (totalsModal.style.display != 'none') {
-      closeModalIfApplicable( { target: findParentWithClass(totalsModal, 'modal-bg') } );
-    } else {
+  let totalsModal = document.getElementById('totals-modal');
+  if (event.key === '*') {
+    if (totalsModal.style.display != 'none' && content.style.display == 'none') {
+      showPanel('content')
+    } else if (totalsModal.style.display == 'none' && content.style.display != 'none') {
       showTotalsModal();
     }
   }
 }
-document.addEventListener('keyup',numberPadListener);
 const loader = document.getElementById("loading");
+const datePicker = document.getElementById("date-picker");
+if (
+  !navigator.userAgent.includes("Chrome") &&
+  navigator.userAgent.includes("Safari")
+) {
+  iosCookieRefresh();
+}
+document.addEventListener('keyup',numberPadListener);
+datePicker.value = getTodayOrUrlParam();
+setDate();
 applyEmulators();

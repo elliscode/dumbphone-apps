@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Notes</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
-    <link rel="stylesheet" href="../css/loader.css?v=015" />
-    <link rel="icon" type="image/png" href="../img/notepad.favicon.png?v=015" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
+    <link rel="stylesheet" href="../css/loader.css?v=017" />
+    <link rel="icon" type="image/png" href="../img/notepad.favicon.png?v=017" />
     <style>
 .note {
   position: relative;
@@ -14,17 +14,12 @@
 .note {
   overflow-wrap: anywhere;
 }
-.controls {
-  position:absolute;
-  top:0px;
-  right:0px;
-}
 .new-note-parent {
   width:100%;
   height:100%;
 }
 .new-note {
-  height: calc(100vh - 16px);
+  height: calc(100vh - 36px);
   display:flex;
   flex-direction: column;
 }
@@ -43,11 +38,11 @@
   </head>
 
   <body>
-    <div id="main-ui" class="panel">
-      <div>
-        <b><a href="../index.html">Home</a></b> &gt; <b>notes</b>
-      </div>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>notes</b>
+    </div>
 
+    <div id="main-ui" class="panel">
       <button onclick="openCreate(event)">Create new note +</button>
 
       <div id="notes">
@@ -58,11 +53,11 @@
       </div>
     </div>
 
-    <div style="display: none" id="confirm" class="modal-bg">
+    <div style="display: none" id="confirm" class="panel">
       <div class="modal">
         <p>Are you sure you want to delete the note <span id="note-name"></span>?</p>
         <button id="save-settings" onclick="deleteNote(event)">Yes</button>
-        <button id="cancel-settings" onclick="closeModalLocal(event)">
+        <button id="cancel-settings" onclick="showPanel('main-ui')">
           Cancel
         </button>
       </div>
@@ -71,11 +66,17 @@
     <div id="create-new-note" style="display: none" class="panel">
       <div class="new-note">
         <div class="toolbar">
-          <input type="text" />
-          <button onclick="createButtonCallback(event)">Save note</button>
-          <button onclick="showPanel('main-ui')">&times;</button>
+          <input input-group-name="note-maker" type="text" />
+          <div style="display:flex;">
+            <button input-group-name="note-maker" onclick="createButtonCallback(event)">Save note</button>
+          </div>
+          <div style="display:flex;">
+            <button input-group-name="note-maker" onclick="showPanel('main-ui')">&times;</button>
+          </div>
         </div>
-        <textarea></textarea>
+        <div style="display:flex; flex-grow:1;">
+          <textarea input-group-name="note-maker"></textarea>
+        </div>
       </div>
     </div>
 
@@ -95,16 +96,13 @@
         <div></div>
       </div>
     </div>
-    <script src="../js/utils.js?v=015"></script>
+    <script src="../js/utils.js?v=017"></script>
     <script src="../js/env.js"></script>
     <script>
 const loader = document.getElementById("loading");
 const notes = document.getElementById("notes");
 const noteNameSpan = document.getElementById('note-name');
 const confirmModal = document.getElementById('confirm');
-if (!csrfToken) {
-  window.location.replace("../signup.html");
-}
 if (
   !navigator.userAgent.includes("Chrome") &&
   navigator.userAgent.includes("Safari")
@@ -195,14 +193,14 @@ function confirmDelete(event) {
   let noteDiv = findParentWithClass(event.target, 'note');
   let noteId = noteDiv.getAttribute('note-name');
   noteNameSpan.innerText = noteId;
-  confirmModal.style.display = 'flex';
+  showPanel('confirm');
 }
 function deleteNote(event) {
   let noteId = noteNameSpan.innerText;
   let noteDiv = document.querySelector(`[note-name="${noteId}"]`);
   noteDiv.remove();
   console.log(`deleting note ${noteId}`);
-  closeModalLocal(event);
+  showPanel('main-ui');
 
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/notes/delete", true);
@@ -217,12 +215,6 @@ function deleteNote(event) {
 }
 function handleDelete(event) {
   let result = defaultHandler(event);
-}
-function closeModalLocal(event) {
-  let parent = findParentWithClass(event.target, "modal-bg");
-  if (parent) {
-    parent.style.display = "none";
-  }
 }
 function getInputs() {
   let parentDiv = document.getElementById('create-new-note');
@@ -257,6 +249,7 @@ function setNote(noteId, noteText) {
   );
 }
 getNotes();
+applyEmulators();
     </script>
   </body>
 </html>

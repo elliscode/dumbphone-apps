@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>File Sharer</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
-    <link rel="stylesheet" href="../css/loader.css?v=015" />
-    <link rel="icon" type="image/png" href="../img/share.favicon.png?v=015" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
+    <link rel="stylesheet" href="../css/loader.css?v=017" />
+    <link rel="icon" type="image/png" href="../img/share.favicon.png?v=017" />
     <style>
       body {
         padding-bottom: 30px;
@@ -24,8 +24,8 @@
     <div id="loading"></div>
 
     <form onsubmit="runFileUpload(event)" id="form">
-      <input type="file" id="file" name="filename" primary-button/>
-      <input type="submit" id="submit" value="Upload file" />
+      <input onchange="checkFileValid(event)" type="file" id="file" name="filename" primary-button/>
+      <input type="submit" id="submit" value="Upload file" disabled/>
     </form>
 
     <div id="link-div" style="display: none">
@@ -34,163 +34,172 @@
       <a id="sms-link">Click here to send as SMS</a>
     </div>
 
+    <div id="upload-links"></div>
+
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=015"></script>
+    <script src="../js/utils.js?v=017"></script>
     <script src="../js/env.js"></script>
     <script>
-      if (!csrfToken) {
-        window.location.replace("../signup.html");
+if (
+  !navigator.userAgent.includes("Chrome") &&
+  navigator.userAgent.includes("Safari")
+) {
+  iosCookieRefresh();
+}
+const loader = document.getElementById("loading");
+const submitButton = document.getElementById("submit");
+const uploadLinksDiv = document.getElementById('upload-links');
+loader.style.display = "none";
+
+let fileName = undefined;
+let fileType = undefined;
+
+function checkFileValid(event) {
+  const valid = event.target.files.length == 1;
+  if (valid) {
+    submitButton.removeAttribute('disabled');
+  } else {
+    submitButton.setAttribute('disabled','true');
+  }
+}
+
+function runFileUpload(event) {
+  event.preventDefault();
+  const fileInput = document.getElementById("file");
+  fileInput.disabled = true;
+  submitButton.disabled = true;
+  submitButton.value = "Uploading...";
+
+  const file = fileInput.files[0];
+  const fileName = file.name;
+  const extension = fileName.substring(fileName.lastIndexOf(".") + 1);
+
+  if (extension == "3gp" || extension == "mp4" || extension == "mov") {
+    fileType = "video";
+  } else {
+    fileType = "picture";
+  }
+
+  let url = API_DOMAIN + "/one-offs/generate-presigned-post";
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true); // false for synchronous request
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handlePresignedUrl;
+  xmlHttp.send(JSON.stringify({ extension: extension, csrf: csrfToken }));
+}
+function handlePresignedUrl(event) {
+  let responseJson = defaultHandlerV1(event);
+
+  const fileInput = document.getElementById("file");
+  const file = fileInput.files[0];
+
+  const formData = new FormData();
+  for (let key of Object.keys(responseJson.fields)) {
+    formData.append(key, responseJson.fields[key]);
+    if (key == "key") {
+      fileName = responseJson.fields[key];
+    }
+  }
+  formData.append("file", file);
+
+  let url = responseJson.url;
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true); // false for synchronous request
+  xmlHttp.withCredentials = false;
+  // xmlHttp.setRequestHeader('Content-Type', 'video/3gpp')
+  xmlHttp.onload = handleUpload;
+  xmlHttp.send(formData);
+}
+function handleUpload(event) {
+  let xmlHttp = event.target;
+
+  const fileInput = document.getElementById("file");
+  fileInput.disabled = false;
+  const submitButton = document.getElementById("submit");
+  submitButton.value = "Upload file";
+  const form = document.getElementById("form");
+  form.reset();
+
+  const statusText = document.getElementById("status");
+  if (200 <= xmlHttp.status && xmlHttp.status < 300) {
+    const linkDiv = document.getElementById("link-div");
+    linkDiv.style.display = "block";
+
+    const link = document.getElementById("link");
+    link.innerText = UI_DOMAIN.substring(8) + "/fs/?id=" + fileName;
+
+    const smsLink = document.getElementById("sms-link");
+    smsLink.style.display = "block";
+    smsLink.href =
+      "sms://?&body=" +
+      encodeURIComponent(UI_DOMAIN.substring(8) + "/fs/?id=" + fileName);
+
+    statusText.innerText =
+      "Share your file! Send this link to your friends!";
+
+    createUploadEntry(fileName, Date.now());
+
+    sendAcknowledgement(fileName);
+  } else {
+    statusText.innerText =
+      "Upload failed, refresh the page and try again...";
+  }
+}
+function sendAcknowledgement(fileName) {
+  let url = API_DOMAIN + "/one-offs/acknowledge-presigned-post-success";
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true); // false for synchronous request
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleAcknowledgement;
+  xmlHttp.send(
+    JSON.stringify({ csrf: csrfToken, fullFileName: fileName })
+  );
+}
+function handleAcknowledgement(event) {
+  let xmlHttp = event.target;
+}
+function getFiles(event) {
+  let url = API_DOMAIN + "/one-offs/get-uploaded-items";
+  xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true); // false for synchronous request
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleGetFiles;
+  xmlHttp.send(JSON.stringify({ csrf: csrfToken }));
+}
+function handleGetFiles(event) {
+  let xmlHttp = event.target;
+  if (xmlHttp.status >= 200 && xmlHttp.status < 300) {
+    results = {};
+    let responseJson = JSON.parse(xmlHttp.responseText);
+    let sortedArray = responseJson.files;
+    if (sortedArray.length > 0) {
+      let title = document.createElement("p");
+      title.innerText = "Previously uploaded items:";
+      document.body.appendChild(title);
+      for (let i = 0; i < sortedArray.length; i++) {
+        let item = sortedArray[i];
+        createUploadEntry(item.name, parseInt(item.uploadDate) * 1000);
       }
-      if (
-        !navigator.userAgent.includes("Chrome") &&
-        navigator.userAgent.includes("Safari")
-      ) {
-        iosCookieRefresh();
-      }
-      const loader = document.getElementById("loading");
-      loader.style.display = "none";
-
-      let fileName = undefined;
-      let fileType = undefined;
-
-      function runFileUpload(event) {
-        event.preventDefault();
-        const fileInput = document.getElementById("file");
-        fileInput.disabled = true;
-        const submitButton = document.getElementById("submit");
-        submitButton.disabled = true;
-        submitButton.value = "Uploading...";
-
-        const file = fileInput.files[0];
-        const fileName = file.name;
-        const extension = fileName.substring(fileName.lastIndexOf(".") + 1);
-
-        if (extension == "3gp" || extension == "mp4" || extension == "mov") {
-          fileType = "video";
-        } else {
-          fileType = "picture";
-        }
-
-        let url = API_DOMAIN + "/one-offs/generate-presigned-post";
-        xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("POST", url, true); // false for synchronous request
-        xmlHttp.withCredentials = true;
-        xmlHttp.onload = handlePresignedUrl;
-        xmlHttp.send(JSON.stringify({ extension: extension, csrf: csrfToken }));
-      }
-      function handlePresignedUrl(event) {
-        let responseJson = defaultHandlerV1(event);
-
-        const fileInput = document.getElementById("file");
-        const file = fileInput.files[0];
-
-        const formData = new FormData();
-        for (let key of Object.keys(responseJson.fields)) {
-          formData.append(key, responseJson.fields[key]);
-          if (key == "key") {
-            fileName = responseJson.fields[key];
-          }
-        }
-        formData.append("file", file);
-
-        let url = responseJson.url;
-        xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("POST", url, true); // false for synchronous request
-        xmlHttp.withCredentials = false;
-        // xmlHttp.setRequestHeader('Content-Type', 'video/3gpp')
-        xmlHttp.onload = handleUpload;
-        xmlHttp.send(formData);
-      }
-      function handleUpload(event) {
-        let xmlHttp = event.target;
-
-        const fileInput = document.getElementById("file");
-        fileInput.disabled = false;
-        const submitButton = document.getElementById("submit");
-        submitButton.disabled = false;
-        submitButton.value = "Upload file";
-        const form = document.getElementById("form");
-        form.reset();
-
-        const statusText = document.getElementById("status");
-        if (200 <= xmlHttp.status && xmlHttp.status < 300) {
-          const linkDiv = document.getElementById("link-div");
-          linkDiv.style.display = "block";
-
-          const link = document.getElementById("link");
-          link.innerText = UI_DOMAIN.substring(8) + "/fs/?id=" + fileName;
-
-          const smsLink = document.getElementById("sms-link");
-          smsLink.style.display = "block";
-          smsLink.href =
-            "sms://?&body=" +
-            encodeURIComponent(UI_DOMAIN.substring(8) + "/fs/?id=" + fileName);
-
-          statusText.innerText =
-            "Share your file! Send this link to your friends!";
-
-          sendAcknowledgement(fileName);
-        } else {
-          statusText.innerText =
-            "Upload failed, refresh the page and try again...";
-        }
-      }
-      function sendAcknowledgement(fileName) {
-        let url = API_DOMAIN + "/one-offs/acknowledge-presigned-post-success";
-        xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("POST", url, true); // false for synchronous request
-        xmlHttp.withCredentials = true;
-        xmlHttp.onload = handleAcknowledgement;
-        xmlHttp.send(
-          JSON.stringify({ csrf: csrfToken, fullFileName: fileName })
-        );
-      }
-      function handleAcknowledgement(event) {
-        let xmlHttp = event.target;
-      }
-      function getFiles(event) {
-        let url = API_DOMAIN + "/one-offs/get-uploaded-items";
-        xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("POST", url, true); // false for synchronous request
-        xmlHttp.withCredentials = true;
-        xmlHttp.onload = handleGetFiles;
-        xmlHttp.send(JSON.stringify({ csrf: csrfToken }));
-      }
-      function handleGetFiles(event) {
-        let xmlHttp = event.target;
-        if (xmlHttp.status >= 200 && xmlHttp.status < 300) {
-          results = {};
-          let responseJson = JSON.parse(xmlHttp.responseText);
-          let sortedArray = responseJson.files.sort(
-            (x, y) => y.uploadDate - x.uploadDate
-          );
-          if (sortedArray.length > 0) {
-            let title = document.createElement("p");
-            title.innerText = "Previously uploaded items:";
-            document.body.appendChild(title);
-            for (let i = 0; i < sortedArray.length; i++) {
-              let item = sortedArray[i];
-              let paragraph = document.createElement("p");
-              let timeSpan = document.createElement("span");
-              timeSpan.innerText = new Date(
-                parseInt(item.uploadDate) * 1000
-              ).toLocaleString();
-              paragraph.appendChild(timeSpan);
-              let spaceSpan = document.createElement("span");
-              spaceSpan.innerHTML = " &mdash; ";
-              paragraph.appendChild(spaceSpan);
-              let link = document.createElement("a");
-              link.href = UI_DOMAIN + "/fs/?id=" + item.name;
-              link.innerText = item.name;
-              paragraph.appendChild(link);
-              document.body.appendChild(paragraph);
-            }
-          }
-        }
-      }
-      setTimeout(getFiles, 100);
+    }
+  }
+}
+function createUploadEntry(name, date) {
+  let paragraph = document.createElement("p");
+  let timeSpan = document.createElement("span");
+  timeSpan.innerText = new Date(date).toLocaleString();
+  paragraph.appendChild(timeSpan);
+  let spaceSpan = document.createElement("span");
+  spaceSpan.innerHTML = " &mdash; ";
+  paragraph.appendChild(spaceSpan);
+  let link = document.createElement("a");
+  link.href = UI_DOMAIN + "/fs/?id=" + name;
+  link.innerText = name;
+  paragraph.appendChild(link);
+  uploadLinksDiv.insertBefore(paragraph, uploadLinksDiv.firstElementChild);
+}
+setTimeout(getFiles, 100);
     </script>
   </body>
 </html>
