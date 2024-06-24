@@ -331,6 +331,10 @@ function openInfoWindow(text, disableFade=false) {
   clearTimeout(infoWindowCloseTimeout);
   clearTimeout(infoWindowFadeTimeout);
   let info = document.getElementById("info");
+  if (!info) {
+    console.log("No info div, so you will need to add one to the page you are calling this from");
+    return;
+  }
   info.classList.remove('fade-out');
   info.style.display = "block";
   let infoP = document.getElementById("info-p");
