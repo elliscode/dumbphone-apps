@@ -14,6 +14,7 @@
   position: relative;
   background-color: #2A3038;
   width: 100%;
+  padding-bottom: 1px;
 }
 .dial-parent {
   max-width: 600px;
@@ -27,21 +28,19 @@
 }
 .dial {
   box-sizing: border-box;
-  width: calc(100% - 10%);
-  height: calc(100% - 10%);
+  width: calc(100%);
+  height: calc(100%);
   border-radius: 50%;
   position: absolute;
-  margin-left: calc(10% / 2);
-  margin-top: calc(10% / 2);
 }
 .background {
-  top: calc(10% / 2);
-  left: calc(10% / 2);
+  top: calc(12%);
+  left: calc(12%);
   background-color: #fff2;
-  width: calc(100% - 10%);
-  height: calc(100% - 10%);
+  width: calc(100% - (2 * 12%));
+  height: calc(100% - (2 * 12%));
   border-radius: 50%;
-  position:absolute;
+  position: absolute;
 }
 .temperature {
   position: relative;
@@ -56,13 +55,13 @@
   display: inline-block;
 }
 .temperature-dot {
-  width: 10%;
-  height: 10%;
+  width: 12%;
+  height: 12%;
   border-radius: 50%;
   background-color: #fff;
   position: absolute;
   top: 0px;
-  left: calc(50% - (10% / 2));
+  left: calc(50% - (12% / 2));
   display:none;
 }
 .setpoint {
@@ -89,8 +88,9 @@
   font-size: 7vw;
   display: flex;
   justify-content: space-between;
-  padding: calc(10% / 2);
+  padding: 0px calc(12% / 2);
   box-sizing: border-box;
+  margin: calc(12% / 2) 0px;
 }
 @media screen and (min-width:612px) {
   .temperature {
@@ -437,10 +437,10 @@ function setDotPositionBasedOnTemperature(tempF, dot) {
   let normalizedValue = (Math.min(Math.max((tempF), 50), 90) - 70) / 20;
   let xComponent = Math.cos(normalizedValue * 5 * Math.PI / 6);
   let yComponent = Math.sin(normalizedValue * 5 * Math.PI / 6);
-  let topPercent = (1-xComponent) * 50;
-  let leftPercent = (( yComponent + 1) / 2) * 100;
-  dot.style.top = `calc(${topPercent}% - calc(10% / 2))`;
-  dot.style.left = `calc(${leftPercent}% - calc(10% / 2))`;
+  let topPercent = ((((100-parseInt('12%'))/100) * (1 - xComponent)) + ((parseInt('12%'))/100)) * 50;
+  let leftPercent = (((100-parseInt('12%'))/100) * (( yComponent + 1) / 2) + ((parseInt('12%'))/2/100)) * 100;
+  dot.style.top = `calc(${topPercent}% - calc(12% / 2))`;
+  dot.style.left = `calc(${leftPercent}% - calc(12% / 2))`;
   dot.style.display = 'block';
   console.log(`${tempF} = (${xComponent},${yComponent})`);
 }
