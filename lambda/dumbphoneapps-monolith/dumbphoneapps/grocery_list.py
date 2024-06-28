@@ -99,14 +99,31 @@ def acceptsharelist_route(event, user_data, body):
     # next figure out if the target user has a list with the same name, if they
     # do, delete the current users list and combine all the items together
     found_list = None
-    source_list = get_list_data([list_id])[0]
-    all_target_user_lists = get_list_data([userlist['id'] for userlist in target_user_list_ids["lists"]])
+    source_list = {}
+    source_lists = get_list_data([list_id])
+    if len(source_lists):
+        source_list = source_lists[0]
+    if not source_list:
+        return format_response(
+            event=event,
+            http_code=404,
+            body=f"List adding failed, please contact the administrator",
+        )
+    indexes = [userlist['id'] for userlist in target_user_list_ids]
+    print(indexes)
+    all_target_user_lists = get_list_data(indexes)
     for target_user_list in all_target_user_lists:
-        if target_user_list["name"] == source_list["name"]:
+        if target_user_list.get('name') == source_list.get("name"):
             found_list = target_user_list
             break
 
     if found_list is not None:
+        if found_list.get('id') == source_list.get('id'):
+            return format_response(
+                event=event,
+                http_code=400,
+                body=f"You already own this list",
+            )
         for key, value in source_list["items"].items():
             if key in found_list["items"].keys():
                 continue
@@ -400,7 +417,8 @@ def get_list_data(list_ids):
         python_obj = dynamo_obj_to_python_obj(item)
         result_map[python_obj["key2"]] = python_obj
     for list_id in list_ids:
-        output.append(result_map[list_id])
+        if list_id in result_map:
+            output.append(result_map[list_id])
     return output
 
 
@@ -439,24 +457,25 @@ def get_userlist_data(username):
         Key=python_obj_to_dynamo_obj({"key1": "userlist", "key2": username}),
         TableName=TABLE_NAME,
     )
+    unique_ids = []
     output = None
     if "Item" in user_data_boto:
         required_keys = create_default_userlist_dict('').keys()
         output = dynamo_obj_to_python_obj(user_data_boto["Item"])
-        if isinstance(output['lists'], dict):
-            # we want to convert it to a list
-            new_list = []
-            for key in output['lists'].keys():
-                new_list.append(output['lists'][key])
-            output['lists'] = new_list
-        elif isinstance(output['lists'], list):
+        if isinstance(output['lists'], list):
             # esnure its the right kind of list, a list of dicts, not a list of strings
             new_list = []
             for list_dict in output['lists']:
                 if isinstance(list_dict, dict):
+                    if list_dict['id'] in unique_ids:
+                        continue
                     new_list.append(list_dict)
+                    unique_ids.append(list_dict['id'])
                 elif isinstance(list_dict, str):
+                    if list_dict in unique_ids:
+                        continue
                     new_list.append(create_default_userlist_dict(list_dict))
+                    unique_ids.append(list_dict)
             output['lists'] = new_list
     return output
 

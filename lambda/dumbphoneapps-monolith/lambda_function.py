@@ -123,8 +123,8 @@ def route(event):
         return setcrossedoff_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/set-list-order"):
         return setlistorder_route(event)
-    if path_equals(event=event, method="POST", path="/grocery-list/send-share-list"):
-        return sendsharelist_route(event)
+    # if path_equals(event=event, method="POST", path="/grocery-list/send-share-list"):
+    #     return sendsharelist_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/accept-share-list"):
         return acceptsharelist_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/clean-up-list"):

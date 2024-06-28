@@ -80,31 +80,14 @@ function handleDeleteFromList(event) {
 }
 const listName = document.getElementById('list-name');
 function openShareWindow(event) {
-  const groupId = event.target.getAttribute('group-id');
+  let groupId = event.target.getAttribute('group-id');
   const groupElement = document.querySelector(`div.group[group-id="${groupId}"]`);
   const titleElement = groupElement.querySelector('span.name');
-  listName.innerText = titleElement.innerText;
-  listName.setAttribute('group-id', groupId);
-  showPanel('share');
-  event.stopPropagation();
-}
-function sendShareRequest(event) {
-  let userToShareWithBox = document.getElementById("user-to-share-with");
-  let user = userToShareWithBox.value.replace(/[^\d]/g,'');
-  if (!/^\d{10}$/.test(user) || user[0] == '1') {
-    openInfoWindow(`${user} is not a valid 10 digit phone number`);
-    return;
-  }
-  let group_hash = listName.getAttribute("group-id");
-
-  let url = API_DOMAIN + "/grocery-list/send-share-list";
-  let xmlHttp = new XMLHttpRequest();
-  xmlHttp.open("POST", url, true); // false for synchronous request
-  xmlHttp.withCredentials = true;
-  xmlHttp.onload = handleShareResponse;
-  xmlHttp.send(
-    JSON.stringify({ csrf: csrfToken, user: user, list_id: group_hash })
-  );
+  let msgText = `I'm sharing the ${titleElement.innerText} list\n${UI_DOMAIN_NO_HTTP}/grocery-list/index.html?share=${groupId}`;
+  const smsLink = document.createElement("a");
+  smsLink.style.display = "block";
+  smsLink.href = "sms://?&body=" + encodeURIComponent(msgText);
+  smsLink.click();
 }
 function acceptShare(group_hash) {
   let url = API_DOMAIN + "/grocery-list/accept-share-list";
@@ -529,10 +512,10 @@ let oldUi = true;
 if (!navigator.userAgent.includes("Chrome") && navigator.userAgent.includes("Safari")) {
   oldUi = false;
   iosCookieRefresh();
-  setStylesheet("css/grocery-list-new.css?v=017");
+  setStylesheet("css/grocery-list-new.css?v=01817");
   document.getElementById("item-text-box").addEventListener("blur", startHide);
 } else {
-  setStylesheet("css/grocery-list-old.css?v=017");
+  setStylesheet("css/grocery-list-old.css?v=01817");
 }
 function handleGetList(event) {
   const result = defaultHandlerV1(event);
