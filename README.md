@@ -7,3 +7,10 @@
 # acknowledgements
 
 icons from https://ionic.io/ionicons
+
+# throwback
+
+to when I didn't know AWS and hosted this website on half a laptop in my basement
+
+- [django version](https://github.com/elliscode/dumbphone-apps/tree/cfc4091685d2cbc0fa1304c6b36ccd675614b47e)
+- [spring version](https://github.com/elliscode/dumbphone-apps/tree/5225b080d405aa3d9b327eec6afaedf8af04d8c0)
