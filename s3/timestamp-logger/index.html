@@ -23,15 +23,17 @@
       </div>
 
       <div style="display: inline">
-        <input onchange="getAnswers(event)" id="date-picker" type="date" />
+        <input onchange="getTimestampValues(event)" id="date-picker" type="date" />
       </div>
 
-      <div class="rounded-block">
-        <div class="rounded-title">How it works</div>
-        <ol style="margin-bottom:0px;">
-          <li>Create timestamps by pressing the "Edit" button</li>
-          <li>Press the "Log" button to set a value for a timestmp</li>
-        </ol>
+      <div id="content">
+        <div class="rounded-block">
+          <div class="rounded-title">How it works</div>
+          <ol style="margin-bottom:0px;">
+            <li>Create timestamps by pressing the "Edit" button</li>
+            <li>Press the "Log" button to set a value for a timestmp</li>
+          </ol>
+        </div>
       </div>
     </div>
 
@@ -44,7 +46,88 @@
     <script src="../js/utils.js?v=01817"></script>
     <script src="../js/env.js"></script>
     <script>
-checkIfLoggedIn();
+function getTimestamps(event) {
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/timestamps/get-timestamps", true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleGetTimestamps;
+  xmlHttp.send(
+    JSON.stringify({
+      csrf: csrfToken
+    })
+  );
+}
+
+function handleGetTimestamps(event) {
+  let result = defaultHandler(event);
+  console.log(result);
+
+  if(result.responseJson.events) {
+    displayTimestamps(result.responseJson.events);
+    getTimestampValues(event);
+  }
+}
+
+const content = document.getElementById('content');
+
+function displayTimestamps(timestampEvents) {
+  while (content.firstElementChild) {
+    content.firstElementChild.remove();
+  }
+  for (let timestampEvent of timestampEvents) {
+    let outerDiv = document.createElement('div');
+    outerDiv.classList.add('rounded-block');
+    outerDiv.setAttribute('hash', timestampEvent.hash);
+
+    let titleDiv = document.createElement('div');
+    titleDiv.classList.add('rounded-title');
+    titleDiv.innerText = timestampEvent.title;
+    outerDiv.appendChild(titleDiv);
+
+    let button = document.createElement('button');
+    button.innerText = "Log timestamp";
+    button.addEventListener('click', setTimestampCallback)
+    outerDiv.appendChild(button);
+
+    content.appendChild(outerDiv);
+  }
+}
+
+function setTimestampCallback(event) {
+  let outerDiv = findParentWithClass(event.target, 'rounded-block');
+  let timestampHash = outerDiv.getAttribute('hash');
+  let date = datePicker.value;
+  let currentTime = Date.now();
+
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/timestamps/get-values", true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleGetTimestampValues;
+  xmlHttp.send(
+    JSON.stringify({
+      csrf: csrfToken,
+      date: datePicker.value
+    })
+  );
+}
+
+function getTimestampValues(event) {
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/timestamps/get-values", true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleGetTimestampValues;
+  xmlHttp.send(
+    JSON.stringify({
+      csrf: csrfToken,
+      date: datePicker.value
+    })
+  );
+}
+
+function handleGetTimestampValues(event) {
+  let result = defaultHandler(event);
+  console.log(result);
+}
 
 const datePicker = document.getElementById("date-picker");
 datePicker.value = getTodayOrUrlParam();

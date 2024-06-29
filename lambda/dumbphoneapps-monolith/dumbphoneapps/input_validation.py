@@ -1,0 +1,148 @@
+import re
+import datetime
+
+NEGATIVE_INTEGER_REGEX = "^[\\-]*\\d+$"
+DATE_REGEX = "^\\d{4}-\\d{2}-\\d{2}$"
+
+
+def validate_unix_time(value):
+    if isinstance(value, str) and value.isnumeric():
+        return value
+    elif isinstance(value, int):
+        return str(value)
+    return None
+
+
+def validate_javascript_hash(value):
+    if isinstance(value, str) and re.match(NEGATIVE_INTEGER_REGEX, value):
+        return value
+    elif isinstance(value, int):
+        return str(value)
+    return None
+
+
+def validate_date(value):
+    if isinstance(value, str) and re.match(DATE_REGEX, value):
+        try:
+            datetime.datetime.strptime(value, "%Y-%m-%d")
+            return value
+        except:
+            pass
+    elif isinstance(value, datetime.datetime):
+        return value.strftime("%Y-%m-%d")
+    return None
+
+
+def validate_string(value):
+    if not value:
+        return None
+    return str(value)
+
+
+def is_valid_against_schema(value, schema):
+    if schema["type"] == list or schema["type"] == dict:
+        if not isinstance(value, schema["type"]):
+            return False
+        if schema["type"] == list:
+            all_valid = True
+            for value_item in value:
+                all_valid = all_valid and is_valid_against_schema(value_item, schema["elements"])
+            return all_valid
+        if schema["type"] == dict:
+            all_valid = True
+            for field in schema["fields"]:
+                if field["name"] not in value:
+                    all_valid = False
+                    break
+                all_valid = all_valid and is_valid_against_schema(value[field["name"]], field)
+            return all_valid
+    elif callable(schema["type"]):
+        if schema["type"].__call__(value):
+            return True
+        return False
+    return False
+
+
+def validate_schema(value, schema):
+    if schema["type"] == list or schema["type"] == dict:
+        if not isinstance(value, schema["type"]):
+            return None
+        if schema["type"] == list:
+            output = []
+            for value_item in value:
+                result = validate_schema(value_item, schema["elements"])
+                if not result:
+                    return None
+                output.append(result)
+            return output;
+        if schema["type"] == dict:
+            output = {}
+            for field in schema["fields"]:
+                if field["name"] not in value:
+                    return None
+                result = validate_schema(value[field["name"]], field)
+                if not result:
+                    return None
+                output[field["name"]] = result
+            return output
+    elif callable(schema["type"]):
+        result = schema["type"].__call__(value)
+        if result:
+            return result
+        return None
+    return None
+
+
+if __name__ == '__main__':
+    EVENTS_SCHEMA = {
+        "type": list,
+        "elements": {
+            "type": dict,
+            "fields": [
+                {"type": validate_unix_time, "name": "timestamp"},
+                {"type": validate_javascript_hash, "name": "hash"},
+            ]
+        }
+    }
+    print(validate_date('2024-13-13'))
+    print(validate_date(datetime.datetime.now()))
+    print(validate_javascript_hash(-187))
+    print(validate_javascript_hash("-187"))
+    print(validate_javascript_hash("-187vb"))
+    print(is_valid_against_schema([
+    {
+      "timestamp": "1718320743",
+      "hash": "-177853341"
+    },
+    {
+      "timestamp": "1718329743",
+      "hash": "-1218480146"
+    },
+    {
+      "timestamp": "1718329744",
+      "hash": "-177853341"
+    },
+    {
+      "timestamp": "1718329943",
+      "hash": "-1218480146"
+    }
+  ], EVENTS_SCHEMA))
+    print(f"{EVENTS_SCHEMA}")
+    print(validate_schema([
+    {
+      "timestamp": 1718320743,
+      "hash": -177853341
+    },
+    {
+      "timestamp": "1718329743",
+      "hash": "-1218480146"
+    },
+    {
+      "timestamp": "1718329744",
+      "hash": "-177853341"
+    },
+    {
+      "timestamp": 1718329943,
+      "hash": -1218480146
+    }
+  ], EVENTS_SCHEMA))

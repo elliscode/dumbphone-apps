@@ -4,6 +4,10 @@
 1. create a lambda and upload the python files in the `lambda/dumbphoneapps-monolith` folder
 1. set up an API gateway with an ANY method with proxy integration and set your lambda as the target of the lambda integration
 
+# releasing
+
+run either `sh dev-release.sh sl` or `sh prod-release.sh sl`
+
 # acknowledgements
 
 icons from https://ionic.io/ionicons
