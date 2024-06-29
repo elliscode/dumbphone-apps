@@ -86,29 +86,46 @@ function displayTimestamps(timestampEvents) {
 
     let button = document.createElement('button');
     button.innerText = "Log timestamp";
-    button.addEventListener('click', setTimestampCallback)
+    button.addEventListener('click', addTimestampCallback)
     outerDiv.appendChild(button);
+
+    let hr = document.createElement('hr');
+    hr.style.display = 'block';
+    outerDiv.appendChild(hr);
+
+    let contentDiv = document.createElement('div');
+    contentDiv.classList.add('timestamp-values')
+    contentDiv.setAttribute('hash', timestampEvent.hash);
+    outerDiv.appendChild(contentDiv);
 
     content.appendChild(outerDiv);
   }
 }
 
-function setTimestampCallback(event) {
+function addTimestampCallback(event) {
   let outerDiv = findParentWithClass(event.target, 'rounded-block');
   let timestampHash = outerDiv.getAttribute('hash');
   let date = datePicker.value;
   let currentTime = Date.now();
 
   let xmlHttp = new XMLHttpRequest();
-  xmlHttp.open("POST", API_DOMAIN + "/timestamps/get-values", true);
+  xmlHttp.open("POST", API_DOMAIN + "/timestamps/add-value", true);
   xmlHttp.withCredentials = true;
-  xmlHttp.onload = handleGetTimestampValues;
+  xmlHttp.onload = handleAddTimestamp;
   xmlHttp.send(
     JSON.stringify({
       csrf: csrfToken,
-      date: datePicker.value
+      timestamp: currentTime,
+      hash: timestampHash,
+      date: date
     })
   );
+}
+
+function handleAddTimestamp(event) {
+  let result = defaultHandler(event);
+
+  getTimestampValues(event);
 }
 
 function getTimestampValues(event) {
@@ -126,13 +143,34 @@ function getTimestampValues(event) {
 
 function handleGetTimestampValues(event) {
   let result = defaultHandler(event);
-  console.log(result);
+  
+  if (!result.responseJson || !result.responseJson.values) {
+    return;
+  }
+  
+  for (let valueDiv of document.querySelectorAll(`div.timestamp-values[hash]`)) {
+    while (valueDiv.firstElementChild) {
+      valueDiv.firstElementChild.remove();
+    }
+  }
+  
+  for (let value of result.responseJson.values) {
+    let valueDiv = document.querySelector(`div.timestamp-values[hash="${value.hash}"]`);
+    if (!valueDiv) {
+      continue;
+    }
+    let item = document.createElement('div');
+    item.innerText = `${new Date(parseInt(value.timestamp))}`;
+    valueDiv.appendChild(item);
+  }
 }
 
 const datePicker = document.getElementById("date-picker");
 datePicker.value = getTodayOrUrlParam();
 
 applyEmulators();
+
+getTimestamps();
     </script>
   </body>
 </html>

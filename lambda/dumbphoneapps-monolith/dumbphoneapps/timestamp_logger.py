@@ -128,7 +128,7 @@ def get_values_route(event, user_data, body):
         return format_response(
             event=event,
             http_code=200,
-            body={"timestamp": 0, "values": {}},
+            body={"timestamp": 0, "values": []},
         )
 
     values = dynamo_obj_to_python_obj(response["Item"])
@@ -137,7 +137,7 @@ def get_values_route(event, user_data, body):
         return format_response(
             event=event,
             http_code=200,
-            body={"timestamp": 0, "values": {}},
+            body={"timestamp": 0, "values": []},
         )
 
     return format_response(
