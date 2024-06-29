@@ -29,17 +29,6 @@ TIMESTAMPS_SCHEMA = {
     }
 }
 
-TIMESTAMP_VALUES_SCHEMA = {
-    "type": list,
-    "elements": {
-        "type": dict,
-        "fields": [
-            {"type": validate_unix_time, "name": "timestamp"},
-            {"type": validate_javascript_hash, "name": "hash"},
-        ]
-    }
-}
-
 TIMESTAMP_RELATIONSHIPS_SCHEMA = {
     "type": list,
     "elements": {
@@ -144,39 +133,6 @@ def get_values_route(event, user_data, body):
         event=event,
         http_code=200,
         body={"timestamp": values.get("timestamp", 0), "values": values["values"]},
-    )
-
-
-@authenticate
-def set_values_route(event, user_data, body):
-    phone = user_data["key2"]
-
-    timestamp = validate_unix_time(body.get("timestamp"))
-    values = validate_schema(body.get("values"), TIMESTAMP_VALUES_SCHEMA)
-    date = validate_date(body.get('date'))
-    if not values or not timestamp or not date:
-        return format_response(
-            event=event,
-            http_code=400,
-            body=f"Improperly formatted timestamp, date, or values, values must be in the format {TIMESTAMP_VALUES_SCHEMA}",
-        )
-
-    python_data = {
-        "key1": f"timestamp_values_{phone}",
-        "key2": date,
-        "timestamp": timestamp,
-        "values": values,
-    }
-    dynamo_data = python_obj_to_dynamo_obj(python_data)
-    dynamo.put_item(
-        TableName=TABLE_NAME,
-        Item=dynamo_data,
-    )
-
-    return format_response(
-        event=event,
-        http_code=201,
-        body="Successfully wrote all values to the database",
     )
 
 
