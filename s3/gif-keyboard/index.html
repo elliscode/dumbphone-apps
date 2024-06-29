@@ -82,7 +82,6 @@ function handleSearch(event) {
     resultsDiv.firstElementChild.remove();
   }
   let result = defaultHandler(event);
-  console.log(result.responseJson);
   const allItems = result.responseJson.results.results;
   let firstDiv = undefined;
   for (let item of allItems) {

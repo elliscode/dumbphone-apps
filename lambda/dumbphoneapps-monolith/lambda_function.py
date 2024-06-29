@@ -78,7 +78,6 @@ from dumbphoneapps.timestamp_logger import (
     set_timestamps_route,
     get_timestamps_route,
     get_values_route,
-    set_values_route,
     add_value_route,
     get_timestamp_report_data_route,
     get_relationships_route,
@@ -206,8 +205,6 @@ def route(event):
         return set_timestamps_route(event)
     if path_equals(event=event, method="POST", path="/timestamps/get-timestamps"):
         return get_timestamps_route(event)
-    if path_equals(event=event, method="POST", path="/timestamps/set-values"):
-        return set_values_route(event)
     if path_equals(event=event, method="POST", path="/timestamps/get-values"):
         return get_values_route(event)
     if path_equals(event=event, method="POST", path="/timestamps/add-value"):

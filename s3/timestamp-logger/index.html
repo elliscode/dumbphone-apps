@@ -60,7 +60,6 @@ function getTimestamps(event) {
 
 function handleGetTimestamps(event) {
   let result = defaultHandler(event);
-  console.log(result);
 
   if(result.responseJson.events) {
     displayTimestamps(result.responseJson.events);
@@ -163,6 +162,10 @@ function handleGetTimestampValues(event) {
     item.innerText = `${new Date(parseInt(value.timestamp))}`;
     valueDiv.appendChild(item);
   }
+}
+
+function openReport(event) {
+  window.location.assign("report.html");
 }
 
 const datePicker = document.getElementById("date-picker");
