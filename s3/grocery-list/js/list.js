@@ -158,6 +158,7 @@ function clearCrossedOffItems(event) {
   }
 
   queueListCleanUp(groupId);
+  event.stopPropagation();
 }
 let cleanUpQueue = {};
 function queueListCleanUp(groupId) {
