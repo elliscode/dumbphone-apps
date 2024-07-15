@@ -61,6 +61,7 @@ if (!!csrfToken) {
 const locationToken = getParameterByName("id");
 const json = document.getElementById("json");
 const TIME_LIMIT = 60 * 60;
+const UPDATE_PERIOD_SECONDS = 6;
 let locationTimeout = undefined;
 
 let resumeButton = document.getElementById("resume");
@@ -160,7 +161,7 @@ function handleShare(event) {
       return;
     }
 
-    locationTimeout = setTimeout(getCurrentLocation, 10000);
+    locationTimeout = setTimeout(getCurrentLocation, UPDATE_PERIOD_SECONDS * 1000);
   }
 }
 

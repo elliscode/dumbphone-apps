@@ -7,6 +7,25 @@
     <link rel="stylesheet" href="../css/loader.css?v=01817" />
     <link rel="icon" type="image/png" href="../img/alarm.favicon.png?v=01817" />
     <style>
+.timeline {
+  width: 100%;
+  height: 10px;
+  background-color: #eee;
+  border: 1px solid black;
+  position: relative;
+  display: block;
+  border-radius: 5px;
+}
+.timestamp {
+    width: 10px;
+    height: 100%;
+    position: absolute;
+    top: 0px;
+    border: 1px black solid;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background-color: white;
+}
     </style>
   </head>
 
@@ -39,8 +58,12 @@
 
     <div class="panel" id="Edit" style="display:none;">
       <div class="controls">
-        <button onclick="showPanel('Main')">&times;</button>
+        <button onclick="showPanel('Main')">Back</button>
       </div>
+      <div id="edit-content">
+      </div>
+      <button onclick="console.log('Not implemented')">+ Add New</button>
+      <button onclick="console.log('Not implemented')">Save</button>
     </div>
 
     <script src="../js/utils.js?v=01817"></script>
@@ -61,19 +84,23 @@ function getTimestamps(event) {
 function handleGetTimestamps(event) {
   let result = defaultHandler(event);
 
-  if(result.responseJson.events) {
-    displayTimestamps(result.responseJson.events);
-    getTimestampValues(event);
+  if(!result.responseJson || !result.responseJson.events || result.responseJson.events.length == 0) {
+    return;
   }
+
+  displayTimestamps(result.responseJson.events);
+  getTimestampValues(event);
 }
 
 const content = document.getElementById('content');
+const editDiv = document.getElementById('edit-content');
 
 function displayTimestamps(timestampEvents) {
   while (content.firstElementChild) {
     content.firstElementChild.remove();
   }
   for (let timestampEvent of timestampEvents) {
+    // The actual timestamp displays
     let outerDiv = document.createElement('div');
     outerDiv.classList.add('rounded-block');
     outerDiv.setAttribute('hash', timestampEvent.hash);
@@ -92,12 +119,52 @@ function displayTimestamps(timestampEvents) {
     hr.style.display = 'block';
     outerDiv.appendChild(hr);
 
-    let contentDiv = document.createElement('div');
-    contentDiv.classList.add('timestamp-values')
-    contentDiv.setAttribute('hash', timestampEvent.hash);
-    outerDiv.appendChild(contentDiv);
+    let timelineDiv = document.createElement('div');
+    timelineDiv.classList.add('timeline')
+    timelineDiv.setAttribute('hash', timestampEvent.hash);
+    outerDiv.appendChild(timelineDiv);
 
     content.appendChild(outerDiv);
+
+    // The timestamp edit window
+    let questionDiv = document.createElement('div');
+    questionDiv.classList.add('question-edit');
+    questionDiv.classList.add('rounded-block-without-title');
+    {
+      let div = document.createElement('div');
+      div.classList.add('question-controls');
+      {
+        let button = document.createElement('button');
+        button.innerHTML = '&#8743;';
+        // button.onclick = moveQuestionUp;
+        div.appendChild(button);
+      }
+      {
+        let button = document.createElement('button');
+        button.innerHTML = '&#8744;';
+        // button.onclick = moveQuestionDown;
+        div.appendChild(button);
+      }
+      {
+        let button = document.createElement('button');
+        button.innerHTML = '&times;';
+        // button.onclick = deleteQuestion;
+        div.appendChild(button);
+      }
+      questionDiv.appendChild(div);
+    }
+    {
+      let label = document.createElement('label');
+      label.innerText = 'Question: ';
+      let input = document.createElement('input');
+      input.type = 'text';
+      input.classList.add('question-text');
+      input.defaultValue = timestampEvent.title;
+      label.appendChild(input);
+      questionDiv.appendChild(label);
+    }
+
+    editDiv.appendChild(questionDiv);
   }
 }
 
@@ -143,7 +210,7 @@ function getTimestampValues(event) {
 function handleGetTimestampValues(event) {
   let result = defaultHandler(event);
   
-  if (!result.responseJson || !result.responseJson.values) {
+  if (!result.responseJson || !result.responseJson.values || Object.keys(result.responseJson.values).length == 0) {
     return;
   }
   
@@ -154,13 +221,22 @@ function handleGetTimestampValues(event) {
   }
   
   for (let value of result.responseJson.values) {
-    let valueDiv = document.querySelector(`div.timestamp-values[hash="${value.hash}"]`);
-    if (!valueDiv) {
+    let timeValue = parseInt(value.timestamp);
+
+    let timelineDiv = document.querySelector(`div.timeline[hash="${value.hash}"]`);
+    if (!timelineDiv) {
       continue;
     }
-    let item = document.createElement('div');
-    item.innerText = `${new Date(parseInt(value.timestamp))}`;
-    valueDiv.appendChild(item);
+
+    let dayStart = Date.parse((new Date()).toLocaleDateString());
+    let ratio = (timeValue - dayStart) / (86400 * 1000);
+    let percent = ratio * 100;
+    let offset = ratio * 10;
+
+    let timestampDiv = document.createElement('div');
+    timestampDiv.classList.add('timestamp');
+    timelineDiv.appendChild(timestampDiv);
+    timestampDiv.style.left = `calc(${percent}% - ${offset}px)`;
   }
 }
 

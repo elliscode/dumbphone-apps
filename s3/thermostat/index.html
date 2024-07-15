@@ -190,8 +190,9 @@ function handleDevices(event) {
       {
         let button = document.createElement('button');
         button.innerText = "Turn off fan";
+        button.setAttribute('fan-time-in-seconds', '1s');
         button.setAttribute('device-id', device.name);
-        button.addEventListener('click', turnOffFan);
+        button.addEventListener('click', setFanForTime);
         controlsDiv.appendChild(button);
       }
       // let pre = document.createElement('pre');
