@@ -1,3 +1,4 @@
+const SECONDS_BETWEEN = 5;
 const json = document.getElementById("json");
 const button = document.getElementById("share-button");
 const linkDiv = document.getElementById("link-div");
@@ -8,10 +9,10 @@ function getCurrentLocation() {
   json.style.display = "block";
   button.style.display = "none";
   if (navigator.geolocation) {
-    json.innerHTML = "Retrieving current location from device...";
+    json.innerText = "Retrieving current location from device...";
     navigator.geolocation.getCurrentPosition(showPosition);
   } else {
-    json.innerHTML = "Geolocation is not supported by this browser.";
+    json.innerText = "Geolocation is not supported by this browser.";
   }
 }
 let locationToken = localStorage.getItem("locationToken");
@@ -25,7 +26,7 @@ function showPosition(position) {
 
   lat = position.coords.latitude;
   long = position.coords.longitude;
-  json.innerHTML =
+  json.innerText =
     "Sending current location latitude=" +
     lat +
     " and longitude=" +
@@ -74,5 +75,10 @@ function handleShare(event) {
   let googleUrl = "https://www.google.com/maps/search/?api=1&query=" + coordsString;
   smsDirectionsLink.href = "sms://?&body=" + encodeURIComponent(googleUrl);
 
-  locationTimeout = setTimeout(getCurrentLocation, 5000);
+  locationTimeout = setTimeout(getCurrentLocation, SECONDS_BETWEEN * 1000);
+  for (let i = 0; i < SECONDS_BETWEEN; i++) {
+    setTimeout(()=>{
+      json.innerText = `Waiting ${SECONDS_BETWEEN - i} seconds...`;
+    }, i * 1000);
+  }
 }
