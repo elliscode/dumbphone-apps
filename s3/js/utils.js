@@ -88,7 +88,7 @@ function iosCookieRefresh(event) {
   );
   if (
     !cookieRefreshTime ||
-    !new RegExp("d+").test(cookieRefreshTime) ||
+    !new RegExp("\\d+").test(cookieRefreshTime) ||
     parseInt(cookieRefreshTime) < new Date().getTime()
   ) {
     let xmlHttp = new XMLHttpRequest();

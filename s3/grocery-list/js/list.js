@@ -513,10 +513,10 @@ let oldUi = true;
 if (!navigator.userAgent.includes("Chrome") && navigator.userAgent.includes("Safari")) {
   oldUi = false;
   iosCookieRefresh();
-  setStylesheet("css/grocery-list-new.css?v=01817");
+  setStylesheet("css/grocery-list-new.css?v=019");
   document.getElementById("item-text-box").addEventListener("blur", startHide);
 } else {
-  setStylesheet("css/grocery-list-old.css?v=01817");
+  setStylesheet("css/grocery-list-old.css?v=019");
 }
 function handleGetList(event) {
   const result = defaultHandlerV1(event);

@@ -3,6 +3,8 @@ import datetime
 
 NEGATIVE_INTEGER_REGEX = "^[\\-]*\\d+$"
 DATE_REGEX = "^\\d{4}-\\d{2}-\\d{2}$"
+TIME_REGEX = "^\\d{2}:\\d{2}:\\d{2}$"
+FLOAT_REGEX = "^[\\-]{0,1}\\d*[\\.]{0,1}\\d+$"
 
 
 def validate_unix_time(value):
@@ -30,6 +32,26 @@ def validate_date(value):
             pass
     elif isinstance(value, datetime.datetime):
         return value.strftime("%Y-%m-%d")
+    return None
+
+
+def validate_hms_time(value):
+    if isinstance(value, str) and re.match(TIME_REGEX, value):
+        try:
+            datetime.datetime.strptime(value, "%H:%M:%S")
+            return value
+        except:
+            pass
+    elif isinstance(value, datetime.datetime):
+        return value.strftime("%H:%M:%S")
+    return None
+
+
+def validate_decimal(value):
+    if isinstance(value, str) and re.match(FLOAT_REGEX, value):
+        return value
+    elif isinstance(value, float):
+        return str(value)
     return None
 
 

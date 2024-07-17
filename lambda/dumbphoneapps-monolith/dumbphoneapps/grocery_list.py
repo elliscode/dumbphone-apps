@@ -110,7 +110,6 @@ def acceptsharelist_route(event, user_data, body):
             body=f"List adding failed, please contact the administrator",
         )
     indexes = [userlist['id'] for userlist in target_user_list_ids]
-    print(indexes)
     all_target_user_lists = get_list_data(indexes)
     for target_user_list in all_target_user_lists:
         if target_user_list.get('name') == source_list.get("name"):
@@ -118,7 +117,7 @@ def acceptsharelist_route(event, user_data, body):
             break
 
     if found_list is not None:
-        if found_list.get('id') == source_list.get('id'):
+        if found_list.get('key2') == source_list.get('key2'):
             return format_response(
                 event=event,
                 http_code=400,
