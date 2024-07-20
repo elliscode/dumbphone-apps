@@ -39,6 +39,7 @@
 }
 .front {
   z-index:2;
+  border: 2px solid black;
 }
     </style>
   </head>
@@ -122,6 +123,7 @@ function handleGetTimestamps(event) {
   let result = defaultHandler(event);
 
   if(!result.responseJson || !result.responseJson.events || result.responseJson.events.length == 0) {
+    loader.style.display = 'none';
     return;
   }
 
@@ -243,7 +245,7 @@ function handleGetTimestampValues(event) {
       continue;
     }
 
-    let dayStart = Date.parse((new Date()).toLocaleDateString());
+    let dayStart = new Date(datePicker.value).getTime() + (60 * 1000 * new Date().getTimezoneOffset());
     let ratio = (timeValue - dayStart) / (86400 * 1000);
     let percent = ratio * 100;
     let offset = ratio * 10;
@@ -294,15 +296,69 @@ function handleGetTimestampValues(event) {
   loader.style.display = 'none';
 }
 
-function interactWithTimestamp(event) {
-  console.log(event.target);
+function clearInteraction(event) {
   for (let item of document.getElementsByClassName('front')) {
     item.classList.remove('front');
   }
   for (let item of document.getElementsByClassName('time-view')) {
     item.remove();
   }
-  event.target.classList.add('front');
+}
+
+function interactWithTimestamp(event) {
+  clearInteraction(event);
+  let timestamp = event.target;
+  timestamp.classList.add('front');
+  let group = findParentWithClass(event.target, 'question-block');
+  let timeView = document.createElement('div');
+  timeView.classList.add('time-view');
+  let timestampText = document.createElement('span');
+  timestampText.innerText = new Date(parseInt(timestamp.getAttribute('timestamp')));
+  timestampText.style.display = 'block';
+  timeView.appendChild(timestampText);
+  {
+    let button = document.createElement('button');
+    button.innerText = 'Previous';
+    button.addEventListener('click', goToPreviousTimestamp)
+    timeView.appendChild(button);
+  }
+  {
+    let button = document.createElement('button');
+    button.innerText = 'Cancel';
+    button.addEventListener('click', clearInteraction);
+    timeView.appendChild(button);
+  }
+  {
+    let button = document.createElement('button');
+    button.innerText = 'Next';
+    button.addEventListener('click', goToNextTimestamp)
+    timeView.appendChild(button);
+  }
+  group.appendChild(timeView);
+}
+
+function goToPreviousTimestamp(event) {
+  let item = document.querySelector('.front');
+  if (!item) {
+    return;
+  }
+  let other = item.previousElementSibling;
+  if (!other) {
+    return;
+  }
+  interactWithTimestamp({target: other});
+}
+
+function goToNextTimestamp(event) {
+  let item = document.querySelector('.front');
+  if (!item) {
+    return;
+  }
+  let other = item.nextElementSibling;
+  if (!other) {
+    return;
+  }
+  interactWithTimestamp({target: other});
 }
 
 function openReport(event) {
@@ -389,7 +445,7 @@ function addNewTimestampToEditWindow(event, timestampEvent) {
 
 function setTimestamps(event) {
   loader.style.display = 'block';
-  
+
   let events = [];
   let questionEdits = document.getElementsByClassName('question-edit');
   for (let questionEdit of questionEdits) {
