@@ -5,7 +5,7 @@
     <title>Timestamp Logger</title>
     <link rel="stylesheet" href="../css/stylesheet.css?v=019" />
     <link rel="stylesheet" href="../css/loader.css?v=019" />
-    <link rel="icon" type="image/png" href="../img/alarm.favicon.png?v=019" />
+    <link rel="icon" type="image/png" href="../img/stopwatch.favicon.png?v=019" />
     <style>
 .timeline {
   width: 100%;
@@ -80,10 +80,31 @@
       <button onclick="setTimestamps(event)">Save</button>
     </div>
 
+    <div id="loading">
+      <div class="lds-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+
     <script src="../js/utils.js?v=019"></script>
     <script src="../js/env.js"></script>
     <script>
+let loader = document.getElementById("loading");
+
 function getTimestamps(event) {
+  loader.style.display = 'block';
+
   showPanel('Main');
 
   let xmlHttp = new XMLHttpRequest();
@@ -186,6 +207,8 @@ function handleAddTimestamp(event) {
 }
 
 function getTimestampValues(event) {
+  loader.style.display = 'block';
+
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/timestamps/get-values", true);
   xmlHttp.withCredentials = true;
@@ -202,6 +225,7 @@ function handleGetTimestampValues(event) {
   let result = defaultHandler(event);
   
   if (!result.responseJson || !result.responseJson.values || Object.keys(result.responseJson.values).length == 0) {
+    loader.style.display = 'none';
     return;
   }
   
@@ -266,6 +290,8 @@ function handleGetTimestampValues(event) {
       totalDiv.remove();
     }
   }
+
+  loader.style.display = 'none';
 }
 
 function interactWithTimestamp(event) {
@@ -362,6 +388,8 @@ function addNewTimestampToEditWindow(event, timestampEvent) {
 }
 
 function setTimestamps(event) {
+  loader.style.display = 'block';
+  
   let events = [];
   let questionEdits = document.getElementsByClassName('question-edit');
   for (let questionEdit of questionEdits) {
