@@ -4,7 +4,7 @@ import time
 from .input_validation import (
     validate_schema,
     validate_unix_time,
-    validate_javascript_hash,
+    validate_id,
     validate_date,
     validate_string
 )
@@ -24,18 +24,7 @@ TIMESTAMPS_SCHEMA = {
         "type": dict,
         "fields": [
             {"type": validate_string, "name": "title"},
-            {"type": validate_javascript_hash, "name": "hash"},
-        ]
-    }
-}
-
-TIMESTAMP_RELATIONSHIPS_SCHEMA = {
-    "type": list,
-    "elements": {
-        "type": dict,
-        "fields": [
-            {"type": validate_javascript_hash, "name": "start"},
-            {"type": validate_javascript_hash, "name": "end"},
+            {"type": validate_id, "name": "hash"},
         ]
     }
 }
@@ -141,7 +130,7 @@ def add_value_route(event, user_data, body):
     phone = user_data["key2"]
 
     timestamp = validate_unix_time(body.get("timestamp"))
-    hash_value = validate_javascript_hash(body.get("hash"))
+    hash_value = validate_id(body.get("hash"))
     date = validate_date(body.get("date"))
 
     if not timestamp or not hash_value or not date:
@@ -182,65 +171,6 @@ def add_value_route(event, user_data, body):
         event=event,
         http_code=201,
         body="Successfully wrote all values to the database",
-    )
-
-
-@authenticate
-def set_relationships_route(event, user_data, body):
-    phone = user_data["key2"]
-
-    relationships = validate_schema(body.get("relationships"), TIMESTAMP_RELATIONSHIPS_SCHEMA)
-    if not relationships:
-        return format_response(
-            event=event,
-            http_code=400,
-            body=f"Improperly formatted timestamp, date, or values, values must be in the format {TIMESTAMP_RELATIONSHIPS_SCHEMA}",
-        )
-
-    timestamps_entry = {
-        "key1": f"timestamp_relationships_{phone}",
-        "key2": f"{int(time.time())}",
-        "relationships": body["relationships"],
-    }
-
-    dynamo.put_item(
-        TableName=TABLE_NAME,
-        Item=python_obj_to_dynamo_obj(timestamps_entry),
-    )
-
-    return format_response(
-        event=event,
-        http_code=201,
-        body="Successfully wrote timestamp relationships to database",
-    )
-
-
-@authenticate
-def get_relationships_route(event, user_data, body):
-    phone = user_data["key2"]
-
-    response = dynamo.query(
-        TableName=TABLE_NAME,
-        KeyConditions={
-            "key1": {
-                "AttributeValueList": [{"S": f"timestamp_relationships_{phone}"}],
-                "ComparisonOperator": "EQ",
-            },
-        },
-        ScanIndexForward=False,
-    )
-
-    latest_timestamps = []
-    for item in response["Items"]:
-        python_item = dynamo_obj_to_python_obj(item)
-        print(python_item)
-        latest_timestamps = python_item["relationships"]
-        break
-
-    return format_response(
-        event=event,
-        http_code=200,
-        body={"relationships": latest_timestamps},
     )
 
 

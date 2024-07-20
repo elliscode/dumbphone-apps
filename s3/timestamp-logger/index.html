@@ -26,6 +26,20 @@
     border-radius: 50%;
     background-color: white;
 }
+.question-controls {
+  display: inline-block;
+}
+.label {
+  display: inline-block;
+}
+.total {
+  position: absolute;
+  top: 23px;
+  right: 5px;
+}
+.front {
+  z-index:2;
+}
     </style>
   </head>
 
@@ -37,7 +51,7 @@
     <div class="panel" id="Main">
       <div class="controls">
         <button onclick="openReport(event)">Report</button>
-        <button onclick="showPanel('Edit')">Edit</button>
+        <button onclick="renderEditWindow(event)">Edit</button>
         <button onclick="logOut(event)">Log out</button>
       </div>
 
@@ -62,14 +76,16 @@
       </div>
       <div id="edit-content">
       </div>
-      <button onclick="console.log('Not implemented')">+ Add New</button>
-      <button onclick="console.log('Not implemented')">Save</button>
+      <button onclick="addNewTimestamp(event)">+ Add New</button>
+      <button onclick="setTimestamps(event)">Save</button>
     </div>
 
     <script src="../js/utils.js?v=019"></script>
     <script src="../js/env.js"></script>
     <script>
 function getTimestamps(event) {
+  showPanel('Main');
+
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/timestamps/get-timestamps", true);
   xmlHttp.withCredentials = true;
@@ -103,6 +119,7 @@ function displayTimestamps(timestampEvents) {
     // The actual timestamp displays
     let outerDiv = document.createElement('div');
     outerDiv.classList.add('rounded-block');
+    outerDiv.classList.add('question-block');
     outerDiv.setAttribute('hash', timestampEvent.hash);
 
     let titleDiv = document.createElement('div');
@@ -125,47 +142,21 @@ function displayTimestamps(timestampEvents) {
     outerDiv.appendChild(timelineDiv);
 
     content.appendChild(outerDiv);
+  }
+}
 
-    // The timestamp edit window
-    let questionDiv = document.createElement('div');
-    questionDiv.classList.add('question-edit');
-    questionDiv.classList.add('rounded-block-without-title');
-    {
-      let div = document.createElement('div');
-      div.classList.add('question-controls');
-      {
-        let button = document.createElement('button');
-        button.innerHTML = '&#8743;';
-        // button.onclick = moveQuestionUp;
-        div.appendChild(button);
-      }
-      {
-        let button = document.createElement('button');
-        button.innerHTML = '&#8744;';
-        // button.onclick = moveQuestionDown;
-        div.appendChild(button);
-      }
-      {
-        let button = document.createElement('button');
-        button.innerHTML = '&times;';
-        // button.onclick = deleteQuestion;
-        div.appendChild(button);
-      }
-      questionDiv.appendChild(div);
-    }
-    {
-      let label = document.createElement('label');
-      label.innerText = 'Question: ';
-      let input = document.createElement('input');
-      input.type = 'text';
-      input.classList.add('question-text');
-      input.defaultValue = timestampEvent.title;
-      label.appendChild(input);
-      questionDiv.appendChild(label);
-    }
-
+function renderEditWindow(event) {
+  while (editDiv.firstElementChild) {
+    editDiv.firstElementChild.remove();
+  }
+  let questionBlocks = document.getElementsByClassName('question-block');
+  for (let questionBlock of questionBlocks) {
+    let hash = questionBlock.getAttribute('hash');
+    let name = questionBlock.querySelector('.rounded-title').innerText;
+    let questionDiv = addNewTimestampToEditWindow(event, {'hash': hash, 'title': name})
     editDiv.appendChild(questionDiv);
   }
+  showPanel('Edit');
 }
 
 function addTimestampCallback(event) {
@@ -214,7 +205,7 @@ function handleGetTimestampValues(event) {
     return;
   }
   
-  for (let valueDiv of document.querySelectorAll(`div.timestamp-values[hash]`)) {
+  for (let valueDiv of document.querySelectorAll(`div.timeline`)) {
     while (valueDiv.firstElementChild) {
       valueDiv.firstElementChild.remove();
     }
@@ -235,13 +226,160 @@ function handleGetTimestampValues(event) {
 
     let timestampDiv = document.createElement('div');
     timestampDiv.classList.add('timestamp');
-    timelineDiv.appendChild(timestampDiv);
+    timestampDiv.setAttribute('hash', value.hash);
+    timestampDiv.setAttribute('timestamp', value.timestamp);
+    timestampDiv.addEventListener('click', interactWithTimestamp);
     timestampDiv.style.left = `calc(${percent}% - ${offset}px)`;
+    timelineDiv.appendChild(timestampDiv);
   }
+
+  for (let timeline of document.getElementsByClassName('timeline')) {
+    let total = 0;
+    let previous = undefined;
+    let allTimestamps = Array.from(timeline.querySelectorAll('.timestamp[timestamp]'));
+    allTimestamps.sort((x,y)=>x.getAttribute('timestamp').localeCompare(y.getAttribute('timestamp')));
+    for (let timestamp of allTimestamps) {
+      if (!previous) {
+        previous = timestamp;
+        continue;
+      }
+      let endTime = timestamp.getAttribute('timestamp');
+      let startTime = previous.getAttribute('timestamp');
+      let difference = parseInt(endTime) - parseInt(startTime);
+      total += difference;
+      previous = undefined;
+    }
+    let totalDiv = timeline.parentElement.querySelector('.total');
+    if (!totalDiv) {
+      totalDiv = document.createElement('div');
+      totalDiv.classList.add('total');
+      let parent = timeline.parentElement;
+      parent.insertBefore(totalDiv, parent.querySelector('hr'));
+    }
+    if (total > 0) {
+      let totalMinutes = total / 1000 / 60;
+      let totalHours = totalMinutes / 60;
+      let roundedHours = `${Math.floor(totalHours)}`.padStart(2,'0');
+      let roundedMinutes = `${Math.round(totalMinutes) % 60}`.padStart(2,'0');
+      totalDiv.innerText = `${roundedHours}:${roundedMinutes}`;
+    } else {
+      totalDiv.remove();
+    }
+  }
+}
+
+function interactWithTimestamp(event) {
+  console.log(event.target);
+  for (let item of document.getElementsByClassName('front')) {
+    item.classList.remove('front');
+  }
+  for (let item of document.getElementsByClassName('time-view')) {
+    item.remove();
+  }
+  event.target.classList.add('front');
 }
 
 function openReport(event) {
   window.location.assign("report.html");
+}
+
+function moveUp(event) {
+  const caller = event.target;
+  let thisItem = findParentWithClass(caller, "rounded-block");
+  let otherItem = thisItem.previousElementSibling;
+  if (otherItem && otherItem.classList.contains('rounded-block')) {
+    thisItem.parentElement.insertBefore(thisItem, otherItem);
+    scrollToItem(thisItem);
+  }
+  event.stopPropagation();
+}
+
+function moveDown(event) {
+  const caller = event.target;
+  let thisItem = findParentWithClass(caller, "rounded-block");
+  let otherItem = thisItem.nextElementSibling;
+  if (otherItem && otherItem.classList.contains('rounded-block')) {
+    thisItem.parentElement.insertBefore(otherItem, thisItem);
+    scrollToItem(thisItem);
+  }
+  event.stopPropagation();
+}
+
+function addNewTimestamp(event) {
+  let questionDiv = addNewTimestampToEditWindow(event);
+  editDiv.appendChild(questionDiv);
+}
+
+function removeTimestamp(event) {
+  let questionEdit = findParentWithClass(event.target, 'question-edit');
+  questionEdit.remove();
+}
+
+function addNewTimestampToEditWindow(event, timestampEvent) {
+  let questionDiv = document.createElement('div');
+  questionDiv.classList.add('question-edit');
+  questionDiv.classList.add('rounded-block');
+  questionDiv.classList.add('without-title');
+  if (timestampEvent) {
+    questionDiv.setAttribute('hash', timestampEvent.hash);
+  }
+  {
+    let label = document.createElement('label');
+    label.innerText = 'Timestamp name: ';
+    let input = document.createElement('input');
+    input.type = 'text';
+    input.classList.add('question-text');
+    if (timestampEvent) {
+      input.defaultValue = timestampEvent.title;
+    }
+    label.appendChild(input);
+    questionDiv.appendChild(label);
+  }
+  {
+    let div = document.createElement('div');
+    div.classList.add('question-controls');
+    {
+      let button = document.createElement('button');
+      button.innerHTML = '&#8743;';
+      button.onclick = moveUp;
+      div.appendChild(button);
+    }
+    {
+      let button = document.createElement('button');
+      button.innerHTML = '&#8744;';
+      button.onclick = moveDown;
+      div.appendChild(button);
+    }
+    {
+      let button = document.createElement('button');
+      button.innerHTML = '&times;';
+      button.onclick = removeTimestamp;
+      div.appendChild(button);
+    }
+    questionDiv.appendChild(div);
+  }
+  return questionDiv;
+}
+
+function setTimestamps(event) {
+  let events = [];
+  let questionEdits = document.getElementsByClassName('question-edit');
+  for (let questionEdit of questionEdits) {
+    let name = questionEdit.querySelector('input').value;
+    let hash = questionEdit.getAttribute('hash');
+    events.push({'hash': hash, 'title': name});
+  }
+
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/timestamps/set-timestamps", true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = getTimestamps;
+  xmlHttp.send(
+    JSON.stringify({
+      csrf: csrfToken,
+      events: events
+    })
+  );
 }
 
 const datePicker = document.getElementById("date-picker");

@@ -80,8 +80,6 @@ from dumbphoneapps.timestamp_logger import (
     get_values_route,
     add_value_route,
     get_timestamp_report_data_route,
-    get_relationships_route,
-    set_relationships_route,
 )
 
 
@@ -209,10 +207,6 @@ def route(event):
         return get_values_route(event)
     if path_equals(event=event, method="POST", path="/timestamps/add-value"):
         return add_value_route(event)
-    # if path_equals(event=event, method="POST", path="/timestamps/set-relationships"):
-    #     return set_relationships_route(event)
-    # if path_equals(event=event, method="POST", path="/timestamps/get-relationships"):
-    #     return get_relationships_route(event)
     if path_equals(event=event, method="POST", path="/timestamps/get-report-data"):
         return get_timestamp_report_data_route(event)
     if path_starts_with(event=event, method="POST", path="/discord/"):

@@ -1,5 +1,8 @@
 import re
 import datetime
+from .utils import (
+    create_id
+)
 
 NEGATIVE_INTEGER_REGEX = "^[\\-]*\\d+$"
 DATE_REGEX = "^\\d{4}-\\d{2}-\\d{2}$"
@@ -15,8 +18,10 @@ def validate_unix_time(value):
     return None
 
 
-def validate_javascript_hash(value):
-    if isinstance(value, str) and re.match(NEGATIVE_INTEGER_REGEX, value):
+def validate_id(value):
+    if not value:
+        return create_id(32)
+    if isinstance(value, str):
         return value
     elif isinstance(value, int):
         return str(value)
@@ -122,15 +127,15 @@ if __name__ == '__main__':
             "type": dict,
             "fields": [
                 {"type": validate_unix_time, "name": "timestamp"},
-                {"type": validate_javascript_hash, "name": "hash"},
+                {"type": validate_id, "name": "hash"},
             ]
         }
     }
     print(validate_date('2024-13-13'))
     print(validate_date(datetime.datetime.now()))
-    print(validate_javascript_hash(-187))
-    print(validate_javascript_hash("-187"))
-    print(validate_javascript_hash("-187vb"))
+    print(validate_id(-187))
+    print(validate_id("-187"))
+    print(validate_id("-187vb"))
     print(is_valid_against_schema([
     {
       "timestamp": "1718320743",
