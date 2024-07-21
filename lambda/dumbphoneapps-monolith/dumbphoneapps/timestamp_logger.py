@@ -18,27 +18,38 @@ from .utils import (
     dynamo_obj_to_python_obj,
 )
 
-TIMESTAMPS_SCHEMA = {
+TIMESTAMP_SCHEMA = {
+    "type": dict,
+    "fields": [
+        {"type": validate_string, "name": "title"},
+        {"type": validate_id, "name": "hash"},
+    ]
+}
+
+TIMESTAMPS_LIST_SCHEMA = {
     "type": list,
-    "elements": {
-        "type": dict,
-        "fields": [
-            {"type": validate_string, "name": "title"},
-            {"type": validate_id, "name": "hash"},
-        ]
-    }
+    "elements": TIMESTAMP_SCHEMA,
+}
+
+TIMESTAMP_VALUE_SCHEMA = {
+    "type": dict,
+    "fields": [
+        {"type": validate_id, "name": "hash"},
+        {"type": validate_unix_time, "name": "timestamp"},
+        {"type": validate_date, "name": "date"}
+    ]
 }
 
 
 @authenticate
 def set_timestamps_route(event, user_data, body):
     phone = user_data["key2"]
-    events = validate_schema(body.get("events"), TIMESTAMPS_SCHEMA)
+    events = validate_schema(body.get("events"), TIMESTAMPS_LIST_SCHEMA)
     if not events:
         return format_response(
             event=event,
             http_code=400,
-            body=f"Improperly formatted events, must be in the format {TIMESTAMPS_SCHEMA}",
+            body=f"Improperly formatted events, must be in the format {TIMESTAMPS_LIST_SCHEMA}",
         )
 
     timestamps_entry = {
@@ -209,4 +220,60 @@ def get_timestamp_report_data_route(event, user_data, body):
         event=event,
         http_code=200,
         body={"values": output_values},
+    )
+
+
+@authenticate
+def delete_timestamp_value(event, user_data, body):
+    phone = user_data["key2"]
+    parsed_body = validate_schema(body, TIMESTAMP_VALUE_SCHEMA)
+    if not parsed_body:
+        return format_response(
+            event=event,
+            http_code=400,
+            body=f"Improperly formatted body, must contain the fields {TIMESTAMP_VALUE_SCHEMA}",
+        )
+
+    key = {
+        "key1": f"timestamp_values_{phone}",
+        "key2": parsed_body['date'],
+    }
+
+    response = dynamo.get_item(
+        TableName=TABLE_NAME,
+        Key=python_obj_to_dynamo_obj(key),
+    )
+
+    if "Item" not in response:
+        python_data = key.copy()
+        python_data['values'] = []
+    else:
+        python_data = dynamo_obj_to_python_obj(response["Item"])
+
+    found_index = None
+    for i in range(0, len(python_data['values'])):
+        print(f"{python_data['values'][i]['hash']} == {body['hash']} and {python_data['values'][i]['timestamp']} == {body['timestamp']}")
+        if python_data['values'][i]['hash'] == body['hash'] and python_data['values'][i]['timestamp'] == body['timestamp']:
+            found_index = i
+            break
+
+    if found_index is None:
+        return format_response(
+            event=event,
+            http_code=400,
+            body=f"The value you requested to delete did not exist, no operation",
+        )
+
+    python_data['values'].pop(found_index)
+
+    dynamo_data = python_obj_to_dynamo_obj(python_data)
+    dynamo.put_item(
+        TableName=TABLE_NAME,
+        Item=dynamo_data,
+    )
+
+    return format_response(
+        event=event,
+        http_code=201,
+        body="Successfully wrote all values to the database",
     )

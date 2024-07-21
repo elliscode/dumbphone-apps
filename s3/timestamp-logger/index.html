@@ -324,17 +324,47 @@ function interactWithTimestamp(event) {
   }
   {
     let button = document.createElement('button');
+    button.innerText = 'Next';
+    button.addEventListener('click', goToNextTimestamp)
+    timeView.appendChild(button);
+  }
+  {
+    let button = document.createElement('button');
     button.innerText = 'Cancel';
     button.addEventListener('click', clearInteraction);
     timeView.appendChild(button);
   }
   {
     let button = document.createElement('button');
-    button.innerText = 'Next';
-    button.addEventListener('click', goToNextTimestamp)
+    button.innerText = 'Delete';
+    button.addEventListener('click', deleteTimestamp);
     timeView.appendChild(button);
   }
   group.appendChild(timeView);
+}
+
+function deleteTimestamp(event) {
+  let item = document.querySelector('.front');
+  if (!item) {
+    return;
+  }
+  let hash = item.getAttribute('hash');
+  let timestamp = item.getAttribute('timestamp');
+
+  clearInteraction(event);
+
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/timestamps/delete-value", true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = getTimestampValues;
+  xmlHttp.send(
+    JSON.stringify({
+      csrf: csrfToken,
+      hash: hash,
+      timestamp: timestamp,
+      date: datePicker.value
+    })
+  );
 }
 
 function goToPreviousTimestamp(event) {
