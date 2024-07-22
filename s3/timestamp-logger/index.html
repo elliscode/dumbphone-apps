@@ -226,18 +226,24 @@ function getTimestampValues(event) {
 function handleGetTimestampValues(event) {
   let result = defaultHandler(event);
   
-  if (!result.responseJson || !result.responseJson.values || Object.keys(result.responseJson.values).length == 0) {
-    loader.style.display = 'none';
-    return;
-  }
-  
+  clearInteraction();
+
   for (let valueDiv of document.querySelectorAll(`div.timeline`)) {
     while (valueDiv.firstElementChild) {
       valueDiv.firstElementChild.remove();
     }
   }
+  let totalDiv = Array.from(document.querySelectorAll('.total'));
+  totalDiv.forEach(x=>x.remove());
   
-  for (let value of result.responseJson.values) {
+  if (!result.responseJson || !result.responseJson.values || Object.keys(result.responseJson.values).length == 0) {
+    loader.style.display = 'none';
+    return;
+  }
+
+  let sortedValues = result.responseJson.values.sort((x,y)=>x.timestamp.localeCompare(y.timestamp));
+  
+  for (let value of sortedValues) {
     let timeValue = parseInt(value.timestamp);
 
     let timelineDiv = document.querySelector(`div.timeline[hash="${value.hash}"]`);
