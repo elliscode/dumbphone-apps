@@ -516,7 +516,7 @@ if (!navigator.userAgent.includes("Chrome") && navigator.userAgent.includes("Saf
   setStylesheet("css/grocery-list-new.css?v=019");
   document.getElementById("item-text-box").addEventListener("blur", startHide);
 } else {
-  setStylesheet("css/grocery-list-old.css?v=019");
+  setStylesheet("css/grocery-list-old.css?v=01920");
 }
 function handleGetList(event) {
   const result = defaultHandlerV1(event);
@@ -581,9 +581,12 @@ function enterKeyListener(event) {
   }
 }
 function sideKeyListener(event) {
+  let targetGroupName = event.target.getAttribute('input-group-name');
+  if (event.type === 'keydown' && ['Enter'].includes(event.key) && targetGroupName == 'list') {
+    clearCrossedOffItems({target: event.target.parentElement.querySelector('button'), stopPropagation: ()=>{}});
+  }
   if (event.type === 'keydown' && ['ArrowLeft', 'ArrowRight'].includes(event.key)) {
     let parentDiv = findParentWithClass(event.target, 'group-parent');
-    let targetGroupName = event.target.getAttribute('input-group-name');
     let invisibles = Array.from(parentDiv.getElementsByClassName('invisible-input'));
     let item = undefined;
     if (targetGroupName == 'list') {
