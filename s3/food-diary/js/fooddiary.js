@@ -934,7 +934,11 @@ function closeSearch(event) {
 
 
 function servingsEnterListener(event) {
-  if (event.key == 'Enter') {
+  if (event.key == 'EndCall') {
+    event.target.blur();
+    showPanel('content');
+    event.preventDefault();
+  } else if (event.key == 'Enter') {
     if (event.target == servingsTextBox && servingsSaveButton.style.display != 'none') {
       event.target.blur();
       servingsSaveButton.click();
