@@ -27,7 +27,7 @@ let searchTimeout = undefined;
 function queueSearch(event) {
   event.target.removeAttribute("hash");
   clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(search, 400, event);
+  searchTimeout = setTimeout(search, 1000, event);
 }
 let previousSearch = undefined;
 function search(event) {
@@ -931,8 +931,13 @@ function closeSearch(event) {
   const content = document.getElementById('content');
   content.style.display = 'block';
 }
-
-
+function endCallMainWindowCallback(event) {
+  if (event.key == 'EndCall') {
+    event.target.blur();
+    showPanel('content');
+    event.preventDefault();
+  }
+}
 function servingsEnterListener(event) {
   if (event.key == 'EndCall') {
     event.target.blur();
@@ -1120,4 +1125,4 @@ if (
 document.addEventListener('keyup',numberPadListener);
 datePicker.value = getTodayOrUrlParam();
 setDate();
-applyEmulators();
+applyEmulators(endCallMainWindowCallback);

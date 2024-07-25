@@ -31,7 +31,7 @@
 
   <div class="search-blob" id="food-search" style="display:none;">
     <div class="search-bar">
-      <input class="big" type="text" onkeyup="queueSearch(event);searchKeyCallback(event);" onkeydown="searchKeyCallback(event);" />
+      <input class="big" type="text" oninput="queueSearch(event);" onkeyup="searchKeyCallback(event);" onkeydown="searchKeyCallback(event);" />
       <button onclick="closeSearch(event)">Close</button>
       <!--<button onclick="addToList(event)">Add</button>-->
     </div>
