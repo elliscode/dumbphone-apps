@@ -50,38 +50,62 @@ function search(event) {
   previousSearch = query;
 }
 function displaySearch(event) {
+  // first find all the items currently displayed
+  let existingHashes = Array.from(document.querySelectorAll('li[hash]')).map(x=>x.getAttribute('hash'));
+  // first calculate new items
   let items = defaultHandlerV1(event);
-  const suggestions = document.getElementById("search-list");
-  while (suggestions.firstChild) {
-    suggestions.removeChild(suggestions.firstChild);
-  }
+  let itemsToDisplay = [];
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     if (itemsToIgnore.includes(item.hash)) {
       continue;
     }
-    const li = document.createElement("li");
-    li.addEventListener("click", currentSuggestionMethod);
-    li.style.cursor = "pointer";
-    li.style.display = "relative";
-    li.setAttribute("hash", item.hash);
-    li.setAttribute("food-name", item.name);
-    const span = document.createElement("span");
-    span.innerText = item.name;
-    li.appendChild(span);
-    suggestions.appendChild(li);
+    itemsToDisplay.push(item.hash);
+  }
+
+  let areTheyTheSame = existingHashes.every(item => itemsToDisplay.includes(item)) && itemsToDisplay.every(item => existingHashes.includes(item));
+
+  const suggestions = document.getElementById("search-list");
+  if (!areTheyTheSame) {
+    while (suggestions.firstChild) {
+      suggestions.removeChild(suggestions.firstChild);
+    }
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (itemsToIgnore.includes(item.hash)) {
+        continue;
+      }
+      const li = document.createElement("li");
+      li.addEventListener("click", currentSuggestionMethod);
+      li.style.cursor = "pointer";
+      li.style.display = "relative";
+      li.setAttribute("hash", item.hash);
+      li.setAttribute("food-name", item.name);
+      const span = document.createElement("span");
+      span.innerText = item.name;
+      li.appendChild(span);
+      suggestions.appendChild(li);
+    }
   }
   const textBoxParent = document.getElementsByClassName("search-bar")[0];
   const textBox = textBoxParent.getElementsByTagName('input')[0];
+  let addNewFood = document.getElementById('add-new-food');
   if (textBox.value) {
-    const li = document.createElement("li");
-    li.addEventListener("click", handleFood);
-    li.style.cursor = "pointer";
-    li.style.display = "relative";
-    const span = document.createElement("span");
-    span.innerText = "+ Add a new food";
-    li.appendChild(span);
-    suggestions.appendChild(li);
+    if (!addNewFood) {
+      const li = document.createElement("li");
+      li.addEventListener("click", handleFood);
+      li.style.cursor = "pointer";
+      li.style.display = "relative";
+      li.id = 'add-new-food';
+      const span = document.createElement("span");
+      span.innerText = "+ Add a new food";
+      li.appendChild(span);
+      suggestions.appendChild(li);
+    }
+  } else {
+    if (addNewFood) {
+      addNewFood.remove();
+    }
   }
 }
 function deleteFood(event) {
