@@ -177,7 +177,7 @@ function handleGetFiles(event) {
     if (sortedArray.length > 0) {
       let title = document.createElement("p");
       title.innerText = "Previously uploaded items:";
-      document.body.appendChild(title);
+      document.body.insertBefore(title, uploadLinksDiv);
       for (let i = 0; i < sortedArray.length; i++) {
         let item = sortedArray[i];
         createUploadEntry(item.name, parseInt(item.uploadDate) * 1000);
