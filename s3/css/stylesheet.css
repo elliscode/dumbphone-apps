@@ -118,13 +118,11 @@ a.selected, input.selected, button.selected, div.selected {
 .rounded-block>*:last-child {
   margin-bottom:0px;
 }
-.rounded-block-without-title {
-  border: 1px solid black;
-  border-radius: 5px;
-  padding: 10px;
-  margin-bottom: 3px;
-  margin-top: 3px;
-  position:relative;
+.without-title {
+  margin-top: 3px !important;
+}
+.without-title>*:nth-child(2) {
+  margin-top:5px !important;
 }
 .rounded-title {
   position: absolute;

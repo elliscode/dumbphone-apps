@@ -4,10 +4,10 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Food Diary</title>
-  <link rel="stylesheet" href="../css/stylesheet.css?v=015" />
-  <link rel="stylesheet" href="css/fooddiary.css?v=015" />
-  <link rel="stylesheet" href="../css/loader.css?v=015" />
-  <link rel="icon" type="image/png" href="../img/food.favicon.png?v=015" />
+  <link rel="stylesheet" href="../css/stylesheet.css?v=019020" />
+  <link rel="stylesheet" href="css/fooddiary.css?v=019020" />
+  <link rel="stylesheet" href="../css/loader.css?v=019020" />
+  <link rel="icon" type="image/png" href="../img/food.favicon.png?v=019020" />
 </head>
 
 <body>
@@ -31,7 +31,7 @@
 
   <div class="search-blob" id="food-search" style="display:none;">
     <div class="search-bar">
-      <input class="big" type="text" onkeyup="queueSearch(event);searchKeyCallback(event);" onkeydown="searchKeyCallback(event);" />
+      <input class="big" type="text" oninput="queueSearch(event);" onkeyup="searchKeyCallback(event);" onkeydown="searchKeyCallback(event);" />
       <button onclick="closeSearch(event)">Close</button>
       <!--<button onclick="addToList(event)">Add</button>-->
     </div>
@@ -68,7 +68,7 @@
   </div>
 
   <div class="panel" id="servings">
-    <input id="servings-amount" type="tel" placeholder="amount" onkeydown="forceToDecimal(event)" />
+    <input id="servings-amount" type="tel" placeholder="amount" onkeydown="forceToDecimal(event);servingsArrowCallback(event);" />
     <select id="servings-name" onchange="servingChange(event)">
       <option>Test One</option>
       <option>Test Two</option>
@@ -76,12 +76,10 @@
     <button style="display: none" id="servings-edit" onclick="editServing(event)">
       &#x270E;
     </button>
-    <input type="text" id="servings-text" placeholder="serving name" />
-    <input type="tel" id="calories-text" placeholder="calories" onkeydown="forceToDecimal(event)" />
+    <input type="text" id="servings-text" placeholder="serving name" onkeydown="servingsArrowCallback(event);" />
+    <input type="tel" id="calories-text" placeholder="calories" onkeydown="forceToDecimal(event);servingsArrowCallback(event);" />
     <button id="servings-save" onclick="saveServing(event)">Save</button>
-    <button id="servings-create" onclick="createServing(event)">
-      Create
-    </button>
+    <button id="servings-create" onclick="createServing(event)">Create</button>
     <button onclick="closeServings(event)">&times;</button>
   </div>
 
@@ -135,9 +133,9 @@
       <button onclick="logOut(event)">Log out</button>
     </div>
   </div>
-  <script src="../js/utils.js?v=015"></script>
+  <script src="../js/utils.js?v=019020"></script>
   <script src="../js/env.js"></script>
-  <script src="js/fooddiary.js?v=015"></script>
+  <script src="js/fooddiary.js?v=019020"></script>
 </body>
 
 </html>

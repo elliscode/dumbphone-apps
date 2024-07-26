@@ -3,6 +3,10 @@ import time
 
 import urllib3
 
+from .input_validation import (
+    validate_string
+)
+
 from .utils import (
     authenticate,
     format_response,
@@ -18,7 +22,8 @@ discord_token_cache = {}
 
 @authenticate
 def set_discord_token_route(event, user_data, body):
-    if "discordToken" not in body:
+    discord_token = validate_string(body.get("discordToken"))
+    if not discord_token:
         return format_response(
             event=event,
             http_code=400,
@@ -28,7 +33,7 @@ def set_discord_token_route(event, user_data, body):
     python_data = {
         "key1": "discord",
         "key2": user_data["key2"],
-        "token": body["discordToken"],
+        "token": discord_token,
     }
     dynamo_data = python_obj_to_dynamo_obj(python_data)
     dynamo.put_item(

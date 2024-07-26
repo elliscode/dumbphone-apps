@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Notes</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
-    <link rel="stylesheet" href="../css/loader.css?v=017" />
-    <link rel="icon" type="image/png" href="../img/notepad.favicon.png?v=017" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=019" />
+    <link rel="stylesheet" href="../css/loader.css?v=019" />
+    <link rel="icon" type="image/png" href="../img/notepad.favicon.png?v=019" />
     <style>
 .note {
   position: relative;
@@ -96,7 +96,7 @@
         <div></div>
       </div>
     </div>
-    <script src="../js/utils.js?v=017"></script>
+    <script src="../js/utils.js?v=019"></script>
     <script src="../js/env.js"></script>
     <script>
 const loader = document.getElementById("loading");
@@ -199,7 +199,6 @@ function deleteNote(event) {
   let noteId = noteNameSpan.innerText;
   let noteDiv = document.querySelector(`[note-name="${noteId}"]`);
   noteDiv.remove();
-  console.log(`deleting note ${noteId}`);
   showPanel('main-ui');
 
   let xmlHttp = new XMLHttpRequest();

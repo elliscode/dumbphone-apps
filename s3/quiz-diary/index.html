@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Quiz Diary</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
-    <link rel="stylesheet" href="../css/loader.css?v=017" />
-    <link rel="icon" type="image/png" href="../img/checkbox.favicon.png?v=017" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=019" />
+    <link rel="stylesheet" href="../css/loader.css?v=019" />
+    <link rel="icon" type="image/png" href="../img/checkbox.favicon.png?v=019" />
     <style>
 .modal {
   background-color:rgb(255, 255, 255);
@@ -134,7 +134,7 @@ body {
         <div></div>
       </div>
     </div>
-    <script src="../js/utils.js?v=017"></script>
+    <script src="../js/utils.js?v=019"></script>
     <script src="../js/env.js"></script>
     <script>
 const RESPONSE_LIST_QUESTIONS = ['radio','check'];
@@ -585,7 +585,6 @@ function handleSetAnswerSuccess(result) {
   controlsDiv.style.right = '24px';
 }
 function handleSetAnswerError(result) {
-  console.log("failed");
   saving.style.display = 'none';
   saved.style.display = 'none';
   error.style.display = 'inline-block';

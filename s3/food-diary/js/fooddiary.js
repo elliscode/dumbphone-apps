@@ -27,7 +27,7 @@ let searchTimeout = undefined;
 function queueSearch(event) {
   event.target.removeAttribute("hash");
   clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(search, 400, event);
+  searchTimeout = setTimeout(search, 1000, event);
 }
 let previousSearch = undefined;
 function search(event) {
@@ -50,38 +50,62 @@ function search(event) {
   previousSearch = query;
 }
 function displaySearch(event) {
+  // first find all the items currently displayed
+  let existingHashes = Array.from(document.querySelectorAll('li[hash]')).map(x=>x.getAttribute('hash'));
+  // first calculate new items
   let items = defaultHandlerV1(event);
-  const suggestions = document.getElementById("search-list");
-  while (suggestions.firstChild) {
-    suggestions.removeChild(suggestions.firstChild);
-  }
+  let itemsToDisplay = [];
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     if (itemsToIgnore.includes(item.hash)) {
       continue;
     }
-    const li = document.createElement("li");
-    li.addEventListener("click", currentSuggestionMethod);
-    li.style.cursor = "pointer";
-    li.style.display = "relative";
-    li.setAttribute("hash", item.hash);
-    li.setAttribute("food-name", item.name);
-    const span = document.createElement("span");
-    span.innerText = item.name;
-    li.appendChild(span);
-    suggestions.appendChild(li);
+    itemsToDisplay.push(item.hash);
+  }
+
+  let areTheyTheSame = existingHashes.every(item => itemsToDisplay.includes(item)) && itemsToDisplay.every(item => existingHashes.includes(item));
+
+  const suggestions = document.getElementById("search-list");
+  if (!areTheyTheSame) {
+    while (suggestions.firstChild) {
+      suggestions.removeChild(suggestions.firstChild);
+    }
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (itemsToIgnore.includes(item.hash)) {
+        continue;
+      }
+      const li = document.createElement("li");
+      li.addEventListener("click", currentSuggestionMethod);
+      li.style.cursor = "pointer";
+      li.style.display = "relative";
+      li.setAttribute("hash", item.hash);
+      li.setAttribute("food-name", item.name);
+      const span = document.createElement("span");
+      span.innerText = item.name;
+      li.appendChild(span);
+      suggestions.appendChild(li);
+    }
   }
   const textBoxParent = document.getElementsByClassName("search-bar")[0];
   const textBox = textBoxParent.getElementsByTagName('input')[0];
+  let addNewFood = document.getElementById('add-new-food');
   if (textBox.value) {
-    const li = document.createElement("li");
-    li.addEventListener("click", handleFood);
-    li.style.cursor = "pointer";
-    li.style.display = "relative";
-    const span = document.createElement("span");
-    span.innerText = "+ Add a new food";
-    li.appendChild(span);
-    suggestions.appendChild(li);
+    if (!addNewFood) {
+      const li = document.createElement("li");
+      li.addEventListener("click", handleFood);
+      li.style.cursor = "pointer";
+      li.style.display = "relative";
+      li.id = 'add-new-food';
+      const span = document.createElement("span");
+      span.innerText = "+ Add a new food";
+      li.appendChild(span);
+      suggestions.appendChild(li);
+    }
+  } else {
+    if (addNewFood) {
+      addNewFood.remove();
+    }
   }
 }
 function deleteFood(event) {
@@ -185,8 +209,6 @@ function displayServing(event) {
   let textBox = document.getElementById("servings-amount");
   let select = document.getElementById("servings-name");
   let edit = document.getElementById("servings-edit");
-  let servingsText = document.getElementById("servings-text");
-  let caloriesText = document.getElementById("calories-text");
   let servingsCreate = document.getElementById("servings-create");
   let servingsSave = document.getElementById("servings-save");
   edit.style.display = "none";
@@ -583,14 +605,13 @@ function servingRecipeChange(event) {
   servingsSave.style.display = "inline-block";
 }
 function servingChange(event) {
+  let moveToFront = event.triggerBox && event.triggerBox.selectionStart == 0;
   let select = event.target;
   let option = select.options[select.selectedIndex];
   let amount = option.getAttribute("amount");
   let textBox = document.getElementById("servings-amount");
   textBox.value = amount;
   let edit = document.getElementById("servings-edit");
-  let servingsText = document.getElementById("servings-text");
-  let caloriesText = document.getElementById("calories-text");
   let servingsCreate = document.getElementById("servings-create");
   let servingsSave = document.getElementById("servings-save");
   if ("kcal" == option.value) {
@@ -611,6 +632,10 @@ function servingChange(event) {
     caloriesText.style.display = "none";
     servingsCreate.style.display = "none";
     servingsSave.style.display = "inline-block";
+  }
+  if (moveToFront) {
+    event.triggerBox.selectionStart = 0;
+    event.triggerBox.selectionEnd = 0;
   }
 }
 function saveServing(event) {
@@ -647,12 +672,14 @@ function createServing(event) {
   const caller = event.target;
   const hash = caller.getAttribute("hash");
   const foodHash = caller.getAttribute("food-hash");
-  let textBox = document.getElementById("servings-amount");
-  let servingsText = document.getElementById("servings-text");
-  let caloriesText = document.getElementById("calories-text");
-  const quantity = textBox.value;
+  const quantity = servingsTextBox.value;
   const servingName = servingsText.value;
   const calories = caloriesText.value;
+
+  servingsTextBox.value = '';
+  servingsText.value = '';
+  caloriesText.value = '';
+
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/food-diary/create-serving", true);
   xmlHttp.withCredentials = true;
@@ -928,16 +955,37 @@ function closeSearch(event) {
   const content = document.getElementById('content');
   content.style.display = 'block';
 }
-
-const servingsTextBox = document.getElementById("servings-amount");
-const servingsSaveButton = document.getElementById("servings-save");
-servingsTextBox.addEventListener("keyup", function (event) {
-  event.preventDefault();
-  if (event.keyCode === 13) {
-    servingsTextBox.blur();
-    servingsSaveButton.click();
+function endCallMainWindowCallback(event) {
+  if (event.key == 'EndCall') {
+    event.target.blur();
+    showPanel('content');
+    event.preventDefault();
   }
-});
+}
+function servingsEnterListener(event) {
+  if (event.key == 'EndCall') {
+    event.target.blur();
+    showPanel('content');
+    event.preventDefault();
+  } else if (event.key == 'Enter') {
+    if (event.target == servingsTextBox && servingsSaveButton.style.display != 'none') {
+      event.target.blur();
+      servingsSaveButton.click();
+    } else if (servingsCreateButton.style.display != 'none') {
+      event.target.blur();
+      servingsCreateButton.click();
+    }
+  }
+}
+const servingsTextBox = document.getElementById("servings-amount");
+const servingsText = document.getElementById('servings-text');
+const caloriesText = document.getElementById('calories-text');
+const servingsSaveButton = document.getElementById("servings-save");
+const servingsCreateButton = document.getElementById('servings-create');
+servingsTextBox.addEventListener("keyup", servingsEnterListener);
+servingsText.addEventListener("keyup", servingsEnterListener);
+caloriesText.addEventListener("keyup", servingsEnterListener);
+
 
 const foodListPreventDefaultKeys = [
   'SoftLeft',
@@ -1053,20 +1101,30 @@ const servingListInteractionKeyList = [
   'ArrowUp'
 ];
 function servingsArrowCallback(event) {
-  if (servingListPreventDefaultKeys.includes(event.key) || (servingListPreventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
-    event.preventDefault();
-  }
-  if (servingListBlurKeys.includes(event.key) || (event.type === 'keyup' && servingListBlurIfEmptyKeys.includes(event.key) && !event.target.value && !previousValue)) {
-    event.target.blur();
-    closeSearch(event);
-  }
-  if (['ArrowDown', 'ArrowUp'].includes(event.key)) {
-    let modal = findParentWithClass(event.target, 'modal');
+  let youreWhereYoureSupposedToBe = false;
+  youreWhereYoureSupposedToBe = youreWhereYoureSupposedToBe || event.target.selectionStart === null;
+  youreWhereYoureSupposedToBe = youreWhereYoureSupposedToBe || ((event.key == 'ArrowUp' || event.key == 'ArrowLeft') && event.target.selectionStart == 0);
+  youreWhereYoureSupposedToBe = youreWhereYoureSupposedToBe || ((event.key == 'ArrowDown' || event.key == 'ArrowRight') && event.target.selectionStart == event.target.value.length);
+  let modal = findParentWithClass(event.target, 'panel');
+  if (['ArrowDown', 'ArrowUp'].includes(event.key) && youreWhereYoureSupposedToBe && event.target.id == 'servings-amount') {
     let select = modal.getElementsByTagName('select')[0]; 
     let newIndex = select.selectedIndex + (event.key === 'ArrowDown' ? 1 : -1);
     newIndex = newIndex < 0 ? select.length - 1 : newIndex;
     newIndex = newIndex > select.length - 1 ? 0 : newIndex;
     select.selectedIndex = newIndex;
+    servingChange({target: select, triggerBox: event.target});
+    event.preventDefault();
+  }
+  if (['ArrowLeft', 'ArrowRight'].includes(event.key) && youreWhereYoureSupposedToBe) {
+    let inputsAndButtons = Array.from(modal.querySelectorAll('input'));
+    inputsAndButtons = inputsAndButtons.filter(x=>x.style.display!='none');
+    let index = inputsAndButtons.indexOf(event.target);
+    if (-1 == index) {
+      inputsAndButtons[0].focus();
+    } else {
+      let newIndex = (((index + (event.key == 'ArrowLeft' ? -1 : 1)) % inputsAndButtons.length) + inputsAndButtons.length) % inputsAndButtons.length;
+      inputsAndButtons[newIndex].focus();
+    }
   }
 }
 function numberPadListener(event) {
@@ -1091,4 +1149,4 @@ if (
 document.addEventListener('keyup',numberPadListener);
 datePicker.value = getTodayOrUrlParam();
 setDate();
-applyEmulators();
+applyEmulators(endCallMainWindowCallback);

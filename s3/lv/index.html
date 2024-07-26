@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Location Viewer</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
-    <link rel="stylesheet" href="../css/loader.css?v=017" />
-    <link rel="icon" type="image/png" href="../img/pin.favicon.png?v=017" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=019" />
+    <link rel="stylesheet" href="../css/loader.css?v=019" />
+    <link rel="icon" type="image/png" href="../img/pin.favicon.png?v=019" />
     <style>
       .add-to-group button {
         height: 20px;
@@ -28,7 +28,7 @@
     </div>
 
 
-    <div id="map" style="width: 100%; height: calc(100vh - 85px);"></div>
+    <div id="map" style="width: 100%; height: calc(100vh - 85px); max-height: calc(100svh - 85px);"></div>
 
     <div id="loading">
       <div class="lds-spinner">
@@ -51,7 +51,7 @@
       <button onclick="logOut(event)">Log out</button>
     </div>
 
-    <script src="../js/utils.js?v=017"></script>
+    <script src="../js/utils.js?v=019"></script>
     <script src="../js/env.js"></script>
     <script>
 if (!!csrfToken) {
@@ -61,6 +61,7 @@ if (!!csrfToken) {
 const locationToken = getParameterByName("id");
 const json = document.getElementById("json");
 const TIME_LIMIT = 60 * 60;
+const UPDATE_PERIOD_SECONDS = 6;
 let locationTimeout = undefined;
 
 let resumeButton = document.getElementById("resume");
@@ -160,7 +161,7 @@ function handleShare(event) {
       return;
     }
 
-    locationTimeout = setTimeout(getCurrentLocation, 10000);
+    locationTimeout = setTimeout(getCurrentLocation, UPDATE_PERIOD_SECONDS * 1000);
   }
 }
 

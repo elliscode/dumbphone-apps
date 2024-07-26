@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+.not-complete {
+    color:#333;
+}
+.calculating {
+    color:#880;
+}
+.complete {
+    color:#080;
+}
+.complete::before {
+    content: '\2713';
+}
+        </style>
+    </head>
+    <body>
+        <textarea id="input"></textarea>
+        <button onclick="convert(event)">convert</button>
+        <div id="status"></div>
+        <div id="output"></div>
+        <script src="../js/utils.js?v=019"></script>
+        <script src="../js/env.js"></script>
+        <script>
+const TIME_REGEX = /^\d{4}\.\d{2}\.\d{2}\.\d{2}\.\d{2}\.\d{2}$/
+const statusDiv = document.getElementById('status');
+const outputDiv = document.getElementById('output');
+const input = document.getElementById('input');
+function convert(event) {
+    statusDiv.innerText = '';
+    while(outputDiv.firstElementChild) {
+        output.firstElementChild.remove();
+    }
+    let splitValue = input.value.split('\n');
+    for(let item of splitValue) {
+        item = item.trim();
+        if (TIME_REGEX.test(item)) {
+            let formatted = `${item.substring(0,4)}-${item.substring(5,7)}-${item.substring(8,10)}T${item.substring(11,13)}:${item.substring(14,16)}:${item.substring(17,19)}`;
+            let unixTime = Date.parse(formatted) - ((new Date()).getTimezoneOffset() * 60 * 1000);
+
+            let dateParts = (new Date(unixTime)).toLocaleDateString().split('/');
+            let month = dateParts[0];
+            let day = dateParts[1];
+            let year = dateParts[2];
+
+            let date = `${year}-${month.padStart(2,0)}-${day.padStart(2,0)}`;
+
+
+            let p = document.createElement('p');
+            p.classList.add('not-complete');
+            p.innerText = `${date} -- ${unixTime}`;
+            p.setAttribute('date', date);
+            p.setAttribute('timestamp', unixTime);
+            outputDiv.appendChild(p);
+        }
+    }
+    performNextTimestamp();
+}
+function performNextTimestamp() {
+    let next = document.querySelector('p.not-complete');
+    if (!next) {
+        statusDiv.innerText = 'Complete!';
+        return;
+    }
+    next.classList.remove('not-complete');
+    next.classList.add('calculating');
+    statusDiv.innerText = 'Running...';
+    let url = API_DOMAIN + "/timestamps/add-value";
+    xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true); // false for synchronous request
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleTimestamp;
+    xmlHttp.send(JSON.stringify({ 
+        csrf: csrfToken,
+        date: next.getAttribute('date'),
+        timestamp: next.getAttribute('timestamp'),
+        hash: 'igdLu9UF3iidK9HedJjQTcM6EsxfmgM8',
+    }));
+}
+function handleTimestamp(event) {
+    let result = defaultHandler(event);
+    if (result.statusCode != 201) {
+        statusDiv.innerText = 'Failed!';
+    } else {
+        let p = document.querySelector('p.calculating');
+        p.classList.remove('calculating');
+        p.classList.add('complete');
+        performNextTimestamp();
+    }
+}
+        </script>
+    </body>
+</html>

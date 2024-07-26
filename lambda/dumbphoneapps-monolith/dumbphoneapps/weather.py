@@ -5,6 +5,13 @@ import time
 
 import urllib3
 
+from .input_validation import (
+    validate_decimal,
+    validate_date,
+    validate_hms_time,
+    validate_schema
+)
+
 from .utils import (
     authenticate,
     format_response,
@@ -22,19 +29,32 @@ weather_token_expiration = None
 
 http = urllib3.PoolManager()
 
+GET_FORECAST_SCHEMA = {
+    "type": dict,
+    "fields": [
+        {"type": validate_decimal, "name": "lat"},
+        {"type": validate_decimal, "name": "lon"},
+        {"type": validate_date, "name": "today"},
+        {"type": validate_date, "name": "eightDaysFromNow"},
+        {"type": validate_hms_time, "name": "midnight"},
+    ]
+}
+
 
 @authenticate
 def get_forecast_route(event, user_data, body):
-    print(body)
-    lat = body["lat"]
-    lon = body["lon"]
-    today = body["today"]
-    eight_days_from_now = body["eightDaysFromNow"]
-    midnight = body["midnight"]
+    body = validate_schema(body, GET_FORECAST_SCHEMA)
+
+    if not body:
+        return format_response(
+            event=event,
+            http_code=400,
+            body=f"Improperly formatted events, must be in the format {GET_FORECAST_SCHEMA}",
+        )
 
     found_token = get_token()
 
-    uri = f"https://api.meteomatics.com/{today}T{midnight}Z--{eight_days_from_now}T{midnight}Z:PT24H/t_min_2m_24h:F,t_max_2m_24h:F,weather_symbol_24h:idx/{lat},{lon}/json"
+    uri = f"https://api.meteomatics.com/{body['today']}T{body['midnight']}Z--{body['eightDaysFromNow']}T{body['midnight']}Z:PT24H/t_min_2m_24h:F,t_max_2m_24h:F,weather_symbol_24h:idx/{body['lat']},{body['lon']}/json"
     print(uri)
     daily_response = http.request(
         "GET",
@@ -46,7 +66,7 @@ def get_forecast_route(event, user_data, body):
 
     hourly_response = http.request(
         "GET",
-        f"https://api.meteomatics.com/now--now+23H:PT1H/t_2m:F,weather_symbol_1h:idx/{lat},{lon}/json",
+        f"https://api.meteomatics.com/now--now+23H:PT1H/t_2m:F,weather_symbol_1h:idx/{body['lat']},{body['lon']}/json",
         headers={"Authorization": f"Bearer {found_token}"},
     )
     hourly_response_text = hourly_response.data.decode("utf-8")

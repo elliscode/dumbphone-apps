@@ -78,10 +78,9 @@ from dumbphoneapps.timestamp_logger import (
     set_timestamps_route,
     get_timestamps_route,
     get_values_route,
-    set_values_route,
+    add_value_route,
     get_timestamp_report_data_route,
-    get_relationships_route,
-    set_relationships_route,
+    delete_timestamp_value,
 )
 
 
@@ -123,8 +122,8 @@ def route(event):
         return setcrossedoff_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/set-list-order"):
         return setlistorder_route(event)
-    if path_equals(event=event, method="POST", path="/grocery-list/send-share-list"):
-        return sendsharelist_route(event)
+    # if path_equals(event=event, method="POST", path="/grocery-list/send-share-list"):
+    #     return sendsharelist_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/accept-share-list"):
         return acceptsharelist_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/clean-up-list"):
@@ -205,14 +204,12 @@ def route(event):
         return set_timestamps_route(event)
     if path_equals(event=event, method="POST", path="/timestamps/get-timestamps"):
         return get_timestamps_route(event)
-    if path_equals(event=event, method="POST", path="/timestamps/set-values"):
-        return set_values_route(event)
     if path_equals(event=event, method="POST", path="/timestamps/get-values"):
         return get_values_route(event)
-    if path_equals(event=event, method="POST", path="/timestamps/set-relationships"):
-        return set_relationships_route(event)
-    if path_equals(event=event, method="POST", path="/timestamps/get-relationships"):
-        return get_relationships_route(event)
+    if path_equals(event=event, method="POST", path="/timestamps/add-value"):
+        return add_value_route(event)
+    if path_equals(event=event, method="POST", path="/timestamps/delete-value"):
+        return delete_timestamp_value(event)
     if path_equals(event=event, method="POST", path="/timestamps/get-report-data"):
         return get_timestamp_report_data_route(event)
     if path_starts_with(event=event, method="POST", path="/discord/"):

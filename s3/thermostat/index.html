@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Thermostat</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=017" />
-    <link rel="stylesheet" href="../css/loader.css?v=017" />
-    <link rel="icon" type="image/png" href="../img/thermometer.favicon.png?v=017" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=019" />
+    <link rel="stylesheet" href="../css/loader.css?v=019" />
+    <link rel="icon" type="image/png" href="../img/thermometer.favicon.png?v=019" />
     <style>
 .thermostat {
   max-width: 600px;
@@ -145,7 +145,7 @@
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=017"></script>
+    <script src="../js/utils.js?v=019"></script>
     <script src="../js/env.js"></script>
     <script>
 const controlsDiv = document.getElementById('controls');
@@ -190,8 +190,9 @@ function handleDevices(event) {
       {
         let button = document.createElement('button');
         button.innerText = "Turn off fan";
+        button.setAttribute('fan-time-in-seconds', '1s');
         button.setAttribute('device-id', device.name);
-        button.addEventListener('click', turnOffFan);
+        button.addEventListener('click', setFanForTime);
         controlsDiv.appendChild(button);
       }
       // let pre = document.createElement('pre');
@@ -386,7 +387,6 @@ function handleTokenResult(result) {
 function verifyResponse(event) {
   let result = defaultHandler(event, false);
   if (result.statusCode == 200) {
-    console.log(`Succcess ${result.statusCode}`);
     getDevices();
   } else if (result.statusCode == 401) {
     openInfoWindow(`Unauthorized ${result.statusCode}, re-authorizing, try again`);
@@ -445,7 +445,6 @@ function setDotPositionBasedOnTemperature(tempF, dot) {
   dot.style.top = `calc(${topPercent}% - calc(12% / 2))`;
   dot.style.left = `calc(${leftPercent}% - calc(12% / 2))`;
   dot.style.display = 'block';
-  console.log(`${tempF} = (${xComponent},${yComponent})`);
 }
 function goFromFiftyToNinety() {
   for(let i = 50; i <= 90; i++) {

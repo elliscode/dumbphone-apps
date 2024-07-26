@@ -159,3 +159,6 @@ h2 button {
 .new-ui {
   display:none;
 }
+#content-full {
+  padding-bottom:2em;
+}
