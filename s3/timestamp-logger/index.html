@@ -150,10 +150,16 @@ function displayTimestamps(timestampEvents) {
     titleDiv.innerText = timestampEvent.title;
     outerDiv.appendChild(titleDiv);
 
+    let flexDiv = document.createElement('div');
+    flexDiv.style.display = 'flex';
+
     let button = document.createElement('button');
     button.innerText = "Log timestamp";
-    button.addEventListener('click', addTimestampCallback)
-    outerDiv.appendChild(button);
+    button.addEventListener('click', addTimestampCallback);
+    button.setAttribute('input-group-name', 'log-timestamp-button');
+    flexDiv.appendChild(button);
+
+    outerDiv.appendChild(flexDiv);
 
     let hr = document.createElement('hr');
     hr.style.display = 'block';
@@ -166,6 +172,7 @@ function displayTimestamps(timestampEvents) {
 
     content.appendChild(outerDiv);
   }
+  applyEmulators();
 }
 
 function renderEditWindow(event) {
