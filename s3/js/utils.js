@@ -358,6 +358,9 @@ function closeInfoWindow() {
   }
 }
 function scrollToItem(domItem) {
+  if (domItem.target) {
+    domItem = domItem.target;
+  }
   domItem.scrollIntoView({beharior: 'instant', block: 'nearest'});
   let topDiff = domItem.getBoundingClientRect().top - 40;
   if (topDiff < 0) {

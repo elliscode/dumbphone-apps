@@ -172,7 +172,7 @@ function displayTimestamps(timestampEvents) {
 
     content.appendChild(outerDiv);
   }
-  applyEmulators();
+  applyEmulators(scrollToItem);
 }
 
 function renderEditWindow(event) {
@@ -512,7 +512,7 @@ function setTimestamps(event) {
 const datePicker = document.getElementById("date-picker");
 datePicker.value = getTodayOrUrlParam();
 
-applyEmulators();
+applyEmulators(scrollToItem);
 
 getTimestamps();
     </script>
