@@ -96,7 +96,6 @@ button {
 }
 #submit-bar {
   display: none;
-  padding-top:5px;
 }
 #item-text-box {
   flex-grow: 1;
@@ -155,7 +154,6 @@ button {
   justify-content: space-between;
 }
 .logout div {
-  width:calc(100% / 3);
   display:flex;
 }
 .logout div:first-child {
@@ -166,9 +164,6 @@ button {
 }
 .logout div:nth-child(3) {
   justify-content: right;
-}
-.submit-bar {
-  margin-top:5px;
 }
 .old-ui {
   display: none!important;
