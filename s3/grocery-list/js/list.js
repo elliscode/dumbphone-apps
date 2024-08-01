@@ -584,6 +584,9 @@ function sideKeyListener(event) {
   let targetGroupName = event.target.getAttribute('input-group-name');
   if (event.type === 'keydown' && ['Enter'].includes(event.key) && targetGroupName == 'list') {
     clearCrossedOffItems({target: event.target.parentElement.querySelector('button'), stopPropagation: ()=>{}});
+    if (!event.target.parentElement.querySelector('li')) {
+      document.querySelector('input[primary-input]').focus();
+    }
   }
   if (event.type === 'keydown' && ['ArrowLeft', 'ArrowRight'].includes(event.key)) {
     let parentDiv = findParentWithClass(event.target, 'group-parent');
