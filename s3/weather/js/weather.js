@@ -24,7 +24,7 @@ function getCurrentLocation() {
   }
   if (navigator.geolocation) {
     json.innerHTML = "Retrieving current location from device...";
-    navigator.geolocation.getCurrentPosition(getWeatherForPosition, displayGeolocationError, {enableHighAccuracy: false});
+    navigator.geolocation.getCurrentPosition(getWeatherForPosition, displayGeolocationError, {timeout: 15 * 1000});
   } else {
     json.innerHTML = "Geolocation is not supported by this browser.";
   }

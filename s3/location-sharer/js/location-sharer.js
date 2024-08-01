@@ -10,7 +10,7 @@ function getCurrentLocation() {
   button.style.display = "none";
   if (navigator.geolocation) {
     json.innerText = "Retrieving current location from device...";
-    navigator.geolocation.getCurrentPosition(showPosition);
+    navigator.geolocation.getCurrentPosition(showPosition, displayError, {timeout: 15 * 1000});
   } else {
     json.innerText = "Geolocation is not supported by this browser.";
   }
@@ -47,6 +47,9 @@ function showPosition(position) {
     payload.locationToken = locationToken;
   }
   xmlHttp.send(JSON.stringify(payload));
+}
+function displayError(event) {
+  json.innerText = "Geolocation failed, please refresh the page and try again.";
 }
 function handleShare(event) {
   if (locationTimeout) {

@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>File Sharer</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=019" />
-    <link rel="stylesheet" href="../css/loader.css?v=019" />
-    <link rel="icon" type="image/png" href="../img/share.favicon.png?v=019" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=021" />
+    <link rel="stylesheet" href="../css/loader.css?v=021" />
+    <link rel="icon" type="image/png" href="../img/share.favicon.png?v=021" />
     <style>
       body {
         padding-bottom: 30px;
@@ -39,7 +39,7 @@
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=019"></script>
+    <script src="../js/utils.js?v=021"></script>
     <script src="../js/env.js"></script>
     <script>
 if (
@@ -177,7 +177,7 @@ function handleGetFiles(event) {
     if (sortedArray.length > 0) {
       let title = document.createElement("p");
       title.innerText = "Previously uploaded items:";
-      document.body.appendChild(title);
+      document.body.insertBefore(title, uploadLinksDiv);
       for (let i = 0; i < sortedArray.length; i++) {
         let item = sortedArray[i];
         createUploadEntry(item.name, parseInt(item.uploadDate) * 1000);

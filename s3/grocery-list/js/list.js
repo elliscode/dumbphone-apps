@@ -510,13 +510,15 @@ function setStylesheet(uri) {
   head.appendChild(link);
 }
 let oldUi = true;
+const addItemButton = document.getElementById('add-item');
 if (!navigator.userAgent.includes("Chrome") && navigator.userAgent.includes("Safari")) {
   oldUi = false;
   iosCookieRefresh();
-  setStylesheet("css/grocery-list-new.css?v=019");
+  setStylesheet("css/grocery-list-new.css?v=021");
   document.getElementById("item-text-box").addEventListener("blur", startHide);
+  addItemButton.parentElement.appendChild(document.getElementById('submit-bar'));
 } else {
-  setStylesheet("css/grocery-list-old.css?v=01920");
+  setStylesheet("css/grocery-list-old.css?v=021");
 }
 function handleGetList(event) {
   const result = defaultHandlerV1(event);
@@ -564,14 +566,14 @@ function focusEvent(event) {
 const textBox = document.getElementById("item-text-box");
 const submitBar = document.getElementById("submit-bar");
 function showSubmit(event) {
-  Array.from(document.getElementsByClassName('section-header')).forEach(x=>{x.style.top='72px';});
+  addItemButton.style.display = 'none';
   submitBar.style.display = "flex";
   textBox.focus();
 }
 function hideSubmit(event) {
-  Array.from(document.getElementsByClassName('section-header')).forEach(x=>{x.style.top='38px';});
   if (!oldUi) {
     submitBar.style.display = "none";
+    addItemButton.style.display = 'flex';
   }
 }
 function enterKeyListener(event) {
@@ -584,6 +586,9 @@ function sideKeyListener(event) {
   let targetGroupName = event.target.getAttribute('input-group-name');
   if (event.type === 'keydown' && ['Enter'].includes(event.key) && targetGroupName == 'list') {
     clearCrossedOffItems({target: event.target.parentElement.querySelector('button'), stopPropagation: ()=>{}});
+    if (!event.target.parentElement.querySelector('li')) {
+      document.querySelector('input[primary-input]').focus();
+    }
   }
   if (event.type === 'keydown' && ['ArrowLeft', 'ArrowRight'].includes(event.key)) {
     let parentDiv = findParentWithClass(event.target, 'group-parent');

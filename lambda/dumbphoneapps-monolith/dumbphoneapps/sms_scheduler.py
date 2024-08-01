@@ -1,17 +1,9 @@
 import json
 import re
+
 from .utils import (
-    DOMAIN_NAME,
-    get_user_data,
     format_response,
-    sqs,
     authenticate,
-    python_obj_to_dynamo_obj,
-    dynamo,
-    TABLE_NAME,
-    dynamo_obj_to_python_obj,
-    create_id,
-    SMS_SQS_QUEUE_URL,
     SMS_SQS_QUEUE_ARN,
     SMS_SCHEDULER_ROLE_ARN,
     scheduler,

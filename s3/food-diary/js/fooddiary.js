@@ -605,7 +605,7 @@ function servingRecipeChange(event) {
   servingsSave.style.display = "inline-block";
 }
 function servingChange(event) {
-  let moveToFront = event.triggerBox && event.triggerBox.selectionStart == 0;
+  let moveToFront = event.triggerBox && event.key && event.key == 'ArrowUp';
   let select = event.target;
   let option = select.options[select.selectedIndex];
   let amount = option.getAttribute("amount");
@@ -1112,7 +1112,7 @@ function servingsArrowCallback(event) {
     newIndex = newIndex < 0 ? select.length - 1 : newIndex;
     newIndex = newIndex > select.length - 1 ? 0 : newIndex;
     select.selectedIndex = newIndex;
-    servingChange({target: select, triggerBox: event.target});
+    servingChange({target: select, triggerBox: event.target, key: event.key});
     event.preventDefault();
   }
   if (['ArrowLeft', 'ArrowRight'].includes(event.key) && youreWhereYoureSupposedToBe) {
