@@ -200,8 +200,8 @@ function handleReportData(event) {
         totalDiv.innerText = `Total: ${roundedHours}:${roundedMinutes}`;
         totalDiv.style.fontWeight = 'bold';
         hashDiv.appendChild(totalDiv);
+        dayDiv.appendChild(hashDiv);
       }
-      dayDiv.appendChild(hashDiv);
     }
     content.appendChild(dayDiv);
   }
