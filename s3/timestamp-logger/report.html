@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Timestamp Logger Report</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=021" />
-    <link rel="stylesheet" href="../css/loader.css?v=021" />
-    <link rel="icon" type="image/png" href="../img/stopwatch.favicon.png?v=021" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=022" />
+    <link rel="stylesheet" href="../css/loader.css?v=022" />
+    <link rel="icon" type="image/png" href="../img/stopwatch.favicon.png?v=022" />
     <style>
 .timeline {
   width: 100%;
@@ -91,7 +91,7 @@
       </div>
     </div>
 
-    <script src="../js/utils.js?v=021"></script>
+    <script src="../js/utils.js?v=022"></script>
     <script src="../js/env.js"></script>
     <script>
 let loader = document.getElementById("loading");
@@ -101,6 +101,37 @@ const editDiv = document.getElementById('edit-content');
 
 const datePicker = document.getElementById("date-picker");
 datePicker.value = getTodayOrUrlParam();
+
+const namesById = {};
+
+function getTimestamps(event) {
+  loader.style.display = 'block';
+
+  showPanel('Main');
+
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/timestamps/get-timestamps", true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleGetTimestamps;
+  xmlHttp.send(
+    JSON.stringify({
+      csrf: csrfToken
+    })
+  );
+}
+
+function handleGetTimestamps(event) {
+  let result = defaultHandler(event);
+
+  if(!result.responseJson || !result.responseJson.events || result.responseJson.events.length == 0) {
+    loader.style.display = 'none';
+    return;
+  }
+
+  result.responseJson.events.forEach(x=>{namesById[x.hash]=x.title;});
+
+  getReportData(event);
+}
 
 function getReportData(event) {
   let xmlHttp = new XMLHttpRequest();
@@ -137,6 +168,13 @@ function handleReportData(event) {
     title.innerText = day;
     dayDiv.appendChild(title);
     for (let hash of Object.keys(timesByHashByDay[day])) {
+      let hashDiv = document.createElement('div');
+      hashDiv.classList.add('rounded-block');
+      hashDiv.style.display = 'block';
+      let hashTitle = document.createElement('div');
+      hashTitle.classList.add('rounded-title');
+      hashTitle.innerText = namesById[hash];
+      hashDiv.appendChild(hashTitle);
       let total = 0;
       let times = timesByHashByDay[day][hash];
       let previousTime = undefined;
@@ -148,7 +186,7 @@ function handleReportData(event) {
         let p = document.createElement('p');
         p.style.display = 'block';
         p.innerHTML = `${formatTime(previousTime)} &mdash; ${formatTime(thisTime)}`;
-        dayDiv.appendChild(p);
+        hashDiv.appendChild(p);
         total += thisTime - previousTime;
         previousTime = undefined;
       }
@@ -161,8 +199,9 @@ function handleReportData(event) {
         totalDiv.display = 'block';
         totalDiv.innerText = `Total: ${roundedHours}:${roundedMinutes}`;
         totalDiv.style.fontWeight = 'bold';
-        dayDiv.appendChild(totalDiv);
+        hashDiv.appendChild(totalDiv);
       }
+      dayDiv.appendChild(hashDiv);
     }
     content.appendChild(dayDiv);
   }
@@ -186,7 +225,7 @@ function formatTime(input) {
 
 applyEmulators(scrollToItem);
 
-getReportData();
+getTimestamps();
     </script>
   </body>
 </html>

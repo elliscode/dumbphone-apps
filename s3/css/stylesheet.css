@@ -124,6 +124,10 @@ a.selected, input.selected, button.selected, div.selected {
 .without-title>*:nth-child(2) {
   margin-top:5px !important;
 }
+.rounded-block>.rounded-block {
+  margin-top:24px;
+  display:block;
+}
 .rounded-title {
   position: absolute;
   top: calc(-0.5em - 5px);
