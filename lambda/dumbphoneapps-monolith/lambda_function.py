@@ -122,8 +122,6 @@ def route(event):
         return setcrossedoff_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/set-list-order"):
         return setlistorder_route(event)
-    # if path_equals(event=event, method="POST", path="/grocery-list/send-share-list"):
-    #     return sendsharelist_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/accept-share-list"):
         return acceptsharelist_route(event)
     if path_equals(event=event, method="POST", path="/grocery-list/clean-up-list"):
@@ -194,8 +192,6 @@ def route(event):
         return tenor_search_route(event)
     if path_equals(event=event, method="POST", path="/scheduler/set"):
         return schedule_sms_route(event)
-    # if path_equals(event=event, method="POST", path="/scheduler/get"):
-    #     return get_sms_schedules_route(event)
     if path_equals(event=event, method="POST", path="/thermostat/get-token-from-code"):
         return get_token_from_code_route(event)
     if path_equals(event=event, method="POST", path="/thermostat/get-token-from-existing-refresh-token"):

@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Timestamp Logger</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=021" />
-    <link rel="stylesheet" href="../css/loader.css?v=021" />
-    <link rel="icon" type="image/png" href="../img/stopwatch.favicon.png?v=021" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=022" />
+    <link rel="stylesheet" href="../css/loader.css?v=022" />
+    <link rel="icon" type="image/png" href="../img/stopwatch.favicon.png?v=022" />
     <style>
 .timeline {
   width: 100%;
@@ -98,7 +98,7 @@
       </div>
     </div>
 
-    <script src="../js/utils.js?v=021"></script>
+    <script src="../js/utils.js?v=022"></script>
     <script src="../js/env.js"></script>
     <script>
 let loader = document.getElementById("loading");
@@ -168,6 +168,7 @@ function displayTimestamps(timestampEvents) {
     let timelineDiv = document.createElement('div');
     timelineDiv.classList.add('timeline')
     timelineDiv.setAttribute('hash', timestampEvent.hash);
+    timelineDiv.addEventListener('click', interactWithTimestamp);
     outerDiv.appendChild(timelineDiv);
 
     content.appendChild(outerDiv);
@@ -321,6 +322,9 @@ function clearInteraction(event) {
 function interactWithTimestamp(event) {
   clearInteraction(event);
   let timestamp = event.target;
+  if (timestamp.classList.contains('timeline')) {
+    timestamp = timestamp.querySelector('.timestamp');
+  }
   timestamp.classList.add('front');
   let group = findParentWithClass(event.target, 'question-block');
   let timeView = document.createElement('div');

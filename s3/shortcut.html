@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="css/stylesheet.css?v=022" />
+    <style>
+body {
+  margin: 0px;
+  padding: 8px;
+  height: 1600px;
+}
+label {
+  display: block;
+  flex-wrap: wrap;
+}
+    </style>
+  </head>
+  <body>
+    <ul id="status-list">
+        <li>hardcoded</li>
+    </ul>
+    <script src="js/utils.js?v=022"></script>
+    <script src="js/env.js"></script>
+    <script>
+const listDom = document.getElementById('status-list');
+function addItem(content) {
+    let li = document.createElement('li');
+    li.innerText = content;
+    listDom.appendChild(li);
+}
+window.addEventListener('load', ()=>{addItem('End of window.load');});
+addItem('End of script');
+setTimeout(()=>{window.stop();},4000);
+setInterval(()=>{addItem(`document.readyState=${document.readyState}`)},4000);
+    </script>
+  </body>
+</html>

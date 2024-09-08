@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Timestamp Logger Report</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=022" />
+    <link rel="stylesheet" href="../css/loader.css?v=022" />
+    <link rel="icon" type="image/png" href="../img/stopwatch.favicon.png?v=022" />
+    <style>
+.timeline {
+  width: 100%;
+  height: 10px;
+  background-color: #eee;
+  border: 1px solid black;
+  position: relative;
+  display: block;
+  border-radius: 5px;
+}
+.timestamp {
+    width: 10px;
+    height: 100%;
+    position: absolute;
+    top: 0px;
+    border: 1px black solid;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background-color: white;
+}
+.question-controls {
+  display: inline-block;
+}
+.label {
+  display: inline-block;
+}
+.total {
+  position: absolute;
+  top: 23px;
+  right: 5px;
+}
+.front {
+  z-index:2;
+  border: 2px solid black;
+}
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b><a href="index.html">timestamp-logger</a></b> &gt; <b>report</b>
+    </div>
+
+    <div class="panel" id="Main">
+      <div class="controls">
+        <button onclick="openReport(event)">Report</button>
+        <button onclick="renderEditWindow(event)">Edit</button>
+        <button onclick="logOut(event)">Log out</button>
+      </div>
+
+      <div style="display: inline">
+        <input onchange="getTimestampValues(event)" id="date-picker" type="date" />
+      </div>
+
+      <div id="content">
+      </div>
+    </div>
+
+    <div class="panel" id="Edit" style="display:none;">
+      <div class="controls">
+        <button onclick="showPanel('Main')">Back</button>
+      </div>
+      <div id="edit-content">
+      </div>
+      <button onclick="addNewTimestamp(event)">+ Add New</button>
+      <button onclick="setTimestamps(event)">Save</button>
+    </div>
+
+    <div id="loading">
+      <div class="lds-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+
+    <script src="../js/utils.js?v=022"></script>
+    <script src="../js/env.js"></script>
+    <script>
+let loader = document.getElementById("loading");
+
+const content = document.getElementById('content');
+const editDiv = document.getElementById('edit-content');
+
+const datePicker = document.getElementById("date-picker");
+datePicker.value = getTodayOrUrlParam();
+
+const namesById = {};
+
+function getTimestamps(event) {
+  loader.style.display = 'block';
+
+  showPanel('Main');
+
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/timestamps/get-timestamps", true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleGetTimestamps;
+  xmlHttp.send(
+    JSON.stringify({
+      csrf: csrfToken
+    })
+  );
+}
+
+function handleGetTimestamps(event) {
+  let result = defaultHandler(event);
+
+  if(!result.responseJson || !result.responseJson.events || result.responseJson.events.length == 0) {
+    loader.style.display = 'none';
+    return;
+  }
+
+  result.responseJson.events.forEach(x=>{namesById[x.hash]=x.title;});
+
+  getReportData(event);
+}
+
+function getReportData(event) {
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/timestamps/get-report-data", true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleReportData;
+  xmlHttp.send(
+    JSON.stringify({
+      csrf: csrfToken,
+      date: datePicker.value
+    })
+  );
+}
+
+function handleReportData(event) {
+  let result = defaultHandler(event);
+  let sortedValues = result.responseJson.values.sort((x,y)=>{return x.date.localeCompare(y.date);});
+  timesByHashByDay = {};
+  for (let day of sortedValues) {
+    let timesByHash = {};
+    for (let value of day.values) {
+      if (!timesByHash[value.hash]) {
+        timesByHash[value.hash] = [];
+      }
+      timesByHash[value.hash].push(value.timestamp);
+    }
+    timesByHashByDay[day.date] = timesByHash;
+  }
+  for(let day of Object.keys(timesByHashByDay)) {
+    let dayDiv = document.createElement('div');
+    dayDiv.classList.add('rounded-block');
+    let title = document.createElement('div');
+    title.classList.add('rounded-title');
+    title.innerText = day;
+    dayDiv.appendChild(title);
+    for (let hash of Object.keys(timesByHashByDay[day])) {
+      let hashDiv = document.createElement('div');
+      hashDiv.classList.add('rounded-block');
+      hashDiv.style.display = 'block';
+      let hashTitle = document.createElement('div');
+      hashTitle.classList.add('rounded-title');
+      hashTitle.innerText = namesById[hash];
+      hashDiv.appendChild(hashTitle);
+      let total = 0;
+      let times = timesByHashByDay[day][hash];
+      let previousTime = undefined;
+      for (let thisTime of times) {
+        if (!previousTime) {
+          previousTime = thisTime;
+          continue;
+        }
+        let p = document.createElement('p');
+        p.style.display = 'block';
+        p.innerHTML = `${formatTime(previousTime)} &mdash; ${formatTime(thisTime)}`;
+        hashDiv.appendChild(p);
+        total += thisTime - previousTime;
+        previousTime = undefined;
+      }
+      if (total > 0) {
+        let totalMinutes = total / 1000 / 60;
+        let totalHours = totalMinutes / 60;
+        let roundedHours = `${Math.floor(totalHours)}`.padStart(2,'0');
+        let roundedMinutes = `${Math.round(totalMinutes) % 60}`.padStart(2,'0');
+        let totalDiv = document.createElement('p');
+        totalDiv.display = 'block';
+        totalDiv.innerText = `Total: ${roundedHours}:${roundedMinutes}`;
+        totalDiv.style.fontWeight = 'bold';
+        hashDiv.appendChild(totalDiv);
+        dayDiv.appendChild(hashDiv);
+      }
+    }
+    content.appendChild(dayDiv);
+  }
+  hideLoader();
+}
+
+function formatTime(input) {
+  let timeInMs = parseInt(input);
+  let d = new Date(timeInMs);
+  let h = d.getHours();
+  let sfx = 'am';
+  if (h > 12) {
+    h = h - 12;
+    sfx = 'pm';
+  }
+  h = h.toString().padStart(2, '0');
+  let m = d.getMinutes().toString().padStart(2, '0');
+  let s = d.getSeconds().toString().padStart(2, '0');
+  return `${h}:${m}${sfx}`;
+}
+
+applyEmulators(scrollToItem);
+
+getTimestamps();
+    </script>
+  </body>
+</html>

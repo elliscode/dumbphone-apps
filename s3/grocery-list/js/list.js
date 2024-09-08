@@ -514,11 +514,11 @@ const addItemButton = document.getElementById('add-item');
 if (!navigator.userAgent.includes("Chrome") && navigator.userAgent.includes("Safari")) {
   oldUi = false;
   iosCookieRefresh();
-  setStylesheet("css/grocery-list-new.css?v=021");
+  setStylesheet("css/grocery-list-new.css?v=022");
   document.getElementById("item-text-box").addEventListener("blur", startHide);
   addItemButton.parentElement.appendChild(document.getElementById('submit-bar'));
 } else {
-  setStylesheet("css/grocery-list-old.css?v=021");
+  setStylesheet("css/grocery-list-old.css?v=022");
 }
 function handleGetList(event) {
   const result = defaultHandlerV1(event);
