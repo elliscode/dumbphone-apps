@@ -213,9 +213,11 @@ function formatTime(input) {
   let d = new Date(timeInMs);
   let h = d.getHours();
   let sfx = 'am';
+  if (h >= 12) {
+    sfx = 'pm';
+  }
   if (h > 12) {
     h = h - 12;
-    sfx = 'pm';
   }
   h = h.toString().padStart(2, '0');
   let m = d.getMinutes().toString().padStart(2, '0');
