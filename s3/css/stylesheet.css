@@ -186,5 +186,11 @@ a.selected, input.selected, button.selected, div.selected {
   transition: visibility 0s 2s, opacity 2s linear;
 }
 .hide-while-loading {
-  opacity:0;
+  opacity: 0;
+}
+.flex {
+  display: flex;
+}
+.flex-column {
+  flex-direction: column;
 }
