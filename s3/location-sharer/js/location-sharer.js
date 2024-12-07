@@ -10,7 +10,7 @@ function getCurrentLocation() {
   button.style.display = "none";
   if (navigator.geolocation) {
     json.innerText = "Retrieving current location from device...";
-    navigator.geolocation.getCurrentPosition(showPosition, displayError, {timeout: 15 * 1000});
+    navigator.geolocation.getCurrentPosition(showPosition, displayError, {timeout: 30 * 1000});
   } else {
     json.innerText = "Geolocation is not supported by this browser.";
   }

@@ -173,6 +173,13 @@ a.selected, input.selected, button.selected, div.selected {
   max-height: 250px;
   font-size: 20px;
 }
+.giant-button-half {
+  width: calc(100vw - 16px);
+  max-width: 250px;
+  height: calc(50vw - 16px);
+  max-height: 250px;
+  font-size: 20px;
+}
 .fade-out {
   visibility: hidden;
   opacity: 0;

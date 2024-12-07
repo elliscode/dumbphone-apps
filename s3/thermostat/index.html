@@ -95,6 +95,25 @@
   box-sizing: border-box;
   margin: calc(12% / 2) 0px;
 }
+.adjust-temp {
+  display: block;
+  bottom: 0.6%;
+  position: absolute;
+  width: 12%;
+  height: 12%;
+  border-style: none;
+  font-size: 5vw;
+  text-align: center;
+  border-radius: 50%;
+  margin:0px;
+  padding:0px;
+}
+.left {
+  right:51%;
+}
+.right {
+  left:51%;
+}
 @media screen and (min-width:616px) {
   .temperature {
     font-size: 246px;
@@ -104,6 +123,9 @@
   }
   .bottom-text {
     font-size: 43px;
+  }
+  .adjust-temp {
+    font-size: 31px;
   }
 }
     </style>
@@ -145,7 +167,7 @@
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=022"></script>
+    <script src="../js/utils.js?v=023"></script>
     <script src="../js/env.js"></script>
     <script>
 const controlsDiv = document.getElementById('controls');
@@ -258,6 +280,20 @@ function buildThermostat(deviceTraits, parentDiv) {
       dialDiv.appendChild(progressDot);
 
       setDotPositionBasedOnTemperature(i, progressDot);
+    }
+    {
+      let button = document.createElement('button');
+      button.classList.add("adjust-temp")
+      button.classList.add("left")
+      button.innerHTML = "&#9660;";
+      dialDiv.appendChild(button);
+    }
+    {
+      let button = document.createElement('button');
+      button.classList.add("adjust-temp")
+      button.classList.add("right")
+      button.innerHTML = "&#9650;";
+      dialDiv.appendChild(button);
     }
   }
 

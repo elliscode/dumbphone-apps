@@ -17,9 +17,7 @@ const preventDefaultIfEmptyKeys = [
 const blurKeys = [
   'EndCall'
 ];
-const blurIfEmptyKeys = [
-  'Backspace'
-];
+const blurIfEmptyKeys = [];
 function logOut(event) {
   localStorage.removeItem("dumbphoneapps-csrf-token");
   window.location.replace("/signup.html");

@@ -134,8 +134,12 @@
       <b><a href="../index.html">Home</a></b> &gt; <b>weather</b>
     </div>
 
-    <button id="get-weather" class="giant-button" onclick="getCurrentLocation(event)" primary-button>
-      Get weather for your location
+    <button id="get-weather" class="giant-button-half" onclick="getCurrentLocation(event)" primary-button>
+      Get weather from GPS
+    </button>
+
+    <button id="get-weather" class="giant-button-half" onclick="getIpAddressLocation(event)" primary-button>
+      Get weather from IP Address
     </button>
 
     <p style="display:none;">
@@ -333,7 +337,7 @@
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=022"></script>
+    <script src="../js/utils.js?v=023"></script>
     <script src="../js/env.js"></script>
     <script src="js/weather.js?v=022"></script>
   </body>

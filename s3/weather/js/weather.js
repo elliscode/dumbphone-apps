@@ -24,9 +24,28 @@ function getCurrentLocation() {
   }
   if (navigator.geolocation) {
     json.innerHTML = "Retrieving current location from device...";
-    navigator.geolocation.getCurrentPosition(getWeatherForPosition, displayGeolocationError, {timeout: 15 * 1000});
+    navigator.geolocation.getCurrentPosition(getWeatherForPosition, displayGeolocationError, {timeout: 30 * 1000});
   } else {
     json.innerHTML = "Geolocation is not supported by this browser.";
+  }
+}
+function getIpAddressLocation() {
+  json.style.display = "block";
+  button.style.display = "none";
+  if (weatherData) {
+    displayWeather();
+    return;
+  }
+  try {
+    json.innerHTML = "Deriving current location IP Address...";
+    let xmlHttp = new XMLHttpRequest();
+    let url = "https://api.ipgeolocation.io/ipgeo";
+    xmlHttp.open("GET", url, true); // false for synchronous request
+    xmlHttp.withCredentials = false;
+    xmlHttp.onload = handleWeatherGet;
+    xmlHttp.send();
+  } catch (e) {
+    json.innerHTML = "Failed to get location from IP Adress";
   }
 }
 function displayGeolocationError(event) {

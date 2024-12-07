@@ -15,6 +15,7 @@ TABLE_NAME = os.environ.get("DYNAMODB_TABLE_NAME")
 SMS_SQS_QUEUE_URL = os.environ.get("SMS_SQS_QUEUE_URL")
 SMS_SQS_QUEUE_ARN = os.environ.get("SMS_SQS_QUEUE_ARN")
 SMS_SCHEDULER_ROLE_ARN = os.environ.get("SMS_SCHEDULER_ROLE_ARN")
+IP_GEO_API_KEY = os.environ.get("IP_GEO_API_KEY")
 
 digits = "0123456789"
 lowercase_letters = "abcdefghijklmnopqrstuvwxyz"
@@ -417,4 +418,13 @@ def logged_in_check_route(event, user_data, body):
         event=event,
         http_code=200,
         body="You are logged in",
+    )
+
+
+@authenticate
+def get_ip_geo_api_key(event, user_data, body):
+    return format_response(
+        event=event,
+        http_code=200,
+        body={"api_key": IP_GEO_API_KEY},
     )

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Location Sharer</title>
+    <link rel="stylesheet" href="css/stylesheet.css?v=022" />
+    <link rel="stylesheet" href="css/loader.css?v=022" />
+    <link rel="icon" type="image/png" href="img/pin.favicon.png?v=022" />
+    <style>
+      body {
+        padding-bottom: 30px;
+      }
+      .add-to-group button {
+        height: 20px;
+      }
+      #json {
+        white-space:normal;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>location-sharer</b>
+    </div>
+
+    <button class="giant-button-half" id="share-button" onclick="getCurrentLocation(event)" primary-button>
+      Share location
+    </button>
+    <button class="giant-button-half" onClick="getIpCurrentLocation(event)">
+      Get location from IP Address
+    </button>
+
+
+    <div id="link-div" style="display: none">
+      <p>Share your location! Send this link to your friends!</p>
+      <p><a id="sms-link">Click here to send live updates as SMS</a></p>
+      <p><a id="sms-directions-link">Click here to send directions as SMS</a></p>
+    </div>
+
+    <pre id="json"></pre>
+
+    <div id="loading">
+      <div class="lds-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+
+    <div class="logout">
+      <button onclick="logOut(event)">Log out</button>
+    </div>
+    <script src="js/utils.js?v=023"></script>
+    <script src="js/env.js"></script>
+    <script>
+const SECONDS_BETWEEN = 5;
+const json = document.getElementById("json");
+const button = document.getElementById("share-button");
+const linkDiv = document.getElementById("link-div");
+const smsLink = document.getElementById("sms-link");
+const smsDirectionsLink = document.getElementById("sms-directions-link");
+let watchId = undefined;
+function getCurrentLocation() {
+  locationTimeout = undefined;
+  json.style.display = "block";
+  button.style.display = "none";
+  try {
+    json.innerText = "got here";
+    if (navigator.geolocation) {
+      json.innerText = "Retrieving current location from device...";
+      try {
+        watchId = navigator.geolocation.watchPosition(showPosition, displayError, {timeout: 30 * 1000, enableHighAccuracy: false});
+      } catch (e) {
+        json.innerText = "Error";
+      }
+    } else {
+      json.innerText = "Geolocation is not supported by this browser.";
+    }
+  } catch (e) {
+    json.innerText = "Error2";
+  }
+}
+function getIpCurrentLocation() {
+  let xmlHttp = new XMLHttpRequest();
+  let url = "https://api.ipgeolocation.io/ipgeo?apiKey=855c2219b2704c25be8c754071678809&fields=latitude,longitude";
+  xmlHttp.open("GET", url, true); // false for synchronous request
+  xmlHttp.withCredentials = false;
+  xmlHttp.onload = handleIpGeo;
+  xmlHttp.send();
+}
+function handleIpGeo(event) {
+  let result = defaultHandler(event);
+  json.innerText = JSON.stringify(result, null, 2);
+}
+let locationToken = localStorage.getItem("locationToken");
+let locationTimeout = undefined;
+let lat = 0;
+let long = 0;
+function showPosition(position) {
+  json.innerText = "Got here";
+
+  lat = position.coords.latitude;
+  long = position.coords.longitude;
+  json.innerText =
+    "Your current location: latitude=" +
+    lat +
+    " and longitude=" +
+    long;
+}
+function displayError(event) {
+  json.innerText = "Geolocation failed, please refresh the page and try again.";
+}
+if (
+  !navigator.userAgent.includes("Chrome") &&
+  navigator.userAgent.includes("Safari")
+) {
+  iosCookieRefresh();
+}
+checkIfLoggedIn();
+const loader = document.getElementById("loading");
+loader.style.display = "none";
+    </script>
+  </body>
+</html>
