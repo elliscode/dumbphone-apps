@@ -56,7 +56,8 @@ function handleShare(event) {
     return;
   }
 
-  let responseJson = defaultHandlerV1(event);
+  let result = defaultHandler(event);
+  let responseJson = result.responseJson;
   locationToken = responseJson.locationToken;
 
   localStorage.setItem("locationToken", locationToken);

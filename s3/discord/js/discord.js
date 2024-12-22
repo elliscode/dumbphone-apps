@@ -56,7 +56,7 @@ function setToken() {
   xmlHttp.send(JSON.stringify(payload));
 }
 function handleSetToken(event) {
-  defaultHandlerV1(event);
+  defaultHandler(event);
   hideAllModals();
 }
 function goBack(event) {
@@ -111,7 +111,8 @@ function getUser() {
 
 let userId = undefined;
 function handleUser(event) {
-  let responseJson = defaultHandlerV1(event);
+  let result = defaultHandler(event);
+  let responseJson = result.responseJson;
   localStorage.setItem("dumbphoneapps-discord-user", responseJson.id);
   setUserInUi(responseJson.id);
 }
@@ -147,7 +148,8 @@ function getGuilds() {
 }
 
 function handeGuilds(event) {
-  let responseJson = defaultHandlerV1(event);
+  let result = defaultHandler(event);
+  let responseJson = result.responseJson;
 
   for (let i = 0; i < responseJson.length; i++) {
     let guild = responseJson[i];
@@ -189,7 +191,8 @@ function getChannels(event) {
 }
 
 function handleChannels(event) {
-  let responseJson = defaultHandlerV1(event);
+  let result = defaultHandler(event);
+  let responseJson = result.responseJson;
 
   for (let i = 0; i < responseJson.length; i++) {
     let channel = responseJson[i];
@@ -260,7 +263,8 @@ function getMessages(event, dontClearExisting) {
 
 function handleMessages(event) {
   clearLoadMoreDivs();
-  let responseJson = defaultHandlerV1(event);
+  let result = defaultHandler(event);
+  let responseJson = result.responseJson;
 
   let inputDiv = document.querySelector("div.input-div");
   let refreshButton = document.querySelector("button.input-refresh");
@@ -630,7 +634,8 @@ function openDirectMessage(event) {
   xmlHttp.send(JSON.stringify(payload));
 }
 function handleOpenDirectMessage(event) {
-  let responseJson = defaultHandlerV1(event);
+  let result = defaultHandler(event);
+  let responseJson = result.responseJson;
   let names = [];
   for (let i = 0; i < responseJson.recipients.length; i++) {
     let recipient = responseJson.recipients[i];
@@ -665,7 +670,7 @@ function deleteMessage(event) {
 }
 
 function handleDeleteMessage(event) {
-  defaultHandlerV1(event);
+  defaultHandler(event);
   loadMostRecentHistoryItem();
 }
 
@@ -693,7 +698,7 @@ function sendMessage(event) {
 }
 
 function handleSendMessage(event) {
-  defaultHandlerV1(event);
+  defaultHandler(event);
   loadMostRecentHistoryItem();
 }
 
@@ -729,7 +734,8 @@ function getDms(event) {
 }
 
 function handleDms(event) {
-  let responseJson = defaultHandlerV1(event);
+  let result = defaultHandler(event);
+  let responseJson = result.responseJson;
   for (let i = 0; i < responseJson.length; i++) {
     let dmChannel = responseJson[i];
 

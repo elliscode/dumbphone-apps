@@ -61,7 +61,7 @@ function handleIpAddressApiToken(event) {
   try {
     json.innerHTML = "Deriving current location IP Address...";
     let xmlHttp = new XMLHttpRequest();
-    let url = `https://api.ipgeolocation.io/ipgeo?apiKey=${result.responseJson.api_key}`;
+    let url = `https://api.ipgeolocation.io/ipgeo?apiKey=${result.responseJson.api_key}&cacheBust=${Math.random()}`;
     xmlHttp.open("GET", url, true); // false for synchronous request
     xmlHttp.withCredentials = false;
     xmlHttp.onload = handleIpGeolocationResult;
@@ -122,7 +122,8 @@ function handleWeatherGet(event) {
     displayWeather();
     return;
   }
-  let responseJson = defaultHandlerV1(event);
+  let result = defaultHandler(event);
+  let responseJson = result.responseJson;
   weatherData = responseJson;
   displayWeather();
 }

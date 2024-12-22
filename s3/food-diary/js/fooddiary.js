@@ -53,7 +53,8 @@ function displaySearch(event) {
   // first find all the items currently displayed
   let existingHashes = Array.from(document.querySelectorAll('li[hash]')).map(x=>x.getAttribute('hash'));
   // first calculate new items
-  let items = defaultHandlerV1(event);
+  let result = defaultHandler(event);
+  let items = result.responseJson;
   let itemsToDisplay = [];
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
@@ -204,7 +205,8 @@ function closeRecipeServings(event) {
   showPanel('content')
 }
 function displayServing(event) {
-  let item = defaultHandlerV1(event);
+  let result = defaultHandler(event);
+  let item = result.responseJson;
   showPanel('servings')
   let textBox = document.getElementById("servings-amount");
   let select = document.getElementById("servings-name");
@@ -251,7 +253,8 @@ function displayServing(event) {
 }
 let recipeFood = undefined;
 function displayRecipeServing(event) {
-  recipeFood = defaultHandlerV1(event);
+  let result = defaultHandler(event);
+  recipeFood = result.responseJson;
   showPanel('recipe-servings');
   let textBox = document.getElementById("recipe-servings-amount");
   let select = document.getElementById("recipe-servings-name");
@@ -307,7 +310,8 @@ function editEitherFoodOrRecipe(event) {
 
 function handleFood(event) {
   showPanel('content');
-  currentFood = defaultHandlerV1(event);
+  let result = defaultHandler(event);
+  currentFood = result.responseJson;
   const textBoxParent = document.getElementsByClassName("search-bar")[0];
   const textBox = textBoxParent.getElementsByTagName('input')[0];
   if (!currentFood) {
@@ -754,7 +758,8 @@ function setDate(event) {
   );
 }
 function populateTable(event) {
-  let data = defaultHandlerV1(event);
+  let result = defaultHandler(event);
+  let data = result.responseJson;
   closeFood();
   closeServings();
   const table = document.getElementById("diary");
