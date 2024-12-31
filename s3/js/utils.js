@@ -35,7 +35,11 @@ function defaultHandler(event, logOutIf403 = true) {
     result = JSON.parse(xmlHttp.responseText);
   } catch(e) {
     try {
-      result = {'message': xmlHttp.responseText};
+      if (!xmlHttp.responseText) {
+        result = undefined;
+      } else {
+        result = {'message': xmlHttp.responseText};
+      }
     } catch (e2) {
       result = undefined;
     }

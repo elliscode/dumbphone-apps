@@ -22,10 +22,8 @@ from dumbphoneapps.grocery_list import (
     getlist_route,
     additem_route,
     deleteitem_route,
-    deletelist_route,
     setcrossedoff_route,
     setlistorder_route,
-    sendsharelist_route,
     acceptsharelist_route,
     cleanuplist_route,
     deletelist_route
@@ -69,7 +67,6 @@ from dumbphoneapps.tenor import (
 )
 from dumbphoneapps.sms_scheduler import (
     schedule_sms_route,
-    get_sms_schedules_route,
 )
 from dumbphoneapps.thermostat import (
     get_token_from_code_route,
