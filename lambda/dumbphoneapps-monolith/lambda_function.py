@@ -22,10 +22,8 @@ from dumbphoneapps.grocery_list import (
     getlist_route,
     additem_route,
     deleteitem_route,
-    deletelist_route,
     setcrossedoff_route,
     setlistorder_route,
-    sendsharelist_route,
     acceptsharelist_route,
     cleanuplist_route,
     deletelist_route
@@ -61,6 +59,7 @@ from dumbphoneapps.utils import (
     path_starts_with,
     clear_all_tokens_route,
     logged_in_check_route,
+    get_ip_geo_api_key,
 )
 from dumbphoneapps.weather import get_forecast_route
 from dumbphoneapps.tenor import (
@@ -68,7 +67,6 @@ from dumbphoneapps.tenor import (
 )
 from dumbphoneapps.sms_scheduler import (
     schedule_sms_route,
-    get_sms_schedules_route,
 )
 from dumbphoneapps.thermostat import (
     get_token_from_code_route,
@@ -208,6 +206,8 @@ def route(event):
         return delete_timestamp_value(event)
     if path_equals(event=event, method="POST", path="/timestamps/get-report-data"):
         return get_timestamp_report_data_route(event)
+    if path_equals(event=event, method="POST", path="/one-offs/get-ip-geo-api-key"):
+        return get_ip_geo_api_key(event)
     if path_starts_with(event=event, method="POST", path="/discord/"):
         return discord_route(event)
 

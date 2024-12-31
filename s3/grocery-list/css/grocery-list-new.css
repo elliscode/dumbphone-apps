@@ -57,6 +57,7 @@ button {
   margin: 0px;
   position: sticky;
   z-index: 2;
+  top: 39px;
 }
 .group h2 {
   justify-content: space-between;

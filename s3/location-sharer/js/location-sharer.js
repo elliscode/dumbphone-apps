@@ -10,7 +10,7 @@ function getCurrentLocation() {
   button.style.display = "none";
   if (navigator.geolocation) {
     json.innerText = "Retrieving current location from device...";
-    navigator.geolocation.getCurrentPosition(showPosition, displayError, {timeout: 15 * 1000});
+    navigator.geolocation.getCurrentPosition(showPosition, displayError, {timeout: 30 * 1000});
   } else {
     json.innerText = "Geolocation is not supported by this browser.";
   }
@@ -56,7 +56,8 @@ function handleShare(event) {
     return;
   }
 
-  let responseJson = defaultHandlerV1(event);
+  let result = defaultHandler(event);
+  let responseJson = result.responseJson;
   locationToken = responseJson.locationToken;
 
   localStorage.setItem("locationToken", locationToken);

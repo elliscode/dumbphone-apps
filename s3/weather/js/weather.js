@@ -5,29 +5,77 @@ if (
 ) {
   iosCookieRefresh();
 }
-const button = document.getElementById("get-weather");
+const bigButtons = Array.from(document.getElementsByClassName('giant-button-half'));
 const json = document.getElementById("json");
 const locationText = document.getElementById("location-text");
 const timeText = document.getElementById("time-text");
+const cityText = document.getElementById("city");
 const weatherText = document.getElementById("weather-text");
 const currentTempText = document.getElementById("current-temp-text");
 const currentHighText = document.getElementById("current-high-text");
 const currentLowText = document.getElementById("current-low-text");
 const currentImage = document.getElementById("current-image");
 let weatherData = undefined;
+let city = undefined;
 function getCurrentLocation() {
+  city = undefined;
   json.style.display = "block";
-  button.style.display = "none";
+  for (let button of bigButtons) {
+    button.style.display = "none";
+  }
   if (weatherData) {
     displayWeather();
     return;
   }
   if (navigator.geolocation) {
     json.innerHTML = "Retrieving current location from device...";
-    navigator.geolocation.getCurrentPosition(getWeatherForPosition, displayGeolocationError, {timeout: 15 * 1000});
+    navigator.geolocation.getCurrentPosition(getWeatherForPosition, displayGeolocationError, {timeout: 30 * 1000});
   } else {
     json.innerHTML = "Geolocation is not supported by this browser.";
   }
+}
+function getIpAddressLocation() {
+  city = undefined;
+  json.style.display = "block";
+  for (let button of bigButtons) {
+    button.style.display = "none";
+  }
+  if (weatherData) {
+    displayWeather();
+    return;
+  }
+  try {
+    json.innerHTML = "Retrieving ipgeolocation API key...";
+    let url = API_DOMAIN + "/one-offs/get-ip-geo-api-key";
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true); // false for synchronous request
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleIpAddressApiToken;
+    xmlHttp.send(JSON.stringify({ csrf: csrfToken }));
+  } catch (e) {
+    json.innerHTML = "Failed to get location from IP Adress";
+  }
+}
+function handleIpAddressApiToken(event) {
+  let result = defaultHandler(event);
+  try {
+    json.innerHTML = "Deriving current location IP Address...";
+    let xmlHttp = new XMLHttpRequest();
+    let url = `https://api.ipgeolocation.io/ipgeo?apiKey=${result.responseJson.api_key}&cacheBust=${Math.random()}`;
+    xmlHttp.open("GET", url, true); // false for synchronous request
+    xmlHttp.withCredentials = false;
+    xmlHttp.onload = handleIpGeolocationResult;
+    xmlHttp.send();
+  } catch (e) {
+    json.innerHTML = "Failed to get location from IP Adress";
+  }
+}
+function handleIpGeolocationResult(event) {
+  let result = defaultHandler(event);
+  if (result.responseJson.city) {
+    city = result.responseJson.city;
+  }
+  getWeatherForPosition({coords: {latitude: result.responseJson.latitude, longitude: result.responseJson.longitude}});
 }
 function displayGeolocationError(event) {
   json.innerHTML = "Geolocation failed, please refresh the page and try again.";
@@ -74,7 +122,8 @@ function handleWeatherGet(event) {
     displayWeather();
     return;
   }
-  let responseJson = defaultHandlerV1(event);
+  let result = defaultHandler(event);
+  let responseJson = result.responseJson;
   weatherData = responseJson;
   displayWeather();
 }
@@ -110,7 +159,11 @@ function displayWeather() {
   }
   let directionsLink = document.createElement('a');
   directionsLink.href="https://www.google.com/maps/search/?api=1&query=" + coordsString;
-  directionsLink.innerText = coordsString;
+  if (city) {
+    directionsLink.innerText = city;
+  } else {
+    directionsLink.innerText = coordsString;
+  }
   locationText.appendChild(directionsLink);
 
   timeText.innerText = new Date(weatherData.daily.dateGenerated).toDateString();

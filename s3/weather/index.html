@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Weather</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=022" />
-    <link rel="stylesheet" href="../css/loader.css?v=022" />
-    <link rel="icon" type="image/png" href="../img/weather.favicon.png?v=022" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=024" />
+    <link rel="stylesheet" href="../css/loader.css?v=024" />
+    <link rel="icon" type="image/png" href="../img/weather.favicon.png?v=024" />
     <style>
       pre#json {
         white-space: pre-wrap;
@@ -13,8 +13,8 @@
       .weather h1 {
         font-variant: small-caps;
         font-size: 16px;
-        margin: 0px;
-        text-align: center;
+        margin: 10px 0px 0px 0px;
+        text-align: left;
         text-wrap: nowrap;
       }
       .weather h2 {
@@ -133,10 +133,14 @@
     <div>
       <b><a href="../index.html">Home</a></b> &gt; <b>weather</b>
     </div>
-
-    <button id="get-weather" class="giant-button" onclick="getCurrentLocation(event)" primary-button>
-      Get weather for your location
-    </button>
+    <div class="flex flex-column">
+      <button class="giant-button-half" onclick="getCurrentLocation(event)" primary-button>
+        Get weather from GPS
+      </button>
+      <button class="giant-button-half" onclick="getIpAddressLocation(event)" primary-button>
+        Get weather from IP Address
+      </button>
+    </div>
 
     <p style="display:none;">
       Powered by
@@ -148,7 +152,7 @@
     <pre id="json"></pre>
 
     <div class="weather">
-      <h1 style="display:none;"><span id="location-text">&ndash; &ndash; &ndash; &ndash;</span></h1>
+      <h1><span id="location-text">&ndash; &ndash; &ndash; &ndash;</span></h1>
       <h2 style="display:none;"><span id="time-text">&ndash; &ndash; &ndash; &ndash;</span></h2>
       <div class="current">
         <div>
@@ -333,8 +337,8 @@
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=022"></script>
+    <script src="../js/utils.js?v=024"></script>
     <script src="../js/env.js"></script>
-    <script src="js/weather.js?v=022"></script>
+    <script src="js/weather.js?v=024"></script>
   </body>
 </html>

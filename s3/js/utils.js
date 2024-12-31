@@ -17,28 +17,10 @@ const preventDefaultIfEmptyKeys = [
 const blurKeys = [
   'EndCall'
 ];
-const blurIfEmptyKeys = [
-  'Backspace'
-];
+const blurIfEmptyKeys = [];
 function logOut(event) {
   localStorage.removeItem("dumbphoneapps-csrf-token");
   window.location.replace("/signup.html");
-}
-function defaultHandlerV1(event) {
-  if (!event || !event.target) {
-    return undefined;
-  }
-  let xmlHttp = event.target;
-  if (xmlHttp.status == 403) {
-    logOut(event);
-  }
-  let result = undefined;
-  try {
-    result = JSON.parse(xmlHttp.responseText);
-  } catch (e) {
-    result = undefined;
-  }
-  return result;
 }
 function defaultHandler(event, logOutIf403 = true) {
   if (!event || !event.target) {
@@ -53,7 +35,11 @@ function defaultHandler(event, logOutIf403 = true) {
     result = JSON.parse(xmlHttp.responseText);
   } catch(e) {
     try {
-      result = {'message': xmlHttp.responseText};
+      if (!xmlHttp.responseText) {
+        result = undefined;
+      } else {
+        result = {'message': xmlHttp.responseText};
+      }
     } catch (e2) {
       result = undefined;
     }

@@ -41,7 +41,8 @@ function addToList(event) {
   input.value = "";
 }
 function handleAddList(event) {
-  const result = defaultHandlerV1(event);
+  let resultFromDefaultHandler = defaultHandler(event);
+  let result = resultFromDefaultHandler.responseJson;
   if (result.hasOwnProperty("group") && result.hasOwnProperty("item")) {
     addItem(result.group, result.item);
   }
@@ -76,7 +77,8 @@ function deleteFromList(event) {
   );
 }
 function handleDeleteFromList(event) {
-  const result = defaultHandlerV1(event);
+  let resultFromDefaultHandler = defaultHandler(event);
+  let result = resultFromDefaultHandler.responseJson;
 }
 const listName = document.getElementById('list-name');
 function openShareWindow(event) {
@@ -99,7 +101,8 @@ function acceptShare(group_hash) {
 }
 function handleShareResponse(event) {
   showPanel('content-full');
-  const result = defaultHandlerV1(event);
+  let resultFromDefaultHandler = defaultHandler(event);
+  let result = resultFromDefaultHandler.responseJson;
   if (result.hasOwnProperty("message")) {
     openInfoWindow(result.message);
     loadList();
@@ -230,7 +233,8 @@ function runOrderCall() {
 }
 
 function handleOrderCall(event) {
-  const result = defaultHandlerV1(event);
+  let resultFromDefaultHandler = defaultHandler(event);
+  let result = resultFromDefaultHandler.responseJson;
 }
 
 function swapGroups(groupOneId, groupTwoId) {
@@ -465,7 +469,8 @@ function runCrossOffs(event) {
 }
 
 function handleToggle(event) {
-  const result = defaultHandlerV1(event);
+  let resultFromDefaultHandler = defaultHandler(event);
+  let result = resultFromDefaultHandler.responseJson;
   if (Object.keys(cleanUpQueue).length > 0) {
     let url = API_DOMAIN + "/grocery-list/clean-up-list";
     let body = { list_ids: Object.keys(cleanUpQueue), csrf: csrfToken };
@@ -480,7 +485,8 @@ function handleToggle(event) {
 }
 
 function handleCleanup(event) {
-  const result = defaultHandlerV1(event);
+  let resultFromDefaultHandler = defaultHandler(event);
+  let result = resultFromDefaultHandler.responseJson;
 }
 
 function askToDeleteGroup(event) {
@@ -514,14 +520,15 @@ const addItemButton = document.getElementById('add-item');
 if (!navigator.userAgent.includes("Chrome") && navigator.userAgent.includes("Safari")) {
   oldUi = false;
   iosCookieRefresh();
-  setStylesheet("css/grocery-list-new.css?v=022");
+  setStylesheet("css/grocery-list-new.css?v=024");
   document.getElementById("item-text-box").addEventListener("blur", startHide);
   addItemButton.parentElement.appendChild(document.getElementById('submit-bar'));
 } else {
-  setStylesheet("css/grocery-list-old.css?v=022");
+  setStylesheet("css/grocery-list-old.css?v=024");
 }
 function handleGetList(event) {
-  const result = defaultHandlerV1(event);
+  let resultFromDefaultHandler = defaultHandler(event);
+  let result = resultFromDefaultHandler.responseJson;
   let groups = Object.keys(result);
   for (let i = 0; i < groups.length; i++) {
     let group = result[groups[i]];
