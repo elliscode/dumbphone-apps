@@ -202,7 +202,7 @@ function closeServings(event) {
   showPanel('content')
 }
 function closeRecipeServings(event) {
-  showPanel('content')
+  showPanel("recipe-edit");
 }
 function displayServing(event) {
   let result = defaultHandler(event);
@@ -251,6 +251,7 @@ function displayServing(event) {
   textBox.focus();
   textBox.select();
 }
+let isRecipe = false;
 let recipeFood = undefined;
 function displayRecipeServing(event) {
   let result = defaultHandler(event);
@@ -386,6 +387,8 @@ function displayFood() {
   foodEdit.style.display = "block";
 
   document.getElementById("food-edit-name").focus();
+
+  isRecipe = false;
 }
 function displayRecipe(event) {
   let foodEdit = document.getElementById("food-edit");
@@ -402,12 +405,15 @@ function displayRecipe(event) {
 
   redrawRows();
 
-  recipeEdit.style.display = "block";
+  showPanel("recipe-edit");
+
+  isRecipe = true;
 }
 function alterRecipeServing(event) {
   let amount = parseFloat(document.getElementById('recipe-servings-amount').value);
   let unit = document.getElementById('recipe-servings-name').value;
   let serving = recipeFood.metadata.servings.find(x=>x.name==unit);
+  let recipeIndex = currentFood.metadata.ingredients.findIndex(x=>x.hash==recipeFood.hash);
   currentFood.metadata.ingredients[recipeIndex].serving = serving;
   currentFood.metadata.ingredients[recipeIndex].multiplier = `${amount / serving.amount}`;
   currentFood.metadata.ingredients[recipeIndex].calories = recipeFood.metadata.calories;
@@ -488,12 +494,10 @@ function createTotalsRow() {
   }
   return tr;
 }
-let recipeIndex = 0;
 function changeQuantityRow(event) {
   const caller = event.target;
   let servings = document.getElementById("recipe-servings");
   const foodHash = caller.getAttribute("food-hash");
-  recipeIndex = parseInt(caller.getAttribute("index"));
   let save = document.getElementById("servings-save");
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/food-diary/get-serving", true);
@@ -508,6 +512,7 @@ function changeQuantityRow(event) {
 }
 function createTableRow(ingredient, index) {
   let tr = document.createElement("tr");
+  tr.classList.add('row');
   {
     let td = document.createElement("td");
     let button = document.createElement("button");
@@ -564,7 +569,10 @@ function createTableRow(ingredient, index) {
   return tr;
 }
 function deleteRow(event) {
-  event.parentElement.parentElement.remove();
+  let foodToRemoveIndex = currentFood.metadata.ingredients.findIndex(x=>x.hash==event.target.getAttribute('food-hash'));
+  currentFood.metadata.ingredients.splice(foodToRemoveIndex, 1);
+  let row = findParentWithClass(event.target, 'row');
+  row.remove();
 }
 function saveFood(event) {
   if (document.activeElement) {
@@ -1008,7 +1016,6 @@ const foodListBlurKeys = [
   'EndCall'
 ];
 const foodListBlurIfEmptyKeys = [
-  'Backspace'
 ];
 const foodListInteractionKeyList = [
   'ArrowDown',

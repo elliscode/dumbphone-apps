@@ -55,11 +55,17 @@ def get_notes_route(event, user_data, body):
 @authenticate
 def set_note_route(event, user_data, body):
     note_id = body["note_id"]
+    previous_note_id = body["previous_note_id"]
     phone = user_data["key2"]
     response = dynamo.put_item(
         TableName=TABLE_NAME,
         Item=python_obj_to_dynamo_obj({"key1": f"note_{phone}", "key2": note_id, "note": body["note"]}),
     )
+    if previous_note_id != note_id:
+        response = dynamo.delete_item(
+            TableName=TABLE_NAME,
+            Key=python_obj_to_dynamo_obj({"key1": f"note_{phone}", "key2": previous_note_id}),
+        )
 
     return format_response(
         event=event,

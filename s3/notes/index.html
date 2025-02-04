@@ -186,6 +186,7 @@ function openEdit(event) {
   const text = parentDiv.getElementsByTagName('p')[0];
   const inputs = getInputs();
   inputs.title.value = title.innerText;
+  inputs.title.setAttribute('previous-note-id', title.innerText);
   inputs.text.value = text.innerText;
   showPanel('create-new-note');
 }
@@ -230,11 +231,13 @@ function openCreate(event) {
 function createButtonCallback(event) {
   const parentDiv = findParentWithClass(event.target, 'panel');
   const titleInput = parentDiv.getElementsByTagName('input')[0];
+  const noteId = titleInput.value;
+  const previousNoteId = titleInput.getAttribute('previous-note-id');
   const textArea = parentDiv.getElementsByTagName('textarea')[0];
-  setNote(titleInput.value, textArea.value);
+  setNote(noteId, previousNoteId, textArea.value);
   showPanel('main-ui');
 }
-function setNote(noteId, noteText) {
+function setNote(noteId, previousNoteId, noteText) {
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", API_DOMAIN + "/notes/set", true);
   xmlHttp.withCredentials = true;
@@ -243,6 +246,7 @@ function setNote(noteId, noteText) {
     JSON.stringify({
       csrf: csrfToken,
       note_id: noteId,
+      previous_note_id: previousNoteId,
       note: noteText
     })
   );
