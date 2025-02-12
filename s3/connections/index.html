@@ -13,6 +13,61 @@
   words for success or failure    
 -->
     <style>
+#comment {
+  position: fixed;
+  top: 2px;
+  left: 2px;
+  width: calc(100vw - 4px);
+  justify-content: center;
+  align-items: center;
+  display:none;
+}
+#comment-span {
+  font-size: 16px;
+  box-sizing: border-box;
+  background-color: #5a594e;
+  color: #fff;
+  border-radius: 5px;
+  padding: 4px 10px;
+}
+.slow-fade {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s 2s, opacity 2s linear;
+}
+#results {
+  position: relative;
+  width: calc(100vw - 16px);
+  height: calc(100vh - 16px);
+  margin-bottom: 8px;
+  display: none;
+}
+#results > div {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+#display-text {
+  font-size: xx-large;
+  margin-top:0px;
+}
+#result-blocks {
+  display: flex;
+  flex-direction: column;
+}
+.row {
+  display: flex;
+  flex-direction: row;
+}
+.result-cell {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  margin: 1px;
+}
 #puzzle {
     display: flex;
     flex-wrap: wrap;
@@ -26,6 +81,7 @@
     margin: 1px;
     background-color: #efefe6;
     border-radius: 5px;
+    user-select: none;
 }
 .card > div {
     width: 82px;
@@ -36,15 +92,18 @@
     align-items: center;
     overflow-wrap: anywhere;
     text-align: center;
+    box-sizing:border-box;
+    padding:5px;
 }
 .answer {
     display: flex;
     margin: 1px;
     background-color: #efefe6;
     border-radius: 5px;
+    user-select: none;
 }
 .answer > div {
-    width: 332px;
+    width: 334px;
     height:77px;
     border-radius: 5px;
     display:flex;
@@ -52,8 +111,10 @@
     align-items: center;
     overflow-wrap: anywhere;
     text-align: center;
+    box-sizing:border-box;
+    padding:5px;
 }
-.guesses {
+#guesses {
     display:flex;
     margin: 5px 0px;
 }
@@ -65,7 +126,7 @@
     display: inline-block;
     margin: 1px;
 }
-.game-controls > button {
+#game-controls > button {
     display: inline-block;
     margin: 1px;
 }
@@ -93,32 +154,44 @@
   </head>
 
   <body>
-    <div>
-      <b><a href="../index.html">Home</a></b> &gt; <b>connections</b>
+
+    <div id="results">
+      <div>
+        <p id="display-text">TEXT</p>
+        <div id="result-blocks"></div>
+      </div>
     </div>
 
-    <div class="panel" id="content">
+    <div style="display:flex;">
+      <b><a href="../index.html">Home</a></b> <span style="margin: 0px 5px;">&gt;</span> <b>connections</b>    <div style="flex-grow:1;"></div>     <button onclick="logOut(event)">Log out</button>
+    </div>
 
+    <div id="comment"><span id="comment-span"></span></div>
+
+    <div class="panel" id="content">
       <div id="json"></div>
 
       <div id="puzzle"><div id="answers"></div></div>
 
-      <div class="guesses">Mistakes Remaining: <div class="guess"></div><div class="guess"></div><div class="guess"></div><div class="guess"></div></div>
+      <div id="guesses">Mistakes Remaining: <div class="guess"></div><div class="guess"></div><div class="guess"></div><div class="guess"></div></div>
 
-      <div class="game-controls"><button>Shuffle</button><button onclick="deselectAll(event);">Deselect All</button><button onclick="checkGuess(event);">Submit</button></div>
-
-      <div class="logout" style="top:2px;">
-        <button onclick="logOut(event)">Log out</button>
-      </div>
+      <div id="game-controls"><button>Shuffle</button><button onclick="deselectAll(event);">Deselect All</button><button onclick="checkGuess(event);">Submit</button></div>
     </div>
     <script src="../js/utils.js?v=024"></script>
     <script src="../js/env.js"></script>
     <script>
+const TEXT = ["Perfect!","Great!","Solid!","Phew!","Next Time!"];
 const COLORS = ['green', 'yellow', 'blue', 'purple'];
 const json = document.getElementById("json");
 const puzzle = document.getElementById("puzzle");
 const answers = document.getElementById("answers");
-let gameOver = false;
+const gameControls = document.getElementById("game-controls");
+const guesses = document.getElementById("guesses");
+const results = document.getElementById("results");
+const displayText = document.getElementById("display-text");
+const resultBlocks = document.getElementById("result-blocks");
+const comment = document.getElementById("comment");
+const commentSpan = document.getElementById("comment-span");
 function getThePuzzle() {
     let dateValue = getTodayOrUrlParam();
     let url = API_DOMAIN + "/one-offs/get-connections";
@@ -129,7 +202,8 @@ function getThePuzzle() {
     xmlHttp.send(JSON.stringify({ csrf: csrfToken, date: dateValue }));
 }
 let puzzleSolution = undefined;
-let guesses = [];
+let attempts = [];
+let attemptsSet = [];
 function handleThePuzzle(event) {
     let result = defaultHandler(event);
     puzzleSolution = result.responseJson;
@@ -207,6 +281,20 @@ function connectionsArrowCallback(event, functionHandle) {
     if (!tooFast) {
       if (['Call'].includes(event.key)) {
         checkGuess(event);
+        let inputs = Array.from(document.getElementsByClassName('navigable-input'));
+        if (event.target.hasAttribute('input-group-name')) {
+          const currentTarget = event.target.getAttribute('input-group-name');
+          inputs = inputs.filter(x=>x.getAttribute('input-group-name') == currentTarget);
+        }
+        if (!document.querySelector('.selected')) {
+          let newItem = inputs[0];
+          newItem.focus();
+          if (event.type === 'keydown' && 
+              (newItem.hasAttribute('linked-item'))) {
+            let checkbox = newItem.parentElement.getElementsByClassName('selectable')[0];
+            checkbox.classList.add('selected');
+          }
+        }
       } else {
         let inputs = Array.from(document.getElementsByClassName('navigable-input'));
         if (event.target.hasAttribute('input-group-name')) {
@@ -240,7 +328,7 @@ function connectionsArrowCallback(event, functionHandle) {
           rowIndex = rowIndex > row.length - 1 ? rowIndex - row.length : rowIndex;
         }
         let newItem = rows[rowName][rowIndex];
-        newItem.focus()
+        newItem.focus();
         if (event.type === 'keydown' && 
             (newItem.hasAttribute('linked-item'))) {
           let checkbox = newItem.parentElement.getElementsByClassName('selectable')[0];
@@ -270,12 +358,16 @@ function checkGuess(event) {
   let chosenTiles = Array.from(document.getElementsByClassName('chosen'));
   if (chosenTiles.length == 4) {
     let chosenValues = chosenTiles.map(x=>x.innerText.trim()).sort(textSort);
+    if (attemptsSet.includes(JSON.stringify(chosenValues))) {
+      showMessage('Already Guessed!');
+      return;
+    }
     for (let i = 0; i < puzzleSolution.categories.length; i++) {
       let category = puzzleSolution.categories[i];
       let categoryValues = category.cards.map(x=>x.content).sort(textSort);
       if (JSON.stringify(chosenValues) == JSON.stringify(categoryValues)) {
         c = COLORS[i];
-        guesses.push([c,c,c,c]);
+        attempts.push([c,c,c,c]);
         chosenTiles.forEach(x=>x.parentElement.remove());
         drawAnswer(category, c);
         succeedPuzzleIfAppropriate(event);
@@ -295,9 +387,10 @@ function checkGuess(event) {
     }
     let howClose = COLORS.map(x=>thisGuess.reduce((t,y)=>t=t+(x==y),0));
     if (howClose.includes(3)) {
-      console.log('Close... One away');
+      showMessage('One away...');
     }
-    guesses.push(thisGuess);
+    attempts.push(thisGuess);
+    attemptsSet.push(JSON.stringify(chosenValues));
     let remainingGuess = Array.from(document.getElementsByClassName('guess'));
     let removeThisOne = remainingGuess.pop();
     removeThisOne.remove();
@@ -307,19 +400,55 @@ function checkGuess(event) {
   }
 }
 function failPuzzle(event) {
-  console.log(guesses);
-  console.log('failed');
-  gameOver = true;
+  gameOver(false);
 }
 function succeedPuzzleIfAppropriate(event) {
   let appropriate = !document.querySelector('div.card');
   if (appropriate) {
-    console.log(guesses);
-    gameOver = true;
+    gameOver(true);
   }
 }
 function deselectAll(event) {
   Array.from(document.querySelectorAll('div.chosen')).forEach(x=>x.classList.remove('chosen'));
+}
+function gameOver(success) {
+  console.log(attempts);
+  gameControls.style.display = 'none';
+  guesses.style.display = 'none';
+  results.style.display = 'block';
+  let textIndex = success ? attempts.length - 4 : TEXT.length - 1;
+  displayText.innerText = TEXT[textIndex];
+  for(let attempt of attempts) {
+    drawAttempt(attempt);
+  }
+}
+function drawAttempt(attempt) {
+  let row = document.createElement('div');
+  row.classList.add('row');
+  for (let item of attempt) {
+    let cell = document.createElement('div');
+    cell.classList.add('result-cell');
+    cell.classList.add(item);
+    row.appendChild(cell);
+  }
+  resultBlocks.appendChild(row);
+}
+let fadeTimeout = undefined;
+let hideTimeout = undefined;
+function showMessage(messageText) {
+  clearTimeout(fadeTimeout);
+  clearTimeout(hideTimeout);
+  commentSpan.innerText = messageText;
+  comment.classList.remove('slow-fade');
+  comment.style.display = 'flex';
+  fadeTimeout = setTimeout(startFade, 1000);
+}
+function startFade(event) {
+  comment.classList.add('slow-fade');
+  hideTimeout = setTimeout(hideMessage, 2000);
+}
+function hideMessage(event) {
+  comment.style.display = 'none';
 }
 getThePuzzle();
     </script>
