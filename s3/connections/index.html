@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Connections</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=024" />
+    <link rel="stylesheet" href="../css/loader.css?v=024" />
+    <link rel="icon" type="image/png" href="../img/connections.favicon.png?v=024" />
+<!--
+  keeping a map of all GUESSES not just guess colors
+  already guessed!
+  close... one away
+  words for success or failure    
+-->
+    <style>
+#puzzle {
+    display: flex;
+    flex-wrap: wrap;
+}
+#answers {
+    display: flex;
+    flex-wrap: wrap;
+}
+.card {
+    display: flex;
+    margin: 1px;
+    background-color: #efefe6;
+    border-radius: 5px;
+}
+.card > div {
+    width: 82px;
+    height:77px;
+    border-radius: 5px;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    overflow-wrap: anywhere;
+    text-align: center;
+}
+.answer {
+    display: flex;
+    margin: 1px;
+    background-color: #efefe6;
+    border-radius: 5px;
+}
+.answer > div {
+    width: 332px;
+    height:77px;
+    border-radius: 5px;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    overflow-wrap: anywhere;
+    text-align: center;
+}
+.guesses {
+    display:flex;
+    margin: 5px 0px;
+}
+.guess {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background-color: #999;
+    display: inline-block;
+    margin: 1px;
+}
+.game-controls > button {
+    display: inline-block;
+    margin: 1px;
+}
+.chosen {
+  background-color: #5a594e;
+  color: #fff;
+}
+.green {
+  background-color: #97c447;
+  color: #000;
+}
+.yellow {
+  background-color: #f9df6d;
+  color: #000;
+}
+.blue {
+  background-color: #b0c4ef;
+  color: #000;
+}
+.purple {
+  background-color: #bb81c5;
+  color: #000;
+}
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>connections</b>
+    </div>
+
+    <div class="panel" id="content">
+
+      <div id="json"></div>
+
+      <div id="puzzle"><div id="answers"></div></div>
+
+      <div class="guesses">Mistakes Remaining: <div class="guess"></div><div class="guess"></div><div class="guess"></div><div class="guess"></div></div>
+
+      <div class="game-controls"><button>Shuffle</button><button onclick="deselectAll(event);">Deselect All</button><button onclick="checkGuess(event);">Submit</button></div>
+
+      <div class="logout" style="top:2px;">
+        <button onclick="logOut(event)">Log out</button>
+      </div>
+    </div>
+    <script src="../js/utils.js?v=024"></script>
+    <script src="../js/env.js"></script>
+    <script>
+const COLORS = ['green', 'yellow', 'blue', 'purple'];
+const json = document.getElementById("json");
+const puzzle = document.getElementById("puzzle");
+const answers = document.getElementById("answers");
+let gameOver = false;
+function getThePuzzle() {
+    let dateValue = getTodayOrUrlParam();
+    let url = API_DOMAIN + "/one-offs/get-connections";
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true); // false for synchronous request
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleThePuzzle;
+    xmlHttp.send(JSON.stringify({ csrf: csrfToken, date: dateValue }));
+}
+let puzzleSolution = undefined;
+let guesses = [];
+function handleThePuzzle(event) {
+    let result = defaultHandler(event);
+    puzzleSolution = result.responseJson;
+    let cards = [];
+    for(let category of puzzleSolution.categories) {
+        for(let card of category.cards) {
+            cards.push(card);
+        }
+    }
+    cards = cards.sort(cardSort);
+    for(let card of cards) {
+        drawCard(card);
+    }
+    applyEmulators(undefined, connectionsArrowCallback);
+}
+function cardSort(x, y) {
+    return parseInt(x.position) - parseInt(y.position);
+}
+function textSort(x, y) {
+    return x.localeCompare(y);
+}
+function drawCard(card) {
+    let cardDiv = document.createElement('div');
+    cardDiv.classList.add('card');
+    let contentDiv = document.createElement('div');
+    contentDiv.addEventListener('click', select);
+    contentDiv.innerText = card.content;
+    contentDiv.setAttribute('input-group-name', 'navigation')
+    cardDiv.appendChild(contentDiv);
+    puzzle.appendChild(cardDiv);
+}
+function drawAnswer(category, color) {
+    let cardDiv = document.createElement('div');
+    cardDiv.classList.add('answer');
+    let contentDiv = document.createElement('div');
+    contentDiv.innerText = category.title;
+    contentDiv.setAttribute('input-group-name', 'navigation')
+    cardDiv.appendChild(contentDiv);
+    cardDiv.classList.add(color);
+    answers.appendChild(cardDiv);
+}
+const connectionsPreventDefaultKeys = [
+  'Backspace'
+];
+const connectionsPreventDefaultIfEmptyKeys = [
+];
+const connectionsBlurKeys = [
+  'EndCall'
+];
+const connectionsBlurIfEmptyKeys = [
+];
+const connectionsInteractionKeyList = [
+  'ArrowDown',
+  'ArrowUp',
+  'ArrowLeft',
+  'ArrowRight',
+  'Call'
+];
+function connectionsArrowCallback(event, functionHandle) {
+  if ((event.target.tagName.toLowerCase() != 'textarea' && preventDefaultKeys.includes(event.key)) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
+    event.preventDefault();
+  }
+  if (event.type == 'keydown' && event.target.type == 'number' && preventDefaultOnNumberInput.includes(event.key)) {
+    event.preventDefault();
+  }
+  if (blurKeys.includes(event.key)) {
+    event.target.blur();
+  }
+  if (event.type === 'keyup' && blurIfEmptyKeys.includes(event.key) && !event.target.value && !previousValue) {
+    event.target.blur();
+  }
+  if (event.type === 'keydown' && connectionsInteractionKeyList.includes(event.key)) {
+    // check if you are where youre supposed to be before you go
+    let tooFast = (new Date()) - previousArrowTime < 100;
+    if (!tooFast) {
+      if (['Call'].includes(event.key)) {
+        checkGuess(event);
+      } else {
+        let inputs = Array.from(document.getElementsByClassName('navigable-input'));
+        if (event.target.hasAttribute('input-group-name')) {
+          const currentTarget = event.target.getAttribute('input-group-name');
+          inputs = inputs.filter(x=>x.getAttribute('input-group-name') == currentTarget);
+        }
+        let index = inputs.indexOf(event.target);
+        let rows = {};
+        for (let input of inputs) {
+          let key = input.getBoundingClientRect().y.toString();
+          if (!rows[key]) {
+            rows[key] = [];
+          }
+          rows[key].push(input);
+        }
+        let rowNames = Object.keys(rows);
+        let rowName = inputs[index].getBoundingClientRect().y.toString();
+        let row = rows[rowName];
+        let rowIndex = row.findIndex(x=>x==inputs[index]);
+        if (['ArrowUp', 'ArrowDown'].includes(event.key)) {
+          let foundRowNameIdx = rowNames.findIndex(x=>x==rowName);
+          do {
+            foundRowNameIdx = foundRowNameIdx + (['ArrowUp', 'ArrowLeft'].includes(event.key) ? -1 : 1);
+            foundRowNameIdx = foundRowNameIdx < 0 ? foundRowNameIdx + rowNames.length : foundRowNameIdx;
+            foundRowNameIdx = foundRowNameIdx > rowNames.length - 1 ? foundRowNameIdx - rowNames.length : foundRowNameIdx;
+            rowName = rowNames[foundRowNameIdx];
+          } while (!rows[rowName][rowIndex]);
+        } else {
+          rowIndex = rowIndex + (['ArrowUp', 'ArrowLeft'].includes(event.key) ? -1 : 1);
+          rowIndex = rowIndex < 0 ? rowIndex + row.length : rowIndex;
+          rowIndex = rowIndex > row.length - 1 ? rowIndex - row.length : rowIndex;
+        }
+        let newItem = rows[rowName][rowIndex];
+        newItem.focus()
+        if (event.type === 'keydown' && 
+            (newItem.hasAttribute('linked-item'))) {
+          let checkbox = newItem.parentElement.getElementsByClassName('selectable')[0];
+          checkbox.classList.add('selected');
+        }
+      }
+      previousArrowTime = new Date();
+    }
+  }
+  if (event.target.tagName.toLowerCase() != 'textarea' && event.type === 'keydown' && (event.target.hasAttribute('linked-item')) && ['Enter'].includes(event.key)) {
+    let button = event.target.parentElement.getElementsByClassName('selectable')[0];
+    button.click();
+  }
+  if (functionHandle) {
+    functionHandle(event);
+  }
+  previousValue = event.target.value;
+}
+function select(event) {
+  if (event.target.classList.contains('chosen')) {
+    event.target.classList.remove('chosen');
+  } else if (document.querySelectorAll('div.chosen').length < 4) {
+    event.target.classList.add('chosen');
+  }
+}
+function checkGuess(event) {
+  let chosenTiles = Array.from(document.getElementsByClassName('chosen'));
+  if (chosenTiles.length == 4) {
+    let chosenValues = chosenTiles.map(x=>x.innerText.trim()).sort(textSort);
+    for (let i = 0; i < puzzleSolution.categories.length; i++) {
+      let category = puzzleSolution.categories[i];
+      let categoryValues = category.cards.map(x=>x.content).sort(textSort);
+      if (JSON.stringify(chosenValues) == JSON.stringify(categoryValues)) {
+        c = COLORS[i];
+        guesses.push([c,c,c,c]);
+        chosenTiles.forEach(x=>x.parentElement.remove());
+        drawAnswer(category, c);
+        succeedPuzzleIfAppropriate(event);
+        return;
+      }
+    }
+    let thisGuess = [];
+    for (let chosenValue of chosenValues) {
+      for (let i = 0; i < puzzleSolution.categories.length; i++) {
+        let category = puzzleSolution.categories[i];
+        let categoryValues = category.cards.map(x=>x.content).sort(textSort);
+        if (categoryValues.includes(chosenValue)) {
+          c = COLORS[i];
+          thisGuess.push(c);
+        }
+      }
+    }
+    let howClose = COLORS.map(x=>thisGuess.reduce((t,y)=>t=t+(x==y),0));
+    if (howClose.includes(3)) {
+      console.log('Close... One away');
+    }
+    guesses.push(thisGuess);
+    let remainingGuess = Array.from(document.getElementsByClassName('guess'));
+    let removeThisOne = remainingGuess.pop();
+    removeThisOne.remove();
+    if (remainingGuess.length == 0) {
+      failPuzzle(event);
+    }
+  }
+}
+function failPuzzle(event) {
+  console.log(guesses);
+  console.log('failed');
+  gameOver = true;
+}
+function succeedPuzzleIfAppropriate(event) {
+  let appropriate = !document.querySelector('div.card');
+  if (appropriate) {
+    console.log(guesses);
+    gameOver = true;
+  }
+}
+function deselectAll(event) {
+  Array.from(document.querySelectorAll('div.chosen')).forEach(x=>x.classList.remove('chosen'));
+}
+getThePuzzle();
+    </script>
+  </body>
+</html>

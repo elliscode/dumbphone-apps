@@ -3,6 +3,7 @@ import os
 import re
 import time
 import urllib
+import urllib3
 
 from .grocery_list import (
     additem,
@@ -38,6 +39,10 @@ CONTENT_TYPES = {
     "jpeg": "image/jpg",
     "gif": "image/gif",
 }
+
+http = urllib3.PoolManager()
+
+connections_data = {}
 
 
 def get_maps_key_route(event):
@@ -392,4 +397,71 @@ def generate_presigned_get(event):
         event=event,
         http_code=500,
         body="Could not create a presigned url",
+    )
+
+
+@authenticate
+def get_connections_route(event, user_data, body):
+    global connections_data
+
+    date_value = body["date"]
+
+    if connections_data and date_value in connections_data:
+        print("connections cache hit")
+        return format_response(
+            event=event,
+            http_code=200,
+            body=connections_data[date_value],
+        )
+
+    response = dynamo.get_item(
+        TableName=TABLE_NAME,
+        Key=python_obj_to_dynamo_obj(
+            {
+                "key1": "connections",
+                "key2": date_value,
+            }
+        ),
+    )
+
+    if "Item" in response:
+        print("connections db hit")
+        connections_data_from_db = dynamo_obj_to_python_obj(response["Item"])
+        connections_data[date_value] = connections_data_from_db['puzzle']
+        return format_response(
+            event=event,
+            http_code=200,
+            body=connections_data[date_value],
+        )
+
+    print("connections db miss")
+
+    connections_uri = f"https://www.nytimes.com/svc/connections/v2/{date_value}.json"
+
+    response = http.request(
+        "GET",
+        connections_uri,
+    )
+
+    try:
+        response_text = response.data.decode("utf-8")
+        response_json = json.loads(response_text, parse_float=str, parse_int=str)
+    except:
+        return None
+
+    token_data = {
+        "key1": "connections",
+        "key2": date_value,
+        "puzzle": response_json,
+    }
+    dynamo_data = python_obj_to_dynamo_obj(token_data)
+    dynamo.put_item(
+        TableName=TABLE_NAME,
+        Item=dynamo_data,
+    )
+
+    return format_response(
+        event=event,
+        http_code=200,
+        body=response_json,
     )

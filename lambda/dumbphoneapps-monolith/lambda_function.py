@@ -42,6 +42,7 @@ from dumbphoneapps.one_offs import (
     generate_presigned_get,
     acknowledge_presigned_post_success_route,
     gather_uploaded_items_route,
+    get_connections_route,
 )
 from dumbphoneapps.quiz_diary import (
     get_questions_route,
@@ -208,6 +209,8 @@ def route(event):
         return get_timestamp_report_data_route(event)
     if path_equals(event=event, method="POST", path="/one-offs/get-ip-geo-api-key"):
         return get_ip_geo_api_key(event)
+    if path_equals(event=event, method="POST", path="/one-offs/get-connections"):
+        return get_connections_route(event)
     if path_starts_with(event=event, method="POST", path="/discord/"):
         return discord_route(event)
 

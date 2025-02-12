@@ -1096,8 +1096,6 @@ function searchKeyCallback(event, type) {
   previousValue = event.target.value;
 }
 const servingListPreventDefaultKeys = [
-  'ArrowDown',
-  'ArrowUp'
 ];
 const servingListPreventDefaultIfEmptyKeys = [
   'Backspace'
@@ -1106,19 +1104,25 @@ const servingListBlurKeys = [
   'EndCall'
 ];
 const servingListBlurIfEmptyKeys = [
-  'Backspace'
 ];
 const servingListInteractionKeyList = [
   'ArrowDown',
   'ArrowUp'
 ];
 function servingsArrowCallback(event) {
+  if (servingListPreventDefaultKeys.includes(event.key) || (servingListPreventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
+    event.preventDefault();
+  }
+  if (servingListBlurKeys.includes(event.key) || (event.type === 'keyup' && servingListBlurIfEmptyKeys.includes(event.key) && !event.target.value && !previousValue)) {
+    event.target.blur();
+    closeSearch(event);
+  }
   let youreWhereYoureSupposedToBe = false;
   youreWhereYoureSupposedToBe = youreWhereYoureSupposedToBe || event.target.selectionStart === null;
   youreWhereYoureSupposedToBe = youreWhereYoureSupposedToBe || ((event.key == 'ArrowUp' || event.key == 'ArrowLeft') && event.target.selectionStart == 0);
   youreWhereYoureSupposedToBe = youreWhereYoureSupposedToBe || ((event.key == 'ArrowDown' || event.key == 'ArrowRight') && event.target.selectionStart == event.target.value.length);
   let modal = findParentWithClass(event.target, 'panel');
-  if (['ArrowDown', 'ArrowUp'].includes(event.key) && youreWhereYoureSupposedToBe && event.target.id == 'servings-amount') {
+  if (servingListInteractionKeyList.includes(event.key) && youreWhereYoureSupposedToBe && event.target.id == 'servings-amount') {
     let select = modal.getElementsByTagName('select')[0]; 
     let newIndex = select.selectedIndex + (event.key === 'ArrowDown' ? 1 : -1);
     newIndex = newIndex < 0 ? select.length - 1 : newIndex;
