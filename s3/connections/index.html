@@ -6,13 +6,14 @@
     <link rel="stylesheet" href="../css/stylesheet.css?v=024" />
     <link rel="stylesheet" href="../css/loader.css?v=024" />
     <link rel="icon" type="image/png" href="../img/connections.favicon.png?v=024" />
-<!--
-  keeping a map of all GUESSES not just guess colors
-  already guessed!
-  close... one away
-  words for success or failure    
--->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,100..900;1,100..900&family=Moul&display=swap" rel="stylesheet">
     <style>
+#content {
+  height: calc(100vh - 16px);
+}
 #comment {
   position: fixed;
   top: 2px;
@@ -29,6 +30,7 @@
   color: #fff;
   border-radius: 5px;
   padding: 4px 10px;
+  font-family: "Libre Franklin", serif;
 }
 .slow-fade {
   visibility: hidden;
@@ -53,6 +55,8 @@
 #display-text {
   font-size: xx-large;
   margin-top:0px;
+  font-weight:normal;
+  font-family: "Moul", serif;
 }
 #result-blocks {
   display: flex;
@@ -94,6 +98,8 @@
     text-align: center;
     box-sizing:border-box;
     padding:5px;
+    font-family: "Libre Franklin", serif;
+    font-weight: bold;
 }
 .answer {
     display: flex;
@@ -113,10 +119,15 @@
     text-align: center;
     box-sizing:border-box;
     padding:5px;
+    font-family: "Libre Franklin", serif;
 }
 #guesses {
     display:flex;
     margin: 5px 0px;
+    font-family: "Libre Franklin", serif;
+}
+#guesses > span {
+  margin-right:8px;
 }
 .guess {
     width: 20px;
@@ -162,18 +173,18 @@
       </div>
     </div>
 
-    <div style="display:flex;">
-      <b><a href="../index.html">Home</a></b> <span style="margin: 0px 5px;">&gt;</span> <b>connections</b>    <div style="flex-grow:1;"></div>     <button onclick="logOut(event)">Log out</button>
-    </div>
-
     <div id="comment"><span id="comment-span"></span></div>
 
     <div class="panel" id="content">
+      <div style="display:flex;">
+        <b><a href="../index.html">Home</a></b> <span style="margin: 0px 5px;">&gt;</span> <b>connections</b>    <div style="flex-grow:1;"></div>     <button onclick="logOut(event)">Log out</button>
+      </div>
+
       <div id="json"></div>
 
       <div id="puzzle"><div id="answers"></div></div>
 
-      <div id="guesses">Mistakes Remaining: <div class="guess"></div><div class="guess"></div><div class="guess"></div><div class="guess"></div></div>
+      <div id="guesses"><span>Mistakes Remaining:</span><div class="guess"></div><div class="guess"></div><div class="guess"></div><div class="guess"></div></div>
 
       <div id="game-controls"><button>Shuffle</button><button onclick="deselectAll(event);">Deselect All</button><button onclick="checkGuess(event);">Submit</button></div>
     </div>
@@ -421,6 +432,7 @@ function gameOver(success) {
   for(let attempt of attempts) {
     drawAttempt(attempt);
   }
+  document.activeElement.blur();
 }
 function drawAttempt(attempt) {
   let row = document.createElement('div');
