@@ -54,9 +54,18 @@
 }
 #display-text {
   font-size: xx-large;
+  line-height: 1;
   margin-top:0px;
+  margin-bottom: 24px;
   font-weight:normal;
   font-family: "Moul", serif;
+}
+#date-text {
+  font-size: 16px;
+  margin-top: 24px;
+  margin-bottom:0px;
+  font-weight:normal;
+  font-family: "Libre Franklin", serif;
 }
 .moul {
   font-family: "Moul", serif;
@@ -176,6 +185,7 @@
       <div>
         <p id="display-text">TEXT</p>
         <div id="result-blocks"></div>
+        <p id="date-text">0000-00-00</p>
       </div>
     </div>
 
@@ -192,7 +202,7 @@
 
       <div id="guesses"><span>Mistakes Remaining:</span><div class="guess"></div><div class="guess"></div><div class="guess"></div><div class="guess"></div></div>
 
-      <div id="game-controls"><button>Shuffle</button><button onclick="deselectAll(event);">Deselect All</button><button onclick="checkGuess(event);">Submit</button></div>
+      <div id="game-controls"><button>Shuffle</button><button onclick="deselectAll(event);">Deselect All</button><button onclick="checkGuessCallback(event);">Submit</button></div>
     </div>
     <script src="../js/utils.js?v=024"></script>
     <script src="../js/env.js"></script>
@@ -206,6 +216,7 @@ const gameControls = document.getElementById("game-controls");
 const guesses = document.getElementById("guesses");
 const results = document.getElementById("results");
 const displayText = document.getElementById("display-text");
+const dateText = document.getElementById("date-text");
 const resultBlocks = document.getElementById("result-blocks");
 const comment = document.getElementById("comment");
 const commentSpan = document.getElementById("comment-span");
@@ -236,6 +247,12 @@ function handleThePuzzle(event) {
     for(let card of cards) {
         drawCard(card);
     }
+    let connectionsData = getLocalStorage();
+    if (connectionsData[dateValue]) {
+      for (let attempt of connectionsData[dateValue]) {
+        checkGuess(JSON.parse(attempt));
+      }
+    }
     applyEmulators(undefined, connectionsArrowCallback);
 }
 function cardSort(x, y) {
@@ -259,7 +276,6 @@ function drawAnswer(category, color) {
     cardDiv.classList.add('answer');
     let contentDiv = document.createElement('div');
     contentDiv.innerText = category.title;
-    contentDiv.setAttribute('input-group-name', 'navigation')
     cardDiv.appendChild(contentDiv);
     cardDiv.classList.add(color);
     answers.appendChild(cardDiv);
@@ -299,7 +315,7 @@ function connectionsArrowCallback(event, functionHandle) {
     let tooFast = (new Date()) - previousArrowTime < 100;
     if (!tooFast) {
       if (['Call','t'].includes(event.key)) {
-        checkGuess(event);
+        checkGuessCallback(event);
         let inputs = Array.from(document.getElementsByClassName('navigable-input'));
         if (event.target.hasAttribute('input-group-name')) {
           const currentTarget = event.target.getAttribute('input-group-name');
@@ -378,7 +394,7 @@ function select(event) {
     event.target.classList.add('chosen');
   }
 }
-function checkGuess(event) {
+function checkGuessCallback(event) {
   let chosenTiles = Array.from(document.getElementsByClassName('chosen'));
   if (chosenTiles.length == 4) {
     let chosenValues = chosenTiles.map(x=>x.innerText.trim()).sort(textSort);
@@ -386,43 +402,47 @@ function checkGuess(event) {
       showMessage('Already Guessed!');
       return;
     }
+    checkGuess(chosenValues);
+    saveLocalStorage();
+  }
+}
+function checkGuess(chosenValues) {
+  attemptsSet.push(JSON.stringify(chosenValues));
+  for (let i = 0; i < puzzleSolution.categories.length; i++) {
+    let category = puzzleSolution.categories[i];
+    let categoryValues = category.cards.map(x=>x.content).sort(textSort);
+    if (JSON.stringify(chosenValues) == JSON.stringify(categoryValues)) {
+      c = COLORS[i];
+      attempts.push([c,c,c,c]);
+      Array.from(document.getElementsByClassName('card')).filter(x=>chosenValues.includes(x.innerText.trim())).forEach(x=>x.remove());
+      drawAnswer(category, c);
+      succeedPuzzleIfAppropriate(event);
+      return;
+    }
+  }
+  let thisGuess = [];
+  for (let chosenValue of chosenValues) {
     for (let i = 0; i < puzzleSolution.categories.length; i++) {
       let category = puzzleSolution.categories[i];
       let categoryValues = category.cards.map(x=>x.content).sort(textSort);
-      if (JSON.stringify(chosenValues) == JSON.stringify(categoryValues)) {
+      if (categoryValues.includes(chosenValue)) {
         c = COLORS[i];
-        attempts.push([c,c,c,c]);
-        chosenTiles.forEach(x=>x.parentElement.remove());
-        drawAnswer(category, c);
-        succeedPuzzleIfAppropriate(event);
-        return;
+        thisGuess.push(c);
       }
     }
-    let thisGuess = [];
-    for (let chosenValue of chosenValues) {
-      for (let i = 0; i < puzzleSolution.categories.length; i++) {
-        let category = puzzleSolution.categories[i];
-        let categoryValues = category.cards.map(x=>x.content).sort(textSort);
-        if (categoryValues.includes(chosenValue)) {
-          c = COLORS[i];
-          thisGuess.push(c);
-        }
-      }
-    }
-    let howClose = COLORS.map(x=>thisGuess.reduce((t,y)=>t=t+(x==y),0));
-    if (howClose.includes(3)) {
-      showMessage('One away...');
-    }
-    attempts.push(thisGuess);
-    attemptsSet.push(JSON.stringify(chosenValues));
-    let remainingGuess = Array.from(document.getElementsByClassName('guess'));
-    let removeThisOne = remainingGuess.pop();
-    removeThisOne.remove();
-    if (remainingGuess.length == 0) {
-      event.target.blur();
-      blurEmulator();
-      failPuzzle(event);
-    }
+  }
+  let howClose = COLORS.map(x=>thisGuess.reduce((t,y)=>t=t+(x==y),0));
+  if (howClose.includes(3)) {
+    showMessage('One away...');
+  }
+  attempts.push(thisGuess);
+  let remainingGuess = Array.from(document.getElementsByClassName('guess'));
+  let removeThisOne = remainingGuess.pop();
+  removeThisOne.remove();
+  if (remainingGuess.length == 0) {
+    event.target.blur();
+    blurEmulator();
+    failPuzzle(event);
   }
 }
 function failPuzzle(event) {
@@ -454,6 +474,7 @@ function gameOver(success) {
   results.style.display = 'block';
   let textIndex = success ? attempts.length - 4 : TEXT.length - 1;
   displayText.innerText = TEXT[textIndex];
+  dateText.innerText = dateValue;
   for(let attempt of attempts) {
     drawAttempt(attempt);
   }
@@ -485,6 +506,23 @@ function startFade(event) {
 }
 function hideMessage(event) {
   comment.style.display = 'none';
+}
+function getLocalStorage() {
+  try {
+    let connectionsDataString = localStorage.getItem("dumbphoneapps-connections-data");
+    let connectionsData = JSON.parse(connectionsDataString);
+    if (connectionsData) {
+      return connectionsData;
+    }
+  } catch (e) {
+    // noop
+  }
+  return {};
+}
+function saveLocalStorage() {
+  let connectionsData = getLocalStorage();
+  connectionsData[dateValue] = attemptsSet;
+  localStorage.setItem('dumbphoneapps-connections-data', JSON.stringify(connectionsData));
 }
 getThePuzzle();
     </script>
