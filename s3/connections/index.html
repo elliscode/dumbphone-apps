@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,100..900;1,100..900&family=Moul&display=swap" rel="stylesheet">
     <style>
 #content {
-  height: calc(100vh - 16px);
+  min-height: calc(100vh - 16px);
 }
 #comment {
   position: fixed;
@@ -40,13 +40,14 @@
 #results {
   position: relative;
   width: calc(100vw - 16px);
-  height: calc(100vh - 16px);
+  min-height: calc(100vh - 16px);
   margin-bottom: 8px;
   display: none;
 }
 #results > div {
   width: 100%;
   height: 100%;
+  min-height: inherit;
   display: flex;
   flex-direction: column;
   justify-content: center;
