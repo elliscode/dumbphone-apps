@@ -256,10 +256,15 @@ function buildThermostat(deviceTraits, parentDiv) {
 
   setDotPositionBasedOnTemperature(tempF, temperatureDot);
 
-  if (deviceTraits['sdm.devices.traits.ThermostatTemperatureSetpoint']
-    && deviceTraits['sdm.devices.traits.ThermostatTemperatureSetpoint']['coolCelsius'])
+  if (deviceTraits['sdm.devices.traits.ThermostatTemperatureSetpoint'])
   {
-    let tempSetPointC = deviceTraits['sdm.devices.traits.ThermostatTemperatureSetpoint']['coolCelsius'];
+    let tempSetPointC = undefined;
+    if (deviceTraits['sdm.devices.traits.ThermostatTemperatureSetpoint']['coolCelsius']) {
+      tempSetPointC = deviceTraits['sdm.devices.traits.ThermostatTemperatureSetpoint']['coolCelsius'];
+    } else if (deviceTraits['sdm.devices.traits.ThermostatTemperatureSetpoint']['heatCelsius']) {
+      tempSetPointC = deviceTraits['sdm.devices.traits.ThermostatTemperatureSetpoint']['heatCelsius'];
+    }
+
     let tempSetPointF = (tempSetPointC*9/5) + 32;
     let roundedTempSetPointF = Math.round(tempSetPointF);
 
@@ -309,6 +314,13 @@ function buildThermostat(deviceTraits, parentDiv) {
     && deviceTraits["sdm.devices.traits.ThermostatHvac"]['status'] === "COOLING")
   {
     thermostatDiv.style.backgroundColor = '#0760d7';
+  }
+
+  if (deviceTraits["sdm.devices.traits.ThermostatHvac"] 
+    && deviceTraits["sdm.devices.traits.ThermostatHvac"]['status']
+    && deviceTraits["sdm.devices.traits.ThermostatHvac"]['status'] === "HEATING")
+  {
+    thermostatDiv.style.backgroundColor = '#c45114';
   }
 
   if (deviceTraits['sdm.devices.traits.Fan']

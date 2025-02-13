@@ -398,7 +398,7 @@ function buildMessage(parentElement, message) {
     !message.content &&
     message.embeds.length == 0 &&
     message.attachments.length == 0 &&
-    message.sticker_items.length == 0
+    (!message.sticker_items || message.sticker_items.length == 0)
   ) {
     let span = document.createElement("span");
     span.innerText = messageTypes[message.type].replace(

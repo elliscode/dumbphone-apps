@@ -227,7 +227,10 @@ function blurEmulator(event) {
   let selecteds = Array.from(document.getElementsByClassName('selected'));
   selecteds.forEach(x=>x.classList.remove('selected'));
 }
-function applyEmulators(customCallback) {
+function applyEmulators(customCallback, arrowKeyCallback) {
+  if (!arrowKeyCallback) {
+    arrowKeyCallback = arrowKeyEmulator;
+  }
   let allItems = Array.from(document.querySelectorAll(`[input-group-name]`));
   for (let i = 0; i < allItems.length; i++) {
     let item = allItems[i];
@@ -235,8 +238,8 @@ function applyEmulators(customCallback) {
       continue;
     }
     if (item.tagName.toLowerCase() == 'textarea' || (item.tagName.toLowerCase() == 'input' && ['tel','number','text'].includes(item.type.toLowerCase()))) {
-      item.addEventListener('keydown', (e)=>{arrowKeyEmulator(e, customCallback)});
-      item.addEventListener('keyup', (e)=>{arrowKeyEmulator(e, customCallback)});
+      item.addEventListener('keydown', (e)=>{arrowKeyCallback(e, customCallback)});
+      item.addEventListener('keyup', (e)=>{arrowKeyCallback(e, customCallback)});
       item.setAttribute('generated', true);
       item.classList.add('navigable-input');
     } else {
@@ -247,8 +250,8 @@ function applyEmulators(customCallback) {
       invisibleInput.setAttribute('input-group-name', item.getAttribute('input-group-name'));
       invisibleInput.setAttribute('generated', true);
       invisibleInput.setAttribute('linked-item', true);
-      invisibleInput.addEventListener('keydown', (e)=>{arrowKeyEmulator(e, customCallback)});
-      invisibleInput.addEventListener('keyup', (e)=>{arrowKeyEmulator(e, customCallback)});
+      invisibleInput.addEventListener('keydown', (e)=>{arrowKeyCallback(e, customCallback)});
+      invisibleInput.addEventListener('keyup', (e)=>{arrowKeyCallback(e, customCallback)});
       invisibleInput.addEventListener('blur', blurEmulator);
       invisibleInput.tabIndex = '-1';
 

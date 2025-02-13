@@ -494,7 +494,6 @@ def set_list_data(list_id, name, items):
             "key2": list_id,
             "name": name,
             "items": items,
-            "expiration": int(time.time()) + (365 * 24 * 60 * 60),
         }
     )
     dynamo.put_item(
@@ -506,7 +505,6 @@ def set_list_data(list_id, name, items):
 def set_list_data_multiple(lists):
     items = []
     for whole_list in lists.values():
-        whole_list["expiration"] = int(time.time()) + (365 * 24 * 60 * 60)
         items.append({"PutRequest": {"Item": python_obj_to_dynamo_obj(whole_list)}})
 
     return dynamo.batch_write_item(RequestItems={TABLE_NAME: items})
