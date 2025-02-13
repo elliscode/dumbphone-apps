@@ -58,6 +58,11 @@
   font-weight:normal;
   font-family: "Moul", serif;
 }
+.moul {
+  font-family: "Moul", serif;
+  line-height: 1;
+  margin-top: 2px;
+}
 #result-blocks {
   display: flex;
   flex-direction: column;
@@ -75,6 +80,7 @@
 #puzzle {
     display: flex;
     flex-wrap: wrap;
+    max-width:340px;
 }
 #answers {
     display: flex;
@@ -177,7 +183,7 @@
 
     <div class="panel" id="content">
       <div style="display:flex;">
-        <b><a href="../index.html">Home</a></b> <span style="margin: 0px 5px;">&gt;</span> <b>connections</b>    <div style="flex-grow:1;"></div>     <button onclick="logOut(event)">Log out</button>
+        <b><a href="../index.html">Home</a></b> <span style="margin: 0px 5px;">&gt;</span> <b class="moul">Connections</b>    <div style="flex-grow:1;"></div>     <button onclick="logOut(event)">Log out</button>
       </div>
 
       <div id="json"></div>
@@ -192,7 +198,7 @@
     <script src="../js/env.js"></script>
     <script>
 const TEXT = ["Perfect!","Great!","Solid!","Phew!","Next Time!"];
-const COLORS = ['green', 'yellow', 'blue', 'purple'];
+const COLORS = ['yellow', 'green', 'blue', 'purple'];
 const json = document.getElementById("json");
 const puzzle = document.getElementById("puzzle");
 const answers = document.getElementById("answers");
@@ -203,8 +209,9 @@ const displayText = document.getElementById("display-text");
 const resultBlocks = document.getElementById("result-blocks");
 const comment = document.getElementById("comment");
 const commentSpan = document.getElementById("comment-span");
+let gameEnded = false;
 function getThePuzzle() {
-    let dateValue = getTodayOrUrlParam();
+    dateValue = getTodayOrUrlParam();
     let url = API_DOMAIN + "/one-offs/get-connections";
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true); // false for synchronous request
@@ -215,6 +222,7 @@ function getThePuzzle() {
 let puzzleSolution = undefined;
 let attempts = [];
 let attemptsSet = [];
+let dateValue = undefined;
 function handleThePuzzle(event) {
     let result = defaultHandler(event);
     puzzleSolution = result.responseJson;
@@ -271,7 +279,7 @@ const connectionsInteractionKeyList = [
   'ArrowUp',
   'ArrowLeft',
   'ArrowRight',
-  'Call'
+  'Call','t'
 ];
 function connectionsArrowCallback(event, functionHandle) {
   if ((event.target.tagName.toLowerCase() != 'textarea' && preventDefaultKeys.includes(event.key)) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
@@ -290,14 +298,14 @@ function connectionsArrowCallback(event, functionHandle) {
     // check if you are where youre supposed to be before you go
     let tooFast = (new Date()) - previousArrowTime < 100;
     if (!tooFast) {
-      if (['Call'].includes(event.key)) {
+      if (['Call','t'].includes(event.key)) {
         checkGuess(event);
         let inputs = Array.from(document.getElementsByClassName('navigable-input'));
         if (event.target.hasAttribute('input-group-name')) {
           const currentTarget = event.target.getAttribute('input-group-name');
           inputs = inputs.filter(x=>x.getAttribute('input-group-name') == currentTarget);
         }
-        if (!document.querySelector('.selected')) {
+        if (!document.querySelector('.selected') && !gameEnded) {
           let newItem = inputs[0];
           newItem.focus();
           if (event.type === 'keydown' && 
@@ -338,12 +346,14 @@ function connectionsArrowCallback(event, functionHandle) {
           rowIndex = rowIndex < 0 ? rowIndex + row.length : rowIndex;
           rowIndex = rowIndex > row.length - 1 ? rowIndex - row.length : rowIndex;
         }
-        let newItem = rows[rowName][rowIndex];
-        newItem.focus();
-        if (event.type === 'keydown' && 
-            (newItem.hasAttribute('linked-item'))) {
-          let checkbox = newItem.parentElement.getElementsByClassName('selectable')[0];
-          checkbox.classList.add('selected');
+        if (!gameEnded) {
+          let newItem = rows[rowName][rowIndex];
+          newItem.focus();
+          if (event.type === 'keydown' && 
+              (newItem.hasAttribute('linked-item'))) {
+            let checkbox = newItem.parentElement.getElementsByClassName('selectable')[0];
+            checkbox.classList.add('selected');
+          }
         }
       }
       previousArrowTime = new Date();
@@ -359,6 +369,9 @@ function connectionsArrowCallback(event, functionHandle) {
   previousValue = event.target.value;
 }
 function select(event) {
+  if (gameEnded) {
+    return;
+  }
   if (event.target.classList.contains('chosen')) {
     event.target.classList.remove('chosen');
   } else if (document.querySelectorAll('div.chosen').length < 4) {
@@ -406,6 +419,8 @@ function checkGuess(event) {
     let removeThisOne = remainingGuess.pop();
     removeThisOne.remove();
     if (remainingGuess.length == 0) {
+      event.target.blur();
+      blurEmulator();
       failPuzzle(event);
     }
   }
@@ -423,7 +438,17 @@ function deselectAll(event) {
   Array.from(document.querySelectorAll('div.chosen')).forEach(x=>x.classList.remove('chosen'));
 }
 function gameOver(success) {
-  console.log(attempts);
+  Array.from(document.getElementsByClassName('card')).forEach(x=>x.remove());
+  for (let i = 0; i < COLORS.length; i++) {
+    let color = COLORS[i];
+    let existingDiv = document.querySelector(`div.${color}`);
+    if (!existingDiv) {
+      drawAnswer(puzzleSolution.categories[i], color);
+    }
+  }
+  document.removeEventListener('keyup', pressCallToFocus);
+  gameEnded = true;
+  deselectAll();
   gameControls.style.display = 'none';
   guesses.style.display = 'none';
   results.style.display = 'block';
@@ -432,7 +457,6 @@ function gameOver(success) {
   for(let attempt of attempts) {
     drawAttempt(attempt);
   }
-  document.activeElement.blur();
 }
 function drawAttempt(attempt) {
   let row = document.createElement('div');
