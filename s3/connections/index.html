@@ -213,7 +213,7 @@
 
       <div id="guesses"><span>Mistakes Remaining:</span><div class="guess"></div><div class="guess"></div><div class="guess"></div><div class="guess"></div></div>
 
-      <div id="game-controls"><button>Shuffle</button><button onclick="deselectAll(event);">Deselect All</button><button onclick="checkGuessCallback(event);">Submit</button></div>
+      <div id="game-controls"><button onclick="shuffleTiles(event);">Shuffle</button><button onclick="deselectAll(event);">Deselect All</button><button onclick="checkGuessCallback(event);">Submit</button></div>
     </div>
     <script src="../js/utils.js?v=024"></script>
     <script src="../js/env.js"></script>
@@ -539,6 +539,25 @@ function saveLocalStorage() {
   let connectionsData = getLocalStorage();
   connectionsData[dateValue] = attemptsSet;
   localStorage.setItem('dumbphoneapps-connections-data', JSON.stringify(connectionsData));
+}
+function shuffleTiles(event) {
+  let cards = Array.from(document.getElementsByClassName('card'));
+  let randomized = shuffle(cards);
+  for (let card of randomized) {
+    puzzle.appendChild(card);
+  }
+}
+// https://stackoverflow.com/a/2450976
+function shuffle(array) {
+  let output = [...array];
+  let currentIndex = output.length;
+  while (currentIndex != 0) {
+    let randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    [output[currentIndex], output[randomIndex]] = [
+      output[randomIndex], output[currentIndex]];
+  }
+  return output;
 }
 getThePuzzle();
     </script>
