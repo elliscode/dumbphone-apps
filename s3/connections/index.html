@@ -136,6 +136,16 @@
     box-sizing:border-box;
     padding:5px;
     font-family: "Libre Franklin", serif;
+    flex-direction: column;
+}
+.answer > div > p {
+  margin: 0px;
+}
+.answer > div > p:first-child {
+  margin-bottom:10px;
+}
+.answer > div > p:last-child {
+  font-size:10px;
 }
 #guesses {
     display:flex;
@@ -276,7 +286,12 @@ function drawAnswer(category, color) {
     let cardDiv = document.createElement('div');
     cardDiv.classList.add('answer');
     let contentDiv = document.createElement('div');
-    contentDiv.innerText = category.title;
+    let categoryP = document.createElement('p');
+    let wordListP = document.createElement('p');
+    categoryP.innerText = category.title;
+    contentDiv.appendChild(categoryP);
+    wordListP.innerText = category.cards.map(x=>x.content).join(", ");
+    contentDiv.appendChild(wordListP);
     cardDiv.appendChild(contentDiv);
     cardDiv.classList.add(color);
     answers.appendChild(cardDiv);
