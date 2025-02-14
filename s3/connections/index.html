@@ -13,6 +13,8 @@
     <style>
 #content {
   min-height: calc(100vh - 16px);
+  display:flex;
+  flex-direction: column;
 }
 #comment {
   position: fixed;
@@ -90,7 +92,9 @@
 #puzzle {
     display: flex;
     flex-wrap: wrap;
-    max-width:340px;
+    min-width: 336px;
+    width: calc(100vw);
+    max-width: calc(100vh - 100px);
 }
 #answers {
     display: flex;
@@ -104,8 +108,12 @@
     user-select: none;
 }
 .card > div {
-    width: 82px;
-    height:77px;
+    min-width: 82px;
+    min-height: 82px;
+    width: calc(25vw - 2px);
+    height: calc(25vw - 2px);
+    max-width: calc((25vh - 25px) - 2px);
+    max-height: calc((25vh - 25px) - 2px);
     border-radius: 5px;
     display:flex;
     justify-content: center;
@@ -125,8 +133,12 @@
     user-select: none;
 }
 .answer > div {
-    width: 334px;
-    height:77px;
+    min-width: 334px;
+    min-height: 82px;
+    width: calc(100vw - 2px);
+    height: calc(25vw - 2px);
+    max-width: calc(100vh - 100px);
+    max-height: calc(25vh - 2px);
     border-radius: 5px;
     display:flex;
     justify-content: center;
@@ -197,6 +209,13 @@
   background-color: #bb81c5;
   color: #000;
 }
+.game-div {
+  flex-direction: column;
+  display:flex;
+  flex-grow:1;
+  justify-content: center;
+  align-items: center;
+}
     </style>
   </head>
 
@@ -219,11 +238,13 @@
 
       <div id="json"></div>
 
-      <div id="puzzle"><div id="answers"></div></div>
+      <div class="game-div">
+        <div id="puzzle"><div id="answers"></div></div>
 
-      <div id="guesses"><span>Mistakes Remaining:</span><div class="guess"></div><div class="guess"></div><div class="guess"></div><div class="guess"></div></div>
+        <div id="guesses"><span>Mistakes Remaining:</span><div class="guess"></div><div class="guess"></div><div class="guess"></div><div class="guess"></div></div>
 
-      <div id="game-controls"><button onclick="shuffleTiles(event);">Shuffle</button><button onclick="deselectAll(event);">Deselect All</button><button onclick="checkGuessCallback(event);">Submit</button></div>
+        <div id="game-controls"><button onclick="shuffleTiles(event);">Shuffle</button><button onclick="deselectAll(event);">Deselect All</button><button onclick="checkGuessCallback(event);">Submit</button></div>
+      </div>
     </div>
     <script src="../js/utils.js?v=024"></script>
     <script src="../js/env.js"></script>
