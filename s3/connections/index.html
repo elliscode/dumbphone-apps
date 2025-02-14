@@ -439,7 +439,15 @@ function checkGuessCallback(event) {
       return;
     }
     checkGuess(chosenValues);
+    saveGuesses();
   }
+}
+function saveGuesses() {
+  let url = API_DOMAIN + "/connections/set-guesses";
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true); // false for synchronous request
+  xmlHttp.withCredentials = true;
+  xmlHttp.send(JSON.stringify({ csrf: csrfToken, date: dateValue, guesses: attemptsSet }));
 }
 function checkGuess(chosenValues) {
   attemptsSet.push(chosenValues);
@@ -475,7 +483,9 @@ function checkGuess(chosenValues) {
   let removeThisOne = remainingGuess.pop();
   removeThisOne.remove();
   if (remainingGuess.length == 0) {
-    event.target.blur();
+    if (!!event && !!event.target && event.target instanceof HTMLElement) {
+      event.target.blur();
+    }
     blurEmulator();
     failPuzzle(event);
   }
