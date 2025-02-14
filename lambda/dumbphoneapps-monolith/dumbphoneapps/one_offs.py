@@ -23,6 +23,9 @@ from .utils import (
     boto3,
     SMS_SQS_QUEUE_URL,
 )
+from .input_validation import (
+    validate_date,
+)
 
 sts_connection = boto3.client("sts")
 
@@ -404,7 +407,14 @@ def generate_presigned_get(event):
 def get_connections_route(event, user_data, body):
     global connections_data
 
-    date_value = body["date"]
+    date_value = validate_date(body["date"])
+
+    if not date_value:
+        return format_response(
+            event=event,
+            http_code=400,
+            body="Improper date format, must be yyyy-MM-dd",
+        )
 
     if connections_data and date_value in connections_data:
         print("connections cache hit")
