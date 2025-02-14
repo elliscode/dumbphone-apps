@@ -92,9 +92,9 @@
 #puzzle {
     display: flex;
     flex-wrap: wrap;
-    min-width: 336px;
-    width: calc(100vw);
-    max-width: calc(100vh - 100px);
+    min-width: 316px;
+    width: calc(100vw - 20px);
+    max-width: calc(100vh - 120px);
 }
 #answers {
     display: flex;
@@ -108,12 +108,12 @@
     user-select: none;
 }
 .card > div {
-    min-width: 82px;
-    min-height: 82px;
-    width: calc(25vw - 2px);
-    height: calc(25vw - 2px);
-    max-width: calc((25vh - 25px) - 2px);
-    max-height: calc((25vh - 25px) - 2px);
+    min-width: 77px;
+    min-height: 77px;
+    width: calc(((100vw - 20px) / 4) - 2px);
+    height: calc(((100vw - 20px) / 4) - 2px);
+    max-width: calc(((100vh - 120px) / 4) - 2px);
+    max-height: calc(((100vh - 120px) / 4) - 2px);
     border-radius: 5px;
     display:flex;
     justify-content: center;
@@ -133,12 +133,12 @@
     user-select: none;
 }
 .answer > div {
-    min-width: 334px;
-    min-height: 82px;
-    width: calc(100vw - 2px);
-    height: calc(25vw - 2px);
-    max-width: calc(100vh - 100px);
-    max-height: calc(25vh - 2px);
+    min-width: 314px;
+    min-height: 77px;
+    width: calc((100vw - 20px) - 2px);
+    height: calc(((100vw - 20px) / 4) - 2px);
+    max-width: calc(100vh - 120px);
+    max-height: calc(((100vh - 120px) / 4) - 2px);
     border-radius: 5px;
     display:flex;
     justify-content: center;
@@ -498,6 +498,8 @@ function checkGuess(chosenValues) {
   let howClose = COLORS.map(x=>thisGuess.reduce((t,y)=>t=t+(x==y),0));
   if (howClose.includes(3)) {
     showMessage('One away...');
+  } else {
+    showMessage('Wrong...');
   }
   attempts.push(thisGuess);
   let remainingGuess = Array.from(document.getElementsByClassName('guess'));
