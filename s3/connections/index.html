@@ -166,6 +166,16 @@
 #game-controls > button {
     display: inline-block;
     margin: 1px;
+    background-color:#fff;
+    border: 1px solid #5a594e;
+    padding: 10px 20px;
+    border-radius: 20px;
+}
+#game-controls > button:hover {
+  background-color:#efefe6;
+}
+#game-controls > button:active {
+  background-color:#c7c7bd;
 }
 .chosen {
   background-color: #5a594e;
@@ -234,7 +244,7 @@ const commentSpan = document.getElementById("comment-span");
 let gameEnded = false;
 function getThePuzzle() {
     dateValue = getTodayOrUrlParam();
-    let url = API_DOMAIN + "/one-offs/get-connections";
+    let url = API_DOMAIN + "/connections/get-connections";
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true); // false for synchronous request
     xmlHttp.withCredentials = true;
@@ -246,25 +256,35 @@ let attempts = [];
 let attemptsSet = [];
 let dateValue = undefined;
 function handleThePuzzle(event) {
-    let result = defaultHandler(event);
-    puzzleSolution = result.responseJson;
-    let cards = [];
-    for(let category of puzzleSolution.categories) {
-        for(let card of category.cards) {
-            cards.push(card);
-        }
+  let result = defaultHandler(event);
+  puzzleSolution = result.responseJson;
+    let url = API_DOMAIN + "/connections/get-guesses";
+    let xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", url, true); // false for synchronous request
+    xmlHttp.withCredentials = true;
+    xmlHttp.onload = handleTheData;
+    xmlHttp.send(JSON.stringify({ csrf: csrfToken, date: dateValue }));
+}
+function handleTheData(event) {
+  let result = defaultHandler(event);
+  let connectionsData = result.responseJson;
+  let cards = [];
+  for(let category of puzzleSolution.categories) {
+    for(let card of category.cards) {
+      cards.push(card);
     }
-    cards = cards.sort(cardSort);
-    for(let card of cards) {
-        drawCard(card);
+  }
+  cards = cards.sort(cardSort);
+  for(let card of cards) {
+    drawCard(card);
+  }
+  if (connectionsData) {
+    for (let attempt of connectionsData) {
+      checkGuess(attempt);
     }
-    let connectionsData = getLocalStorage();
-    if (connectionsData[dateValue]) {
-      for (let attempt of connectionsData[dateValue]) {
-        checkGuess(JSON.parse(attempt));
-      }
-    }
-    applyEmulators(undefined, connectionsArrowCallback);
+    interruptMessage(event);
+  }
+  applyEmulators(undefined, connectionsArrowCallback);
 }
 function cardSort(x, y) {
     return parseInt(x.position) - parseInt(y.position);
@@ -414,16 +434,15 @@ function checkGuessCallback(event) {
   let chosenTiles = Array.from(document.getElementsByClassName('chosen'));
   if (chosenTiles.length == 4) {
     let chosenValues = chosenTiles.map(x=>x.innerText.trim()).sort(textSort);
-    if (attemptsSet.includes(JSON.stringify(chosenValues))) {
+    if (attemptsSet.map(x=>JSON.stringify(x)).includes(JSON.stringify(chosenValues))) {
       showMessage('Already Guessed!');
       return;
     }
     checkGuess(chosenValues);
-    saveLocalStorage();
   }
 }
 function checkGuess(chosenValues) {
-  attemptsSet.push(JSON.stringify(chosenValues));
+  attemptsSet.push(chosenValues);
   for (let i = 0; i < puzzleSolution.categories.length; i++) {
     let category = puzzleSolution.categories[i];
     let categoryValues = category.cards.map(x=>x.content).sort(textSort);
@@ -516,29 +535,17 @@ function showMessage(messageText) {
   comment.style.display = 'flex';
   fadeTimeout = setTimeout(startFade, 1000);
 }
+function interruptMessage(event) {
+  clearTimeout(fadeTimeout);
+  clearTimeout(hideTimeout);
+  comment.style.display = 'none';
+}
 function startFade(event) {
   comment.classList.add('slow-fade');
   hideTimeout = setTimeout(hideMessage, 2000);
 }
 function hideMessage(event) {
   comment.style.display = 'none';
-}
-function getLocalStorage() {
-  try {
-    let connectionsDataString = localStorage.getItem("dumbphoneapps-connections-data");
-    let connectionsData = JSON.parse(connectionsDataString);
-    if (connectionsData) {
-      return connectionsData;
-    }
-  } catch (e) {
-    // noop
-  }
-  return {};
-}
-function saveLocalStorage() {
-  let connectionsData = getLocalStorage();
-  connectionsData[dateValue] = attemptsSet;
-  localStorage.setItem('dumbphoneapps-connections-data', JSON.stringify(connectionsData));
 }
 function shuffleTiles(event) {
   let cards = Array.from(document.getElementsByClassName('card'));

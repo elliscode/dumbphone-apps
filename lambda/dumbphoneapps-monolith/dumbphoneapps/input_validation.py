@@ -137,39 +137,53 @@ if __name__ == '__main__':
     print(validate_id("-187"))
     print(validate_id("-187vb"))
     print(is_valid_against_schema([
-    {
-      "timestamp": "1718320743",
-      "hash": "-177853341"
-    },
-    {
-      "timestamp": "1718329743",
-      "hash": "-1218480146"
-    },
-    {
-      "timestamp": "1718329744",
-      "hash": "-177853341"
-    },
-    {
-      "timestamp": "1718329943",
-      "hash": "-1218480146"
-    }
-  ], EVENTS_SCHEMA))
+        {
+          "timestamp": "1718320743",
+          "hash": "-177853341"
+        },
+        {
+          "timestamp": "1718329743",
+          "hash": "-1218480146"
+        },
+        {
+          "timestamp": "1718329744",
+          "hash": "-177853341"
+        },
+        {
+          "timestamp": "1718329943",
+          "hash": "-1218480146"
+        }
+    ], EVENTS_SCHEMA))
     print(f"{EVENTS_SCHEMA}")
     print(validate_schema([
-    {
-      "timestamp": 1718320743,
-      "hash": -177853341
-    },
-    {
-      "timestamp": "1718329743",
-      "hash": "-1218480146"
-    },
-    {
-      "timestamp": "1718329744",
-      "hash": "-177853341"
-    },
-    {
-      "timestamp": 1718329943,
-      "hash": -1218480146
+        {
+          "timestamp": 1718320743,
+          "hash": -177853341
+        },
+        {
+          "timestamp": "1718329743",
+          "hash": "-1218480146"
+        },
+        {
+          "timestamp": "1718329744",
+          "hash": "-177853341"
+        },
+        {
+          "timestamp": 1718329943,
+          "hash": -1218480146
+        }
+    ], EVENTS_SCHEMA))
+    CONNECTIONS_SCHEMA = {
+        "type": list,
+        "elements": {
+            "type": list,
+            "elements": {
+                "type": str
+            }
+        }
     }
-  ], EVENTS_SCHEMA))
+    print(validate_schema(['["GOTCHA","RATTLE","SLITHER","SURPRISE"]', '["BOO","GOTCHA","GUESS WHO","SURPRISE"]', '["BABY","CREAK","INDULGE","SEE"]', '["HISS","RATTLE","SHED","SLITHER"]', '["BAE","HUMOR","INDULGE","STRAIGHT"]', '["BABY","HUMOR","INDULGE","PAMPER"]', '["BAE","CREAK","SEE","STRAIGHT"]'], CONNECTIONS_SCHEMA))
+    print(validate_schema([["GOTCHA","RATTLE","SLITHER","SURPRISE"], ["BOO","GOTCHA","GUESS WHO","SURPRISE"],
+                           ["BABY","CREAK","INDULGE","SEE"], ["HISS","RATTLE","SHED","SLITHER"],
+                           ["BAE","HUMOR","INDULGE","STRAIGHT"], ["BABY","HUMOR","INDULGE","PAMPER"],
+                           ["BAE","CREAK","SEE","STRAIGHT"]], CONNECTIONS_SCHEMA))
