@@ -3,222 +3,15 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Connections</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=024" />
-    <link rel="stylesheet" href="../css/loader.css?v=024" />
-    <link rel="icon" type="image/png" href="../img/connections.favicon.png?v=024" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=027" />
+    <link rel="stylesheet" href="../css/loader.css?v=027" />
+    <link id="kaios-stylesheet" rel="stylesheet" href="css/kaios.css?v=028" />
+    <link rel="icon" type="image/png" href="../img/connections.favicon.png?v=027" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,100..900;1,100..900&family=Moul&display=swap" rel="stylesheet">
-    <style>
-#content {
-  min-height: calc(100vh - 16px);
-  display:flex;
-  flex-direction: column;
-}
-#comment {
-  position: fixed;
-  top: 2px;
-  left: 2px;
-  width: calc(100vw - 4px);
-  justify-content: center;
-  align-items: center;
-  display:none;
-}
-#comment-span {
-  font-size: 16px;
-  box-sizing: border-box;
-  background-color: #5a594e;
-  color: #fff;
-  border-radius: 5px;
-  padding: 4px 10px;
-  font-family: "Libre Franklin", serif;
-}
-.slow-fade {
-  visibility: hidden;
-  opacity: 0;
-  transition: visibility 0s 2s, opacity 2s linear;
-}
-#results {
-  position: relative;
-  width: calc(100vw - 16px);
-  min-height: calc(100vh - 16px);
-  margin-bottom: 8px;
-  display: none;
-}
-#results > div {
-  width: 100%;
-  height: 100%;
-  min-height: inherit;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-#display-text {
-  font-size: xx-large;
-  line-height: 1;
-  margin-top:0px;
-  margin-bottom: 24px;
-  font-weight:normal;
-  font-family: "Moul", serif;
-}
-#date-text {
-  font-size: 16px;
-  margin-top: 24px;
-  margin-bottom:0px;
-  font-weight:normal;
-  font-family: "Libre Franklin", serif;
-}
-.moul {
-  font-family: "Moul", serif;
-  line-height: 1;
-  margin-top: 2px;
-}
-#result-blocks {
-  display: flex;
-  flex-direction: column;
-}
-.row {
-  display: flex;
-  flex-direction: row;
-}
-.result-cell {
-  width: 40px;
-  height: 40px;
-  border-radius: 5px;
-  margin: 1px;
-}
-#puzzle {
-    display: flex;
-    flex-wrap: wrap;
-    min-width: 316px;
-    width: calc(100vw - 20px);
-    max-width: calc(100vh - 120px);
-}
-#answers {
-    display: flex;
-    flex-wrap: wrap;
-}
-.card {
-    display: flex;
-    margin: 1px;
-    background-color: #efefe6;
-    border-radius: 5px;
-    user-select: none;
-}
-.card > div {
-    min-width: 77px;
-    min-height: 77px;
-    width: calc(((100vw - 20px) / 4) - 2px);
-    height: calc(((100vw - 20px) / 4) - 2px);
-    max-width: calc(((100vh - 120px) / 4) - 2px);
-    max-height: calc(((100vh - 120px) / 4) - 2px);
-    border-radius: 5px;
-    display:flex;
-    justify-content: center;
-    align-items: center;
-    overflow-wrap: anywhere;
-    text-align: center;
-    box-sizing:border-box;
-    padding:5px;
-    font-family: "Libre Franklin", serif;
-    font-weight: bold;
-}
-.answer {
-    display: flex;
-    margin: 1px;
-    background-color: #efefe6;
-    border-radius: 5px;
-    user-select: none;
-}
-.answer > div {
-    min-width: 314px;
-    min-height: 77px;
-    width: calc((100vw - 20px) - 2px);
-    height: calc(((100vw - 20px) / 4) - 2px);
-    max-width: calc(100vh - 120px);
-    max-height: calc(((100vh - 120px) / 4) - 2px);
-    border-radius: 5px;
-    display:flex;
-    justify-content: center;
-    align-items: center;
-    overflow-wrap: anywhere;
-    text-align: center;
-    box-sizing:border-box;
-    padding:5px;
-    font-family: "Libre Franklin", serif;
-    flex-direction: column;
-}
-.answer > div > p {
-  margin: 0px;
-}
-.answer > div > p:first-child {
-  margin-bottom:10px;
-}
-.answer > div > p:last-child {
-  font-size:10px;
-}
-#guesses {
-    display:flex;
-    margin: 5px 0px;
-    font-family: "Libre Franklin", serif;
-}
-#guesses > span {
-  margin-right:8px;
-}
-.guess {
-    width: 20px;
-    height: 20px;
-    border-radius: 10px;
-    background-color: #999;
-    display: inline-block;
-    margin: 1px;
-}
-#game-controls > button {
-    display: inline-block;
-    margin: 1px;
-    background-color:#fff;
-    border: 1px solid #5a594e;
-    padding: 10px 20px;
-    border-radius: 20px;
-}
-#game-controls > button:hover {
-  background-color:#efefe6;
-}
-#game-controls > button:active {
-  background-color:#c7c7bd;
-}
-.chosen {
-  background-color: #5a594e;
-  color: #fff;
-}
-.green {
-  background-color: #97c447;
-  color: #000;
-}
-.yellow {
-  background-color: #f9df6d;
-  color: #000;
-}
-.blue {
-  background-color: #b0c4ef;
-  color: #000;
-}
-.purple {
-  background-color: #bb81c5;
-  color: #000;
-}
-.game-div {
-  flex-direction: column;
-  display:flex;
-  flex-grow:1;
-  justify-content: center;
-  align-items: center;
-}
-    </style>
   </head>
-
   <body>
 
     <div id="results">
@@ -233,7 +26,7 @@
 
     <div class="panel" id="content">
       <div style="display:flex;">
-        <b><a href="../index.html">Home</a></b> <span style="margin: 0px 5px;">&gt;</span> <b class="moul">Connections</b>    <div style="flex-grow:1;"></div>     <button onclick="logOut(event)">Log out</button>
+        <b><a href="../index.html">Home</a></b> <span style="margin: 0px 5px;">&gt;</span> <b class="moul">Connections</b>    <div style="flex-grow:1;"></div>    <input onchange="setDate(event)" id="date-picker" type="date" />
       </div>
 
       <div id="json"></div>
@@ -241,12 +34,12 @@
       <div class="game-div">
         <div id="puzzle"><div id="answers"></div></div>
 
-        <div id="guesses"><span>Mistakes Remaining:</span><div class="guess"></div><div class="guess"></div><div class="guess"></div><div class="guess"></div></div>
+        <div id="guesses"><span>Mistakes Remaining:</span><div id="guess-spot"></div></div>
 
         <div id="game-controls"><button onclick="shuffleTiles(event);">Shuffle</button><button onclick="deselectAll(event);">Deselect All</button><button onclick="checkGuessCallback(event);">Submit</button></div>
       </div>
     </div>
-    <script src="../js/utils.js?v=024"></script>
+    <script src="../js/utils.js?v=027"></script>
     <script src="../js/env.js"></script>
     <script>
 const TEXT = ["Perfect!","Great!","Solid!","Phew!","Next Time!"];
@@ -262,33 +55,60 @@ const dateText = document.getElementById("date-text");
 const resultBlocks = document.getElementById("result-blocks");
 const comment = document.getElementById("comment");
 const commentSpan = document.getElementById("comment-span");
+const datePicker = document.getElementById("date-picker");
+const guessSpot = document.getElementById("guess-spot");
 let gameEnded = false;
+function clearThePuzzle() {
+  puzzleSolution = undefined;
+  gameEnded = false;
+  attempts = [];
+  attemptsSet = [];
+  deselectAll();
+  Array.from(document.getElementsByClassName('card')).forEach(x=>x.remove());
+  Array.from(document.getElementsByClassName('row')).forEach(x=>x.remove());
+  Array.from(document.getElementsByClassName('answer')).forEach(x=>x.remove());
+  seedGuesses();
+  results.style.display = 'none';
+  gameControls.style.display = 'none';
+  guesses.style.display = 'none';
+  document.addEventListener('keyup',pressCallToFocus);
+}
+function seedGuesses() {
+  while (guessSpot.firstElementChild) {
+    guessSpot.firstElementChild.remove();
+  }
+  for (let i = 0; i < 4; i++) {
+    let guessDiv = document.createElement('div');
+    guessDiv.classList.add('guess');
+    guessSpot.appendChild(guessDiv);
+  }
+}
 function getThePuzzle() {
-    dateValue = getTodayOrUrlParam();
     let url = API_DOMAIN + "/connections/get-connections";
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", url, true); // false for synchronous request
     xmlHttp.withCredentials = true;
     xmlHttp.onload = handleThePuzzle;
-    xmlHttp.send(JSON.stringify({ csrf: csrfToken, date: dateValue }));
+    xmlHttp.send(JSON.stringify({ csrf: csrfToken, date: datePicker.value }));
 }
 let puzzleSolution = undefined;
 let attempts = [];
 let attemptsSet = [];
-let dateValue = undefined;
 function handleThePuzzle(event) {
   let result = defaultHandler(event);
   puzzleSolution = result.responseJson;
-    let url = API_DOMAIN + "/connections/get-guesses";
-    let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", url, true); // false for synchronous request
-    xmlHttp.withCredentials = true;
-    xmlHttp.onload = handleTheData;
-    xmlHttp.send(JSON.stringify({ csrf: csrfToken, date: dateValue }));
+  let url = API_DOMAIN + "/connections/get-guesses";
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true); // false for synchronous request
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleTheData;
+  xmlHttp.send(JSON.stringify({ csrf: csrfToken, date: datePicker.value }));
 }
 function handleTheData(event) {
   let result = defaultHandler(event);
   let connectionsData = result.responseJson;
+  gameControls.style.display = 'flex';
+  guesses.style.display = 'flex';
   let cards = [];
   for(let category of puzzleSolution.categories) {
     for(let card of category.cards) {
@@ -304,6 +124,7 @@ function handleTheData(event) {
       checkGuess(attempt);
     }
     interruptMessage(event);
+    removeAllShakes(event);
   }
   applyEmulators(undefined, connectionsArrowCallback);
 }
@@ -352,7 +173,7 @@ const connectionsInteractionKeyList = [
   'ArrowUp',
   'ArrowLeft',
   'ArrowRight',
-  'Call','t'
+  'Call'
 ];
 function connectionsArrowCallback(event, functionHandle) {
   if ((event.target.tagName.toLowerCase() != 'textarea' && preventDefaultKeys.includes(event.key)) || (preventDefaultIfEmptyKeys.includes(event.key) && !event.target.value)) {
@@ -371,7 +192,7 @@ function connectionsArrowCallback(event, functionHandle) {
     // check if you are where youre supposed to be before you go
     let tooFast = (new Date()) - previousArrowTime < 100;
     if (!tooFast) {
-      if (['Call','t'].includes(event.key)) {
+      if (['Call'].includes(event.key)) {
         checkGuessCallback(event);
         let inputs = Array.from(document.getElementsByClassName('navigable-input'));
         if (event.target.hasAttribute('input-group-name')) {
@@ -468,7 +289,7 @@ function saveGuesses() {
   let xmlHttp = new XMLHttpRequest();
   xmlHttp.open("POST", url, true); // false for synchronous request
   xmlHttp.withCredentials = true;
-  xmlHttp.send(JSON.stringify({ csrf: csrfToken, date: dateValue, guesses: attemptsSet }));
+  xmlHttp.send(JSON.stringify({ csrf: csrfToken, date: datePicker.value, guesses: attemptsSet }));
 }
 function checkGuess(chosenValues) {
   attemptsSet.push(chosenValues);
@@ -511,7 +332,13 @@ function checkGuess(chosenValues) {
     }
     blurEmulator();
     failPuzzle(event);
+  } else {
+    Array.from(document.getElementsByClassName('card')).filter(x=>chosenValues.includes(x.innerText.trim())).forEach(x=>x.classList.add('shake'));
+    setTimeout(removeAllShakes, 500);
   }
+}
+function removeAllShakes(event) {
+  Array.from(document.getElementsByClassName('shake')).forEach(x=>x.classList.remove('shake'));
 }
 function failPuzzle(event) {
   gameOver(false);
@@ -542,7 +369,7 @@ function gameOver(success) {
   results.style.display = 'block';
   let textIndex = success ? attempts.length - 4 : TEXT.length - 1;
   displayText.innerText = TEXT[textIndex];
-  dateText.innerText = dateValue;
+  dateText.innerText = datePicker.value;
   for(let attempt of attempts) {
     drawAttempt(attempt);
   }
@@ -599,6 +426,16 @@ function shuffle(array) {
   }
   return output;
 }
+function setDate(event) {
+  clearThePuzzle();
+  getThePuzzle();
+}
+if (!navigator.userAgent.includes('KAIOS/')) {
+  document.getElementById('kaios-stylesheet').remove();
+  setStylesheet("css/normal.css?v=028");
+}
+datePicker.value = getTodayOrUrlParam();
+clearThePuzzle();
 getThePuzzle();
     </script>
   </body>
