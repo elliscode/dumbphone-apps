@@ -40,6 +40,13 @@ def get_connections_route(event, user_data, body):
             body="Improper date format, must be yyyy-MM-dd",
         )
 
+    if date_value < validate_date("2023-06-12"):
+        return format_response(
+            event=event,
+            http_code=400,
+            body="Too early, the first connections puzzle was on 2023-06-12",
+        )
+
     if connections_data and date_value in connections_data:
         print("connections cache hit")
         return format_response(
@@ -81,7 +88,18 @@ def get_connections_route(event, user_data, body):
         response_text = response.data.decode("utf-8")
         response_json = json.loads(response_text, parse_float=str, parse_int=str)
     except:
-        return None
+        return format_response(
+            event=event,
+            http_code=400,
+            body="bad data for some reason",
+        )
+
+    if response_json.get('errors'):
+        return format_response(
+            event=event,
+            http_code=404,
+            body="Puzzle not found",
+        )
 
     token_data = {
         "key1": "connections",
@@ -111,6 +129,13 @@ def get_guesses_route(event, user_data, body):
             event=event,
             http_code=400,
             body="Improper date format, must be yyyy-MM-dd",
+        )
+
+    if date_value < validate_date("2023-06-12"):
+        return format_response(
+            event=event,
+            http_code=400,
+            body="Too early, the first connections puzzle was on 2023-06-12",
         )
 
     response = dynamo.get_item(
