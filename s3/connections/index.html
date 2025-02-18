@@ -84,6 +84,7 @@ function seedGuesses() {
   }
 }
 let loading = false;
+let previousDatePickerValue = undefined;
 function getThePuzzle() {
   if (loading) {
     return;
@@ -443,8 +444,10 @@ function shuffle(array) {
 }
 function setDate(event) {
   if (loading) {
+    datePicker.value = previousDatePickerValue;
     return;
   }
+  previousDatePickerValue = datePicker.value;
   clearThePuzzle();
   getThePuzzle();
 }
