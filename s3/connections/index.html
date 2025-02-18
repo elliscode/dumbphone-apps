@@ -83,13 +83,18 @@ function seedGuesses() {
     guessSpot.appendChild(guessDiv);
   }
 }
+let loading = false;
 function getThePuzzle() {
-    let url = API_DOMAIN + "/connections/get-connections";
-    let xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", url, true); // false for synchronous request
-    xmlHttp.withCredentials = true;
-    xmlHttp.onload = handleThePuzzle;
-    xmlHttp.send(JSON.stringify({ csrf: csrfToken, date: datePicker.value }));
+  if (loading) {
+    return;
+  }
+  loading = true;
+  let url = API_DOMAIN + "/connections/get-connections";
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", url, true); // false for synchronous request
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleThePuzzle;
+  xmlHttp.send(JSON.stringify({ csrf: csrfToken, date: datePicker.value }));
 }
 let puzzleSolution = undefined;
 let attempts = [];
@@ -127,6 +132,7 @@ function handleTheData(event) {
     removeAllShakes(event);
   }
   applyEmulators(undefined, connectionsArrowCallback);
+  loading = false;
 }
 function cardSort(x, y) {
     return parseInt(x.position) - parseInt(y.position);
@@ -436,6 +442,9 @@ function shuffle(array) {
   return output;
 }
 function setDate(event) {
+  if (loading) {
+    return;
+  }
   clearThePuzzle();
   getThePuzzle();
 }
