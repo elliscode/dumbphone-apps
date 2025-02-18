@@ -111,28 +111,32 @@ function handleThePuzzle(event) {
   xmlHttp.send(JSON.stringify({ csrf: csrfToken, date: datePicker.value }));
 }
 function handleTheData(event) {
-  let result = defaultHandler(event);
-  let connectionsData = result.responseJson;
-  gameControls.style.display = 'flex';
-  guesses.style.display = 'flex';
-  let cards = [];
-  for(let category of puzzleSolution.categories) {
-    for(let card of category.cards) {
-      cards.push(card);
+  try {
+    let result = defaultHandler(event);
+    let connectionsData = result.responseJson;
+    gameControls.style.display = 'flex';
+    guesses.style.display = 'flex';
+    let cards = [];
+    for(let category of puzzleSolution.categories) {
+      for(let card of category.cards) {
+        cards.push(card);
+      }
     }
-  }
-  cards = cards.sort(cardSort);
-  for(let card of cards) {
-    drawCard(card);
-  }
-  if (connectionsData) {
-    for (let attempt of connectionsData) {
-      checkGuess(attempt);
+    cards = cards.sort(cardSort);
+    for(let card of cards) {
+      drawCard(card);
     }
-    interruptMessage(event);
-    removeAllShakes(event);
+    if (connectionsData) {
+      for (let attempt of connectionsData) {
+        checkGuess(attempt);
+      }
+      interruptMessage(event);
+      removeAllShakes(event);
+    }
+    applyEmulators(undefined, connectionsArrowCallback);
+  } catch (e) {
+    showMessage('Invalid Date!')
   }
-  applyEmulators(undefined, connectionsArrowCallback);
   loading = false;
 }
 function cardSort(x, y) {
