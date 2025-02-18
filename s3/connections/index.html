@@ -139,7 +139,16 @@ function drawCard(card) {
     cardDiv.classList.add('card');
     let contentDiv = document.createElement('div');
     contentDiv.addEventListener('click', select);
-    contentDiv.innerText = card.content;
+    if (card.content) {
+      contentDiv.innerText = card.content;
+    } else {
+      let img = document.createElement('object');
+      img.data = card.image_url;
+      img.type = "image/svg+xml";
+      img.style.pointerEvents = "none";
+      contentDiv.appendChild(img);
+    }
+    cardDiv.setAttribute('answer-text', card.content ? card.content : card.image_alt_text);
     contentDiv.setAttribute('input-group-name', 'navigation')
     cardDiv.appendChild(contentDiv);
     puzzle.appendChild(cardDiv);
@@ -152,7 +161,7 @@ function drawAnswer(category, color) {
     let wordListP = document.createElement('p');
     categoryP.innerText = category.title;
     contentDiv.appendChild(categoryP);
-    wordListP.innerText = category.cards.map(x=>x.content).join(", ");
+    wordListP.innerText = category.cards.map(x=>x.content ? x.content : x.image_alt_text).join(", ");
     contentDiv.appendChild(wordListP);
     cardDiv.appendChild(contentDiv);
     cardDiv.classList.add(color);
@@ -275,7 +284,7 @@ function select(event) {
 function checkGuessCallback(event) {
   let chosenTiles = Array.from(document.getElementsByClassName('chosen'));
   if (chosenTiles.length == 4) {
-    let chosenValues = chosenTiles.map(x=>x.innerText.trim()).sort(textSort);
+    let chosenValues = chosenTiles.map(x=>findParentWithClass(x,'card').getAttribute('answer-text')).sort(textSort);
     if (attemptsSet.map(x=>JSON.stringify(x)).includes(JSON.stringify(chosenValues))) {
       showMessage('Already Guessed!');
       return;
@@ -295,11 +304,11 @@ function checkGuess(chosenValues) {
   attemptsSet.push(chosenValues);
   for (let i = 0; i < puzzleSolution.categories.length; i++) {
     let category = puzzleSolution.categories[i];
-    let categoryValues = category.cards.map(x=>x.content).sort(textSort);
+    let categoryValues = category.cards.map(x=>x.content ? x.content : x.image_alt_text).sort(textSort);
     if (JSON.stringify(chosenValues) == JSON.stringify(categoryValues)) {
       c = COLORS[i];
       attempts.push([c,c,c,c]);
-      Array.from(document.getElementsByClassName('card')).filter(x=>chosenValues.includes(x.innerText.trim())).forEach(x=>x.remove());
+      Array.from(document.getElementsByClassName('card')).filter(x=>chosenValues.includes(findParentWithClass(x,'card').getAttribute('answer-text'))).forEach(x=>x.remove());
       drawAnswer(category, c);
       succeedPuzzleIfAppropriate(event);
       return;
@@ -309,7 +318,7 @@ function checkGuess(chosenValues) {
   for (let chosenValue of chosenValues) {
     for (let i = 0; i < puzzleSolution.categories.length; i++) {
       let category = puzzleSolution.categories[i];
-      let categoryValues = category.cards.map(x=>x.content).sort(textSort);
+      let categoryValues = category.cards.map(x=>x.content ? x.content : x.image_alt_text).sort(textSort);
       if (categoryValues.includes(chosenValue)) {
         c = COLORS[i];
         thisGuess.push(c);
@@ -333,7 +342,7 @@ function checkGuess(chosenValues) {
     blurEmulator();
     failPuzzle(event);
   } else {
-    Array.from(document.getElementsByClassName('card')).filter(x=>chosenValues.includes(x.innerText.trim())).forEach(x=>x.classList.add('shake'));
+    Array.from(document.getElementsByClassName('card')).filter(x=>chosenValues.includes(findParentWithClass(x,'card').getAttribute('answer-text'))).forEach(x=>x.classList.add('shake'));
     setTimeout(removeAllShakes, 500);
   }
 }
