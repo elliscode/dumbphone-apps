@@ -1,13 +1,15 @@
+<!-- https://www.nytimes.com/games-assets/sports-connections/2024-09-20.json -->
 <!DOCTYPE html>
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Connections</title>
+    <title>Sports Connections</title>
     <link rel="stylesheet" href="../css/stylesheet.css?v=027" />
     <link rel="stylesheet" href="../css/loader.css?v=027" />
-    <link rel="stylesheet" href="css/stylesheet.css?v=030" />
-    <link id="kaios-stylesheet" rel="stylesheet" href="css/kaios.css?v=030" />
-    <link rel="icon" type="image/png" href="../img/connections.favicon.png?v=027" />
+    <link rel="stylesheet" href="../connections/css/stylesheet.css?v=030" />
+    <link rel="stylesheet" href="css/sports.css?v=030" />
+    <link id="kaios-stylesheet" rel="stylesheet" href="../connections/css/kaios.css?v=030" />
+    <link rel="icon" type="image/png" href="../img/connections.sports.favicon.png?v=027" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
@@ -26,8 +28,8 @@
     <div id="comment"><span id="comment-span"></span></div>
 
     <div class="panel" id="content">
-      <div style="display:flex;">
-        <b><a href="../index.html">Home</a></b> <span style="margin: 0px 5px;">&gt;</span> <b class="moul">Connections</b>    <div style="flex-grow:1;"></div>    <input onchange="setDate(event)" id="date-picker" type="date" />
+      <div class="sports-nav" style="display:flex;">
+        <b><a href="../index.html">Home</a></b> <span style="margin: 0px 5px;">&gt;</span> <b class="moul">Sports</b>    <div style="flex-grow:1;"></div>    <input onchange="setDate(event)" id="date-picker" type="date" />
       </div>
 
       <div id="json"></div>
@@ -43,8 +45,8 @@
     <script src="../js/utils.js?v=027"></script>
     <script src="../js/env.js"></script>
     <script>
-const SPORTS = false;
+const SPORTS = true;
     </script>
-    <script src="js/connections.js"></script>
+    <script src="../connections/js/connections.js"></script>
   </body>
 </html>

@@ -47,6 +47,9 @@ from dumbphoneapps.connections import (
     get_connections_route,
     get_guesses_route,
     set_guesses_route,
+    get_connections_sports_route,
+    get_guesses_sports_route,
+    set_guesses_sports_route,
 )
 from dumbphoneapps.quiz_diary import (
     get_questions_route,
@@ -219,6 +222,12 @@ def route(event):
         return get_guesses_route(event)
     if path_equals(event=event, method="POST", path="/connections/set-guesses"):
         return set_guesses_route(event)
+    if path_equals(event=event, method="POST", path="/connections/get-connections-sports"):
+        return get_connections_sports_route(event)
+    if path_equals(event=event, method="POST", path="/connections/get-guesses-sports"):
+        return get_guesses_sports_route(event)
+    if path_equals(event=event, method="POST", path="/connections/set-guesses-sports"):
+        return set_guesses_sports_route(event)
     if path_starts_with(event=event, method="POST", path="/discord/"):
         return discord_route(event)
 

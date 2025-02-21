@@ -29,6 +29,35 @@ connections_data = {}
 
 @authenticate
 def get_connections_route(event, user_data, body):
+    return get_connections(event, user_data, body, "")
+
+
+@authenticate
+def get_guesses_route(event, user_data, body):
+    return get_guesses(event, user_data, body, "")
+
+
+@authenticate
+def set_guesses_route(event, user_data, body):
+    return set_guesses(event, user_data, body, "")
+
+
+@authenticate
+def get_connections_sports_route(event, user_data, body):
+    return get_connections(event, user_data, body, "_sports")
+
+
+@authenticate
+def get_guesses_sports_route(event, user_data, body):
+    return get_guesses(event, user_data, body, "_sports")
+
+
+@authenticate
+def set_guesses_sports_route(event, user_data, body):
+    return set_guesses(event, user_data, body, "_sports")
+
+
+def get_connections(event, user_data, body, connections_type):
     global connections_data
 
     date_value = validate_date(body["date"])
@@ -40,26 +69,30 @@ def get_connections_route(event, user_data, body):
             body="Improper date format, must be yyyy-MM-dd",
         )
 
-    if date_value < validate_date("2023-06-12"):
+    earliest_date = "2023-06-12"
+    if connections_type == "_sports":
+        earliest_date = "2024-09-18"
+
+    if date_value < validate_date(earliest_date):
         return format_response(
             event=event,
             http_code=400,
             body="Too early, the first connections puzzle was on 2023-06-12",
         )
 
-    if connections_data and date_value in connections_data:
+    if connections_data and connections_type in connections_data and date_value in connections_data[connections_type]:
         print("connections cache hit")
         return format_response(
             event=event,
             http_code=200,
-            body=connections_data[date_value],
+            body=connections_data[connections_type][date_value],
         )
 
     response = dynamo.get_item(
         TableName=TABLE_NAME,
         Key=python_obj_to_dynamo_obj(
             {
-                "key1": "connections",
+                "key1": f"connections{connections_type}",
                 "key2": date_value,
             }
         ),
@@ -68,16 +101,20 @@ def get_connections_route(event, user_data, body):
     if "Item" in response:
         print("connections db hit")
         connections_data_from_db = dynamo_obj_to_python_obj(response["Item"])
-        connections_data[date_value] = connections_data_from_db['puzzle']
+        if connections_type not in connections_data:
+            connections_data[connections_type] = {}
+        connections_data[connections_type][date_value] = connections_data_from_db['puzzle']
         return format_response(
             event=event,
             http_code=200,
-            body=connections_data[date_value],
+            body=connections_data[connections_type][date_value],
         )
 
     print("connections db miss")
 
     connections_uri = f"https://www.nytimes.com/svc/connections/v2/{date_value}.json"
+    if connections_type == "_sports":
+        connections_uri = f"https://www.nytimes.com/games-assets/sports-connections/{date_value}.json"
 
     response = http.request(
         "GET",
@@ -102,7 +139,7 @@ def get_connections_route(event, user_data, body):
         )
 
     token_data = {
-        "key1": "connections",
+        "key1": f"connections{connections_type}",
         "key2": date_value,
         "puzzle": response_json,
     }
@@ -119,9 +156,7 @@ def get_connections_route(event, user_data, body):
     )
 
 
-@authenticate
-def get_guesses_route(event, user_data, body):
-
+def get_guesses(event, user_data, body, connections_type):
     date_value = validate_date(body.get("date"))
 
     if not date_value:
@@ -131,7 +166,11 @@ def get_guesses_route(event, user_data, body):
             body="Improper date format, must be yyyy-MM-dd",
         )
 
-    if date_value < validate_date("2023-06-12"):
+    earliest_date = "2023-06-12"
+    if connections_type == "_sports":
+        earliest_date = "2024-09-18"
+
+    if date_value < validate_date(earliest_date):
         return format_response(
             event=event,
             http_code=400,
@@ -142,7 +181,7 @@ def get_guesses_route(event, user_data, body):
         TableName=TABLE_NAME,
         Key=python_obj_to_dynamo_obj(
             {
-                "key1": f"connections_guess_{user_data["key2"]}",
+                "key1": f"connections_guess{connections_type}_{user_data["key2"]}",
                 "key2": date_value,
             }
         ),
@@ -163,9 +202,7 @@ def get_guesses_route(event, user_data, body):
     )
 
 
-@authenticate
-def set_guesses_route(event, user_data, body):
-
+def set_guesses(event, user_data, body, connections_type):
     date_value = validate_date(body.get("date"))
 
     if not date_value:
@@ -185,7 +222,7 @@ def set_guesses_route(event, user_data, body):
         )
 
     guess_data = {
-        "key1": f"connections_guess_{user_data["key2"]}",
+        "key1": f"connections_guess{connections_type}_{user_data["key2"]}",
         "key2": date_value,
         "guesses": guesses,
     }
