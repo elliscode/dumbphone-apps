@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Greek T9</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=027" />
+    <link rel="stylesheet" href="../css/loader.css?v=027" />
+    <link rel="icon" type="image/png" href="../img/pin.favicon.png?v=027" />
+    <style>
+#greek-text {
+    width: calc(100vmin - 16px);
+    height: calc(50vmin - 16px);
+    border: 1px solid black;
+    border-radius: 5px;
+    font-size:xx-large;
+}
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>greek-t9</b>
+    </div>
+
+    <div id="greek-text"></div>
+    <input id="input-box" type="tel">
+
+    <pre id="json"></pre>
+
+    <div class="logout">
+      <button onclick="logOut(event)">Log out</button>
+    </div>
+    <script src="../js/utils.js?v=027"></script>
+    <script src="../js/env.js"></script>
+    <script>
+let greekText = document.getElementById('greek-text');
+let inputBox = document.getElementById('input-box');
+let previousNumber = ' ';
+let count = 0;
+let upperCase = false;
+function tNineEmulator(event) {
+    event.preventDefault();
+    if (event.type == 'keyup') {
+        let number = event.key;
+        if (previousNumber == number) {
+            count = count + 1;
+        } else {
+            count = 0;
+        }
+        previousNumber = number;
+        if (event.key == 'Backspace') {
+            greekText.innerHTML = greekText.innerHTML.slice(0, -1);
+        } else if (['0','1','2','3','4','5','6','7','8','9'].includes(event.key)) {
+            let greekLetter = getGreekLetter(number, count);
+            let currentText = greekText.innerHTML;
+            if (count > 0) {
+                currentText = currentText.slice(0, -1);
+            }
+            if (upperCase) {
+                greekLetter = greekLetter.substring(0, 1) + greekLetter.substring(1, 2).toLocaleUpperCase() + greekLetter.substring(2);
+            }
+            greekText.innerHTML = currentText + greekLetter;
+        }
+    } else if (event.type == 'input') {
+        inputBox.value = '';
+        json.innerText = event.type + " " + event.data + "\n" + json.innerText;
+    } else {
+        json.innerText = event.type + " " + event.key + "\n" + json.innerText;
+    }
+}
+/// sigmaf
+function getGreekLetter(number, count) {
+    if (number == '1') {
+        return '&#894;';
+    } else if (number == '2') {
+        if (count % 4 == 0) {
+            return '&alpha;';
+        } else if (count % 4 == 1) {
+            return '&beta;';
+        } else if (count % 4 == 2) {
+            return '&chi;';
+        } else if (count % 4 == 3) {
+            return '2';
+        }
+    } else if (number == '3') {
+        if (count % 4 == 0) {
+            return '&delta;';
+        } else if (count % 4 == 1) {
+            return '&epsilon;';
+        } else if (count % 4 == 2) {
+            return '&phi;';
+        } else if (count % 4 == 3) {
+            return '3';
+        }
+    } else if (number == '4') {
+        if (count % 4 == 0) {
+            return '&gamma;';
+        } else if (count % 4 == 1) {
+            return '&eta;';
+        } else if (count % 4 == 2) {
+            return '&iota;';
+        } else if (count % 4 == 3) {
+            return '4';
+        }
+    } else if (number == '5') {
+        if (count % 3 == 0) {
+            return '&kappa;';
+        } else if (count % 3 == 1) {
+            return '&lambda;';
+        } else if (count % 3 == 2) {
+            return '5';
+        }
+    } else if (number == '6') {
+        if (count % 4 == 0) {
+            return '&mu;';
+        } else if (count % 4 == 1) {
+            return '&nu;';
+        } else if (count % 4 == 2) {
+            return '&omicron;';
+        } else if (count % 4 == 3) {
+            return '6';
+        }
+    } else if (number == '7') {
+        if (count % 5 == 0) {
+            return '&pi;';
+        } else if (count % 5 == 1) {
+            return '&psi;';
+        } else if (count % 5 == 2) {
+            return '&rho;';
+        } else if (count % 5 == 3) {
+            return '&sigma;';
+        } else if (count % 5 == 4) {
+            return '7';
+        }
+    } else if (number == '8') {
+        if (count % 4 == 0) {
+            return '&tau;';
+        } else if (count % 4 == 1) {
+            return '&theta;';
+        } else if (count % 4 == 2) {
+            return '&sigmaf;';
+        } else if (count % 4 == 3) {
+            return '8';
+        }
+    } else if (number == '9') {
+        if (count % 5 == 0) {
+            return '&omega;';
+        } else if (count % 5 == 1) {
+            return '&xi;';
+        } else if (count % 5 == 2) {
+            return '&upsilon;';
+        } else if (count % 5 == 3) {
+            return '&zeta;';
+        } else if (count % 5 == 4) {
+            return '9';
+        }
+    } else if (number == '0') {  
+        return ' ';
+    }
+}
+inputBox.addEventListener('keyup', tNineEmulator);
+inputBox.addEventListener('keydown', tNineEmulator);
+inputBox.addEventListener('keypress', tNineEmulator);
+inputBox.addEventListener('input', tNineEmulator);
+    </script>
+  </body>
+</html>
+
