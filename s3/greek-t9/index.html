@@ -5,14 +5,25 @@
     <title>Greek T9</title>
     <link rel="stylesheet" href="../css/stylesheet.css?v=027" />
     <link rel="stylesheet" href="../css/loader.css?v=027" />
-    <link rel="icon" type="image/png" href="../img/pin.favicon.png?v=027" />
+    <link rel="icon" type="image/png" href="../img/lambda.favicon.png?v=027" />
     <style>
 #greek-text {
     width: calc(100vmin - 16px);
-    height: calc(50vmin - 16px);
+    height: calc(45vmin - 16px);
     border: 1px solid black;
     border-radius: 5px;
-    font-size:xx-large;
+}
+#real-words {
+    width: calc(100vmin - 16px);
+    height: calc(45vmin - 16px);
+    border: 1px solid black;
+    border-radius: 5px;
+    display:flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+}
+#real-words > div{
+    margin: 0px 10px;
 }
     </style>
   </head>
@@ -22,8 +33,9 @@
       <b><a href="../index.html">Home</a></b> &gt; <b>greek-t9</b>
     </div>
 
-    <div id="greek-text"></div>
+    <textarea id="greek-text"></textarea>
     <input id="input-box" type="tel">
+    <div id="real-words"></div>
 
     <pre id="json"></pre>
 
@@ -32,35 +44,176 @@
     </div>
     <script src="../js/utils.js?v=027"></script>
     <script src="../js/env.js"></script>
+    <!-- https://github.com/eellak/gsoc2019-greek-morpho/blob/master/data/spell_dict_with_freq.dic -->
     <script>
+const ALPHABET = {
+    Alpha: {name: "Alpha", glyph: JSON.parse('"\u0391"'), tonos: JSON.parse('"\u0386"')},
+    Beta: {name: "Beta", glyph: JSON.parse('"\u0392"')},
+    Gamma: {name: "Gamma", glyph: JSON.parse('"\u0393"')},
+    Delta: {name: "Delta", glyph: JSON.parse('"\u0394"')},
+    Epsilon: {name: "Epsilon", glyph: JSON.parse('"\u0395"'), tonos: JSON.parse('"\u0388"')},
+    Zeta: {name: "Zeta", glyph: JSON.parse('"\u0396"')},
+    Eta: {name: "Eta", glyph: JSON.parse('"\u0397"'), tonos: JSON.parse('"\u0389"')},
+    Theta: {name: "Theta", glyph: JSON.parse('"\u0398"')},
+    Iota: {name: "Iota", glyph: JSON.parse('"\u0399"'), tonos: JSON.parse('"\u038A"'), dialytika: JSON.parse('"\u03AA"')},
+    Kappa: {name: "Kappa", glyph: JSON.parse('"\u039A"')},
+    Lambda: {name: "Lambda", glyph: JSON.parse('"\u039B"')},
+    Mu: {name: "Mu", glyph: JSON.parse('"\u039C"')},
+    Nu: {name: "Nu", glyph: JSON.parse('"\u039D"')},
+    Xi: {name: "Xi", glyph: JSON.parse('"\u039E"')},
+    Omicron: {name: "Omicron", glyph: JSON.parse('"\u039F"'), tonos: JSON.parse('"\u038C"')},
+    Pi: {name: "Pi", glyph: JSON.parse('"\u03A0"')},
+    Rho: {name: "Rho", glyph: JSON.parse('"\u03A1"')},
+    Sigma: {name: "Sigma", glyph: JSON.parse('"\u03A3"')},
+    Tau: {name: "Tau", glyph: JSON.parse('"\u03A4"')},
+    Upsilon: {name: "Upsilon", glyph: JSON.parse('"\u03A5"'), tonos: JSON.parse('"\u038E"'), dialytika: JSON.parse('"\u03AB"')},
+    Phi: {name: "Phi", glyph: JSON.parse('"\u03A6"')},
+    Chi: {name: "Chi", glyph: JSON.parse('"\u03A7"')},
+    Psi: {name: "Psi", glyph: JSON.parse('"\u03A8"')},
+    Omega: {name: "Omega", glyph: JSON.parse('"\u03A9"'), tonos: JSON.parse('"\u038F"')},
+    alpha: {name: "alpha", glyph: JSON.parse('"\u03B1"'), tonos: JSON.parse('"\u03AC"')},
+    beta: {name: "beta", glyph: JSON.parse('"\u03B2"')},
+    gamma: {name: "gamma", glyph: JSON.parse('"\u03B3"')},
+    delta: {name: "delta", glyph: JSON.parse('"\u03B4"')},
+    epsilon: {name: "epsilon", glyph: JSON.parse('"\u03B5"'), tonos: JSON.parse('"\u03AD"')},
+    zeta: {name: "zeta", glyph: JSON.parse('"\u03B6"')},
+    eta: {name: "eta", glyph: JSON.parse('"\u03B7"'), tonos: JSON.parse('"\u03AE"')},
+    theta: {name: "theta", glyph: JSON.parse('"\u03B8"')},
+    iota: {name: "iota", glyph: JSON.parse('"\u03B9"'), tonos: JSON.parse('"\u03AF"'), dialytika: JSON.parse('"\u03CA"'), dialytika_tonos: JSON.parse('"\u0390"')},
+    kappa: {name: "kappa", glyph: JSON.parse('"\u03BA"')},
+    lambda: {name: "lambda", glyph: JSON.parse('"\u03BB"')},
+    mu: {name: "mu", glyph: JSON.parse('"\u03BC"')},
+    nu: {name: "nu", glyph: JSON.parse('"\u03BD"')},
+    xi: {name: "xi", glyph: JSON.parse('"\u03BE"')},
+    omicron: {name: "omicron", glyph: JSON.parse('"\u03BF"'), tonos: JSON.parse('"\u03CC"')},
+    pi: {name: "pi", glyph: JSON.parse('"\u03C0"')},
+    rho: {name: "rho", glyph: JSON.parse('"\u03C1"')},
+    sigmaf: {name: "sigmaf", glyph: JSON.parse('"\u03C2"')},
+    sigma: {name: "sigma", glyph: JSON.parse('"\u03C3"')},
+    tau: {name: "tau", glyph: JSON.parse('"\u03C4"')},
+    upsilon: {name: "upsilon", glyph: JSON.parse('"\u03C5"'), tonos: JSON.parse('"\u03CD"'), dialytika: JSON.parse('"\u03CB"'), dialytika_tonos: JSON.parse('"\u03B0"')},
+    phi: {name: "phi", glyph: JSON.parse('"\u03C6"')},
+    chi: {name: "chi", glyph: JSON.parse('"\u03C7"')},
+    psi: {name: "psi", glyph: JSON.parse('"\u03C8"')},
+    omega: {name: "omega", glyph: JSON.parse('"\u03C9"'), tonos: JSON.parse('"\u03CE"')},
+    tonos: {name: "tonos", glyph: JSON.parse('"\u0384"')},
+};
+Object.values(ALPHABET).forEach(x=>x['toString']=()=>x.glyph);
+const REVERSE_MAP = {};
+Object.values(ALPHABET).forEach(x => REVERSE_MAP[x.glyph] = x);
+Object.values(ALPHABET).filter(x => !!x.tonos).forEach(x => REVERSE_MAP[x.tonos] = x);
+Object.values(ALPHABET).filter(x => !!x.dialytika).forEach(x => REVERSE_MAP[x.dialytika] = x);
+Object.values(ALPHABET).filter(x => !!x.dialytika_tonos).forEach(x => REVERSE_MAP[x.dialytika_tonos] = x);
 let greekText = document.getElementById('greek-text');
 let inputBox = document.getElementById('input-box');
+let realWords = document.getElementById('real-words');
+let uppercase = false;
 let previousNumber = ' ';
+let previousTime = 0;
 let count = 0;
-let upperCase = false;
+function resetCount () {
+    if (count != 0) {
+        uppercase = false;
+    }
+    count = 0;
+    let lastCharacter = greekText.value.substring(greekText.value.length - 1, greekText.value.length - 0)
+    let secondToLastCharacter = greekText.value.substring(greekText.value.length - 2, greekText.value.length - 1);
+    let secondToLastLetter = REVERSE_MAP[secondToLastCharacter];
+    if (lastCharacter == ALPHABET['tonos'].glyph && secondToLastLetter && secondToLastLetter.tonos) {
+        greekText.value = greekText.value.slice(0, -2);
+        greekText.value = greekText.value + secondToLastLetter.tonos;
+        updateWordBank();
+    }
+}
+const cache = {};
+function updateWordBank() {
+    while (realWords.firstElementChild) {
+        realWords.firstElementChild.remove();
+    }
+    let lastWord = getLastWord();
+    let firstLetter = lastWord.substring(0,1);
+    let activeLetter = REVERSE_MAP[firstLetter];
+    if (!activeLetter) {
+        return;
+    }
+    let xmlHttp = new XMLHttpRequest();
+    let url = UI_DOMAIN + `/greek-t9/txt/${activeLetter.name.toLocaleLowerCase()}.txt`;
+    if (!!cache[url]) {
+        handleWordBankFirstLetter({target: {responseText: cache[url]}});
+    } else {
+        xmlHttp.open("GET", url, true); // false for synchronous request
+        xmlHttp.withCredentials = false;
+        xmlHttp.onload = handleWordBankFirstLetter;
+        xmlHttp.send();
+    }
+}
+function handleWordBankFirstLetter(event) {
+    if (!cache[event.target.responseURL]) {
+        cache[event.target.responseURL] = event.target.responseText.toLocaleLowerCase();
+    }
+    let lastWord = getLastWord();
+    let lastWordLowerCase = lastWord.toLocaleLowerCase();
+    let words = cache[event.target.responseURL].split(/[\r\n]+/).filter(x=>x.startsWith(lastWordLowerCase)).slice(0,20);
+    words.forEach(x=>{
+        let p = document.createElement('div');
+        p.innerText = x;
+        realWords.appendChild(p);
+    });
+}
+function getLastWord() {
+    return greekText.value.replace(/^.+\s+/, '');
+}
 function tNineEmulator(event) {
     event.preventDefault();
-    if (event.type == 'keyup') {
+    if (event.type == 'keydown') {
+        if (event.key == 'Enter') {
+            const smsLink = document.createElement("a");
+            smsLink.style.display = "block";
+            smsLink.href = "sms://?&body=" + encodeURIComponent(greekText.value);
+            smsLink.click();
+        }
+        if (event.key == 'EndCall') {
+            event.target.blur();
+        }
+        if (event.key && event.key == 'ArrowUp') {
+            uppercase = true;
+            count = 0;            
+        } else if (event.key && event.key == 'ArrowDown') {
+            uppercase = false;
+            count = 0;
+        } else if (event.key && event.key == 'ArrowRight') {
+            resetCount();
+        }
+    } else if (event.type == 'keyup') {
         let number = event.key;
         if (previousNumber == number) {
+            if (Date.now() - previousTime < 120) {
+                return;
+            }
             count = count + 1;
         } else {
-            count = 0;
+            resetCount();
         }
         previousNumber = number;
         if (event.key == 'Backspace') {
-            greekText.innerHTML = greekText.innerHTML.slice(0, -1);
+            greekText.value = greekText.value.slice(0, -1);
+            updateWordBank();
         } else if (['0','1','2','3','4','5','6','7','8','9'].includes(event.key)) {
             let greekLetter = getGreekLetter(number, count);
-            let currentText = greekText.innerHTML;
+            let currentText = greekText.value;
             if (count > 0) {
                 currentText = currentText.slice(0, -1);
             }
-            if (upperCase) {
-                greekLetter = greekLetter.substring(0, 1) + greekLetter.substring(1, 2).toLocaleUpperCase() + greekLetter.substring(2);
+            if (uppercase) {
+                let newKey = greekLetter.name.substring(0,1).toLocaleUpperCase() + greekLetter.name.substring(1);
+                if (ALPHABET[newKey]) {
+                    greekLetter = ALPHABET[newKey];
+                }
             }
-            greekText.innerHTML = currentText + greekLetter;
+            greekText.value = currentText + greekLetter.toString();
+            updateWordBank();
         }
+        previousTime = Date.now();
     } else if (event.type == 'input') {
         inputBox.value = '';
         json.innerText = event.type + " " + event.data + "\n" + json.innerText;
@@ -71,86 +224,92 @@ function tNineEmulator(event) {
 /// sigmaf
 function getGreekLetter(number, count) {
     if (number == '1') {
-        return '&#894;';
+        return ALPHABET['tonos'];
     } else if (number == '2') {
         if (count % 4 == 0) {
-            return '&alpha;';
+            return ALPHABET['alpha'];
         } else if (count % 4 == 1) {
-            return '&beta;';
+            return ALPHABET['beta'];
         } else if (count % 4 == 2) {
-            return '&chi;';
+            return ALPHABET['chi'];
         } else if (count % 4 == 3) {
             return '2';
         }
     } else if (number == '3') {
         if (count % 4 == 0) {
-            return '&delta;';
+            return ALPHABET['delta'];
         } else if (count % 4 == 1) {
-            return '&epsilon;';
+            return ALPHABET['epsilon'];
         } else if (count % 4 == 2) {
-            return '&phi;';
+            return ALPHABET['phi'];
         } else if (count % 4 == 3) {
             return '3';
         }
     } else if (number == '4') {
         if (count % 4 == 0) {
-            return '&gamma;';
+            return ALPHABET['gamma'];
         } else if (count % 4 == 1) {
-            return '&eta;';
+            return ALPHABET['eta'];
         } else if (count % 4 == 2) {
-            return '&iota;';
+            return ALPHABET['iota'];
         } else if (count % 4 == 3) {
             return '4';
         }
     } else if (number == '5') {
-        if (count % 3 == 0) {
-            return '&kappa;';
-        } else if (count % 3 == 1) {
-            return '&lambda;';
-        } else if (count % 3 == 2) {
+        if (count % 4 == 0) {
+            return ALPHABET['gamma'];
+        } else if (count % 4 == 1) {
+            return ALPHABET['kappa'];
+        } else if (count % 4 == 2) {
+            return ALPHABET['lambda'];
+        } else if (count % 4 == 3) {
             return '5';
         }
     } else if (number == '6') {
-        if (count % 4 == 0) {
-            return '&mu;';
-        } else if (count % 4 == 1) {
-            return '&nu;';
-        } else if (count % 4 == 2) {
-            return '&omicron;';
-        } else if (count % 4 == 3) {
-            return '6';
-        }
-    } else if (number == '7') {
         if (count % 5 == 0) {
-            return '&pi;';
+            return ALPHABET['mu'];
         } else if (count % 5 == 1) {
-            return '&psi;';
+            return ALPHABET['nu'];
         } else if (count % 5 == 2) {
-            return '&rho;';
+            return ALPHABET['omicron'];
         } else if (count % 5 == 3) {
-            return '&sigma;';
+            return ALPHABET['omega'];
         } else if (count % 5 == 4) {
+            return '6';
+        } 
+    } else if (number == '7') {
+        if (count % 6  == 0) {
+            return ALPHABET['pi'];
+        } else if (count % 6 == 1) {
+            return ALPHABET['psi'];
+        } else if (count % 6 == 2) {
+            return ALPHABET['rho'];
+        } else if (count % 6 == 3) {
+            return ALPHABET['sigma'];
+        } else if (count % 6 == 4) {
+            return ALPHABET['sigmaf'];
+        } else if (count % 6 == 5) {
             return '7';
         }
     } else if (number == '8') {
         if (count % 4 == 0) {
-            return '&tau;';
+            return ALPHABET['tau'];
         } else if (count % 4 == 1) {
-            return '&theta;';
+            return ALPHABET['upsilon'];
         } else if (count % 4 == 2) {
-            return '&sigmaf;';
+            return ALPHABET['theta'];
         } else if (count % 4 == 3) {
             return '8';
         }
     } else if (number == '9') {
         if (count % 5 == 0) {
-            return '&omega;';
+            return ALPHABET['omega'];
         } else if (count % 5 == 1) {
-            return '&xi;';
+            return ALPHABET['xi'];
         } else if (count % 5 == 2) {
-            return '&upsilon;';
+            return ALPHABET['upsilon'];
         } else if (count % 5 == 3) {
-            return '&zeta;';
+            return ALPHABET['zeta'];
         } else if (count % 5 == 4) {
             return '9';
         }
