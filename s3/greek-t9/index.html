@@ -7,23 +7,47 @@
     <link rel="stylesheet" href="../css/loader.css?v=027" />
     <link rel="icon" type="image/png" href="../img/lambda.favicon.png?v=027" />
     <style>
-#greek-text {
-    width: calc(100vmin - 16px);
-    height: calc(45vmin - 16px);
-    border: 1px solid black;
-    border-radius: 5px;
+#content {
+    display: flex;
+    flex-direction: column;
 }
-#real-words {
-    width: calc(100vmin - 16px);
-    height: calc(45vmin - 16px);
+#greek-text {
+    height: calc(100vh - 85px);
     border: 1px solid black;
     border-radius: 5px;
     display:flex;
     flex-wrap: wrap;
     align-content: flex-start;
 }
-#real-words > div{
+#greek-text > span {
+    display:inline;
+    white-space: pre;
+}
+.placeholder {
+    width: 0px;
+    margin-left: 1px;
+    min-height:1em;
+}
+#input-box {
+    display: block;
+}
+#real-words {
+    height: 20px;
+    border: 1px solid black;
+    border-radius: 5px;
+    display:flex;
+    flex-wrap: nowrap;
+    align-content: flex-start;
+    overflow: hidden;
+}
+#real-words > div {
     margin: 0px 10px;
+}
+.caret {
+    border-right: 1px solid black;
+}
+.active {
+    background-color:rgb(217, 255, 179);
 }
     </style>
   </head>
@@ -33,11 +57,9 @@
       <b><a href="../index.html">Home</a></b> &gt; <b>greek-t9</b>
     </div>
 
-    <textarea id="greek-text"></textarea>
-    <input id="input-box" type="tel">
-    <div id="real-words"></div>
-
-    <pre id="json"></pre>
+    <div id="content">
+    <div id="greek-text" onclick="focusInvisibleInput()"><div class="placeholder"></div></div><div id="real-words"></div><input class="invisible-input" input-group-name="text-edit" primary-input="true" id="input-box" type="number" onfocus="startCaret()" onblur="stopCaret()">
+    </div>
 
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
@@ -116,31 +138,71 @@ function resetCount () {
         uppercase = false;
     }
     count = 0;
-    let lastCharacter = greekText.value.substring(greekText.value.length - 1, greekText.value.length - 0)
-    let secondToLastCharacter = greekText.value.substring(greekText.value.length - 2, greekText.value.length - 1);
+    let lastCharacter = greekText.lastElementChild ? greekText.lastElementChild.textContent : '';
+    let secondToLastCharacter = greekText.lastElementChild ? (greekText.lastElementChild.previousSibling ? greekText.lastElementChild.previousSibling.textContent : '') : '';
     let secondToLastLetter = REVERSE_MAP[secondToLastCharacter];
     if (lastCharacter == ALPHABET['tonos'].glyph && secondToLastLetter && secondToLastLetter.tonos) {
-        greekText.value = greekText.value.slice(0, -2);
-        greekText.value = greekText.value + secondToLastLetter.tonos;
+        greekText.lastElementChild.remove();
+        greekText.lastElementChild.remove();
+        let character = document.createElement('span');
+        character.textContent = secondToLastLetter.tonos.toString();
+        greekText.appendChild(character);
+        setCaret();
         updateWordBank();
+    }
+}
+function focusInvisibleInput() {
+    inputBox.focus();
+    setCaret();
+}
+function clearCaret() {
+    let carets = Array.from(document.getElementsByClassName('caret'));
+    if (carets.length) {
+        carets.forEach(x=>x.classList.remove('caret'));
+    }
+}
+function setCaret() {
+    clearCaret();
+    if (greekText.lastElementChild) {
+        greekText.lastElementChild.classList.add('caret');
+    }
+}
+function toggleCaret() {
+    let carets = Array.from(document.getElementsByClassName('caret'));
+    if (carets.length) {
+        carets.forEach(x=>x.classList.remove('caret'));
+    } else if (greekText.lastElementChild) {
+        greekText.lastElementChild.classList.add('caret');
+    }
+}
+let caretInterval = undefined;
+function startCaret() {
+    clearInterval(caretInterval);
+    caretInterval = setInterval(toggleCaret, 750);
+}
+function stopCaret() {
+    clearInterval(caretInterval);
+    clearCaret();
+}
+function clearWordBank() {
+    while (realWords.firstElementChild) {
+        realWords.firstElementChild.remove();
     }
 }
 const cache = {};
 function updateWordBank() {
-    while (realWords.firstElementChild) {
-        realWords.firstElementChild.remove();
-    }
+    clearWordBank();
     let lastWord = getLastWord();
     let firstLetter = lastWord.substring(0,1);
     let activeLetter = REVERSE_MAP[firstLetter];
     if (!activeLetter) {
         return;
     }
-    let xmlHttp = new XMLHttpRequest();
     let url = UI_DOMAIN + `/greek-t9/txt/${activeLetter.name.toLocaleLowerCase()}.txt`;
     if (!!cache[url]) {
-        handleWordBankFirstLetter({target: {responseText: cache[url]}});
+        handleWordBankFirstLetter({target: {responseURL: url, responseText: cache[url]}});
     } else {
+        let xmlHttp = new XMLHttpRequest();
         xmlHttp.open("GET", url, true); // false for synchronous request
         xmlHttp.withCredentials = false;
         xmlHttp.onload = handleWordBankFirstLetter;
@@ -156,21 +218,36 @@ function handleWordBankFirstLetter(event) {
     let words = cache[event.target.responseURL].split(/[\r\n]+/).filter(x=>x.startsWith(lastWordLowerCase)).slice(0,20);
     words.forEach(x=>{
         let p = document.createElement('div');
-        p.innerText = x;
+        p.textContent = x;
         realWords.appendChild(p);
     });
+    if (realWords.firstElementChild) {
+        realWords.firstElementChild.classList.add('active');
+    }
 }
 function getLastWord() {
-    return greekText.value.replace(/^.+\s+/, '');
+    return greekText.textContent.replace(/^.+\s+/, '');
 }
 function tNineEmulator(event) {
     event.preventDefault();
     if (event.type == 'keydown') {
         if (event.key == 'Enter') {
-            const smsLink = document.createElement("a");
-            smsLink.style.display = "block";
-            smsLink.href = "sms://?&body=" + encodeURIComponent(greekText.value);
-            smsLink.click();
+            let active = document.querySelector('.active');
+            if (active) {
+                let newText = active.textContent.replace(new RegExp(`^${getLastWord()}`), '');
+                if (newText) {
+                    let character = document.createElement('span');
+                    character.textContent = newText;
+                    greekText.appendChild(character);
+                    setCaret();
+                }                
+                clearWordBank();
+            } else {
+                const smsLink = document.createElement("a");
+                smsLink.style.display = "block";
+                smsLink.href = "sms://?&body=" + encodeURIComponent(greekText.textContent);
+                smsLink.click();
+            }
         }
         if (event.key == 'EndCall') {
             event.target.blur();
@@ -181,8 +258,10 @@ function tNineEmulator(event) {
         } else if (event.key && event.key == 'ArrowDown') {
             uppercase = false;
             count = 0;
+        } else if (event.key && event.key == 'ArrowLeft') {
+            switchSelectedWord(-1);
         } else if (event.key && event.key == 'ArrowRight') {
-            resetCount();
+            switchSelectedWord(1);
         }
     } else if (event.type == 'keyup') {
         let number = event.key;
@@ -196,13 +275,15 @@ function tNineEmulator(event) {
         }
         previousNumber = number;
         if (event.key == 'Backspace') {
-            greekText.value = greekText.value.slice(0, -1);
+            if (greekText.lastElementChild && !greekText.lastElementChild.classList.contains('placeholder')) {
+                greekText.lastElementChild.remove();
+            }
+            setCaret();
             updateWordBank();
         } else if (['0','1','2','3','4','5','6','7','8','9'].includes(event.key)) {
             let greekLetter = getGreekLetter(number, count);
-            let currentText = greekText.value;
             if (count > 0) {
-                currentText = currentText.slice(0, -1);
+                greekText.lastElementChild.remove();
             }
             if (uppercase) {
                 let newKey = greekLetter.name.substring(0,1).toLocaleUpperCase() + greekLetter.name.substring(1);
@@ -210,15 +291,35 @@ function tNineEmulator(event) {
                     greekLetter = ALPHABET[newKey];
                 }
             }
-            greekText.value = currentText + greekLetter.toString();
+            let character = document.createElement('span');
+            character.textContent = greekLetter.toString();
+            greekText.appendChild(character);
+            setCaret();
             updateWordBank();
         }
         previousTime = Date.now();
-    } else if (event.type == 'input') {
-        inputBox.value = '';
-        json.innerText = event.type + " " + event.data + "\n" + json.innerText;
-    } else {
-        json.innerText = event.type + " " + event.key + "\n" + json.innerText;
+    }
+}
+function switchSelectedWord(direction) {
+    let activeElement = document.querySelector('.active');
+    let next = activeElement;
+    if (activeElement) {
+        if (direction > 0) {
+            next = activeElement.nextElementSibling;
+            if (!next) {
+                next = realWords.firstElementChild;
+            }
+        } else if (direction < 0) {
+            next = activeElement.previousElementSibling;
+            if (!next) {
+                next = realWords.lastElementChild;
+            }
+        }
+        activeElement.classList.remove('active');
+    }
+    if (next) {
+        next.classList.add('active');
+        next.scrollIntoView();
     }
 }
 /// sigmaf
