@@ -35,9 +35,6 @@ label {
     <label>Put your cursor here (tel): 
       <input type="tel" input-group-name="B"/>
     </label>
-    <label>Put your cursor here (number): 
-      <input type="number" input-group-name="B"/>
-    </label>
     <label>Put your cursor here (checkbox): 
       <input type="checkbox"  input-group-name="B"/>
     </label>
@@ -47,12 +44,16 @@ label {
     <label>Put your cursor here (button): 
       <button input-group-name="B">Button Text</button>
     </label>
+    <label>Put your cursor here (number): 
+      <input id="test" type="number" input-group-name="B"/>
+    </label>
     <div id="event-info-text">
     </div>
     <script src="js/utils.js?v=027"></script>
     <script src="js/env.js"></script>
     <script>
 const eventInfoDiv = document.getElementById('event-info-text');
+const testElement = document.getElementById('test');
 function createNotification(event) {
   const p = document.createElement('p');
   const idString = (Math.random() * 100000).toLocaleString();
@@ -75,9 +76,9 @@ applyEmulators(createNotification);
 function numberPadListener(event) {
   createNotification(event);
 }
-document.addEventListener('keyup',numberPadListener);
-document.addEventListener('keydown',numberPadListener);
-document.addEventListener('keypress',numberPadListener);
+testElement.addEventListener('keyup',numberPadListener);
+testElement.addEventListener('keydown',numberPadListener);
+testElement.addEventListener('keypress',numberPadListener);
     </script>
   </body>
 </html>
