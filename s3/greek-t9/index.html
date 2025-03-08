@@ -39,6 +39,7 @@
     flex-wrap: nowrap;
     align-content: flex-start;
     overflow: hidden;
+    flex-grow: 1;
 }
 #real-words > div {
     margin: 0px 10px;
@@ -51,6 +52,22 @@
 }
 .active {
     background-color:rgb(217, 255, 179);
+}
+#quiz-info {
+    box-sizing: border-box;
+    position: fixed;
+    top: calc(50vh - 75px);
+    left: calc(50vw - 75px);
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 10px;
+    width: 150px;
+    height: 150px;
+    background-color: #fff;
+}
+#quiz-info > div {
+    display:flex;
+    flex-direction:column;
 }
 @keyframes caret-blink {
   0% {border-right: 1px solid black;}
@@ -65,7 +82,14 @@
     </div>
 
     <div id="content">
-    <div id="greek-text" onclick="focusInvisibleInput()"><div class="placeholder"></div></div><div id="real-words"></div><input class="invisible-input" input-group-name="text-edit" primary-input="true" id="input-box" type="number" onfocus="setCaret()" onblur="clearCaret()">
+    <div id="greek-text" onclick="focusInvisibleInput()"><div class="placeholder"></div></div><div style="display:flex;flex-direction:row;"><div id="real-words"></div><input class="invisible-input" input-group-name="text-edit" primary-input="true" id="input-box" type="number" onfocus="setCaret()" onblur="clearCaret()"></div>
+    </div>
+    <button onclick="startQuiz(event)">Start quiz</button>
+    <div id="quiz-info" style="display: none;">
+        <div>
+            <div id="quiz-word"></div>
+            <div id="quiz-result"></div>
+        </div>
     </div>
 
     <div class="logout">
@@ -136,6 +160,9 @@ Object.values(ALPHABET).filter(x => !!x.dialytika_tonos).forEach(x => REVERSE_MA
 let greekText = document.getElementById('greek-text');
 let inputBox = document.getElementById('input-box');
 let realWords = document.getElementById('real-words');
+let quizWord = document.getElementById('quiz-word');
+let quizResult = document.getElementById('quiz-result');
+let quizInfo = document.getElementById('quiz-info');
 let uppercase = false;
 let previousNumber = ' ';
 let previousTime = 0;
@@ -174,6 +201,9 @@ const cacheDispatched = {};
 function updateWordBank() {
     clearWordBank();
     let caretWord = getCaretWord();
+    if (!caretWord) {
+        return;
+    }
     let firstLetter = caretWord.substring(0,1);
     let activeLetter = REVERSE_MAP[firstLetter];
     if (!activeLetter) {
@@ -206,6 +236,43 @@ function handleWordBankFirstLetter(event) {
     if (realWords.firstElementChild) {
         realWords.firstElementChild.classList.add('active');
     }
+}
+function startQuiz() {
+    let url = UI_DOMAIN + `/greek-t9/txt/quiz.txt?v=001`;
+    if (!!cache[url]) {
+        showQuiz({target: {responseURL: url, responseText: cache[url]}});
+    } else if (!cacheDispatched[url]) {
+        cacheDispatched[url] = true;
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("GET", url, true); // false for synchronous request
+        xmlHttp.withCredentials = false;
+        xmlHttp.onload = showQuiz;
+        xmlHttp.send();
+    }
+}
+let quizBank = undefined;
+function showQuiz(event) {
+    if (!cache[event.target.responseURL]) {
+        cache[event.target.responseURL] = event.target.responseText;
+    }
+    if (!quizBank) {
+        quizBank = [];
+        let lines = cache[event.target.responseURL].split('\n');
+        for (let line of lines) {
+            let parts = line.split('\t');
+            if (parts.length == 2) {
+                quizBank.push({'english': parts[1], 'greek': parts[0]});
+            }
+        }
+    }
+    displayQuizItem();
+}
+function displayQuizItem() {
+    quizInfo.style.display = 'block';
+    let item = quizBank[Math.floor(Math.random() * quizBank.length)];
+    quizWord.innerText = item.english;
+    quizWord.setAttribute('greek-word', item.greek);
+    quizWord.style.display = 'block';
 }
 function getCaretWord() {
     let caretElement = document.querySelector('.caret');
@@ -241,7 +308,7 @@ function tNineEmulator(event) {
         if (event.key == 'Enter') {
             let active = document.querySelector('.active');
             if (active) {
-                let newText = active.textContent.replace(new RegExp(`^${getCaretWord()}`), '');
+                let newText = active.textContent.replace(new RegExp(`^${getCaretWord()}`, 'i'), '');
                 if (newText) {
                     let character = document.createElement('span');
                     character.textContent = newText;
@@ -249,6 +316,9 @@ function tNineEmulator(event) {
                     setCaret();
                 }                
                 clearWordBank();
+            } else if (quizWord.textContent.trim()) {
+                validateQuizWord();
+                displayQuizItem();
             } else {
                 const smsLink = document.createElement("a");
                 smsLink.style.display = "block";
@@ -329,6 +399,14 @@ function tNineEmulator(event) {
             updateWordBank();
         }
         previousTime = Date.now();
+    }
+}
+function validateQuizWord() {
+    if (greekText.textContent.trim() == quizWord.getAttribute('greek-word').trim()) {
+        quizResult.innerText = `Correct! ${quizWord.getAttribute('greek-word')}`;
+        fullClear();
+    } else {
+        quizResult.innerText = `WRONG! ${quizWord.getAttribute('greek-word')}`;
     }
 }
 function moveCaret(direction) {
