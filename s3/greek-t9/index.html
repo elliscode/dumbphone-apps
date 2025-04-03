@@ -300,7 +300,6 @@ function getCaretWord() {
     }
     return text;
 }
-let fullClearTimeout = undefined;
 function tNineEmulator(event) {
     event.preventDefault();
     if (event.type == 'keydown') {
@@ -349,8 +348,8 @@ function tNineEmulator(event) {
             } else {
                 moveCaret(1);
             }
-        } else if (event.key && event.key == 'Backspace') {
-            fullClearTimeout = setTimeout(fullClear, 1500);
+        } else if (event.key && event.key == 'AudioVolumeDown') {
+            fullClear();
         }
     } else if (event.type == 'keyup') {
         let caretElement = document.querySelector('.caret');
@@ -365,7 +364,6 @@ function tNineEmulator(event) {
         }
         previousNumber = number;
         if (event.key == 'Backspace') {
-            clearTimeout(fullClearTimeout);
             let previous = caretElement.previousElementSibling;
             if (caretElement && !caretElement.classList.contains('placeholder')) {
                 caretElement.remove();

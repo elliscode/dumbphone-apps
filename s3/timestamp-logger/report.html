@@ -194,7 +194,7 @@ function handleReportData(event) {
         let totalMinutes = total / 1000 / 60;
         let totalHours = totalMinutes / 60;
         let roundedHours = `${Math.floor(totalHours)}`.padStart(2,'0');
-        let roundedMinutes = `${Math.round(totalMinutes) % 60}`.padStart(2,'0');
+        let roundedMinutes = `${Math.floor(totalMinutes) % 60}`.padStart(2,'0');
         let totalDiv = document.createElement('p');
         totalDiv.display = 'block';
         totalDiv.innerText = `Total: ${roundedHours}:${roundedMinutes}`;
