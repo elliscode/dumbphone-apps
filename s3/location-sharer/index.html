@@ -29,12 +29,16 @@
     </button>
 
     <div id="link-div" style="display: none">
-      <p>Share your location! Send this link to your friends!</p>
+      <p>Share your location!</p>
       <p><a id="sms-link">Click here to send live updates as SMS</a></p>
       <p><a id="sms-directions-link">Click here to send directions as SMS</a></p>
     </div>
 
+    <pre id="wakelock"></pre>
+
     <pre id="json"></pre>
+
+    <pre id="location-text"></pre>
 
     <div id="loading">
       <div class="lds-spinner">
@@ -58,7 +62,7 @@
     </div>
     <script src="../js/utils.js?v=027"></script>
     <script src="../js/env.js"></script>
-    <script src="js/location-sharer.js?v=027"></script>
+    <script src="js/location-sharer.js?v=131"></script>
     <script>
 if (
   !navigator.userAgent.includes("Chrome") &&

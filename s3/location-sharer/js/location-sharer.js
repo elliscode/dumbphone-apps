@@ -1,37 +1,61 @@
 const SECONDS_BETWEEN = 5;
 const json = document.getElementById("json");
+const wakeLockText = document.getElementById("wakelock");
+const locationText = document.getElementById('location-text');
 const button = document.getElementById("share-button");
 const linkDiv = document.getElementById("link-div");
 const smsLink = document.getElementById("sms-link");
 const smsDirectionsLink = document.getElementById("sms-directions-link");
+let shareInterval = undefined;
+let watchPositionHandle = undefined;
+let wakeLockSentinel = undefined;
 function getCurrentLocation() {
-  locationTimeout = undefined;
   json.style.display = "block";
   button.style.display = "none";
   if (navigator.geolocation) {
     json.innerText = "Retrieving current location from device...";
-    navigator.geolocation.getCurrentPosition(showPosition, displayError, {timeout: 30 * 1000});
+    watchPositionHandle = navigator.geolocation.watchPosition(fetchLocation, displayError, {timeout: 120 * 1000});
+    shareInterval = setInterval(sendLocation, 5000);
   } else {
     json.innerText = "Geolocation is not supported by this browser.";
   }
 }
-let locationToken = localStorage.getItem("locationToken");
-let locationTimeout = undefined;
-let lat = 0;
-let long = 0;
-function showPosition(position) {
-  if (locationTimeout) {
+async function requestWakeLock() {  
+  if (navigator.userAgent.includes('KAIOS/')) {
     return;
   }
+  try {
+    if (wakeLockSentinel && !wakeLockSentinel.released) {
+      wakeLockSentinel.release();
+    }
+    wakeLockSentinel = await navigator.wakeLock.request("screen");
+    wakeLockText.innerText = '';
+  } catch (err) {
+    console.log(`${err.name}, ${err.message}`);
+    wakeLockText.innerText = 'Wake Lock not active, please touch anywhere in the whitespace to enable';
+  }
+}
+let locationToken = localStorage.getItem("locationToken");
+let lat = undefined;
+let long = undefined;
+function fetchLocation(pos) {
+  lat = pos.coords.latitude;
+  long = pos.coords.longitude;
+  locationText.innerText = `${lat}, ${long}`;
+}
+function sendLocation() {
+  if (!lat && !long) {
+    json.innerText =
+      "Waiting until location information is fetched...";
+      return;
+  }
 
-  lat = position.coords.latitude;
-  long = position.coords.longitude;
+  if (navigator.wakeLock && (!wakeLockSentinel || wakeLockSentinel.released)) {
+    requestWakeLock();
+  }
+
   json.innerText =
-    "Sending current location latitude=" +
-    lat +
-    " and longitude=" +
-    long +
-    " ...";
+    "Sending location...";
 
   let url = API_DOMAIN + "/one-offs/share-location";
   let xmlHttp = new XMLHttpRequest();
@@ -49,13 +73,14 @@ function showPosition(position) {
   xmlHttp.send(JSON.stringify(payload));
 }
 function displayError(event) {
+  clearInterval(shareInterval);
+  navigator.geolocation.clearWatch(watchPositionHandle);
+  if (wakeLockSentinel) {
+    wakeLockSentinel.release();
+  }
   json.innerText = "Geolocation failed, please refresh the page and try again.";
 }
 function handleShare(event) {
-  if (locationTimeout) {
-    return;
-  }
-
   let result = defaultHandler(event);
   let responseJson = result.responseJson;
   locationToken = responseJson.locationToken;
@@ -79,10 +104,15 @@ function handleShare(event) {
   let googleUrl = "https://www.google.com/maps/search/?api=1&query=" + coordsString;
   smsDirectionsLink.href = "sms://?&body=" + encodeURIComponent(googleUrl);
 
-  locationTimeout = setTimeout(getCurrentLocation, SECONDS_BETWEEN * 1000);
   for (let i = 0; i < SECONDS_BETWEEN; i++) {
     setTimeout(()=>{
       json.innerText = `Waiting ${SECONDS_BETWEEN - i} seconds...`;
+      if (navigator.wakeLock && !wakeLockSentinel && wakeLockSentinel.released) {
+        wakeLockText.innerText = 'Wake Lock not active, please touch anywhere in the whitespace to enable';
+      } else {
+        wakeLockText.innerText = '';
+      }
     }, i * 1000);
   }
 }
+document.addEventListener('click', requestWakeLock);
