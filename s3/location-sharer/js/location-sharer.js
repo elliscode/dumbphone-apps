@@ -78,7 +78,7 @@ function displayError(event) {
   if (wakeLockSentinel) {
     wakeLockSentinel.release();
   }
-  json.innerText = "Geolocation failed, please refresh the page and try again.";
+  json.innerText = "Geolocation failed, ensure you have geolocation enabled, then refresh the page and try again.";
 }
 function handleShare(event) {
   let result = defaultHandler(event);
@@ -107,7 +107,7 @@ function handleShare(event) {
   for (let i = 0; i < SECONDS_BETWEEN; i++) {
     setTimeout(()=>{
       json.innerText = `Waiting ${SECONDS_BETWEEN - i} seconds...`;
-      if (navigator.wakeLock && !wakeLockSentinel && wakeLockSentinel.released) {
+      if (!!navigator.wakeLock && !!wakeLockSentinel && wakeLockSentinel.released) {
         wakeLockText.innerText = 'Wake Lock not active, please touch anywhere in the whitespace to enable';
       } else {
         wakeLockText.innerText = '';
