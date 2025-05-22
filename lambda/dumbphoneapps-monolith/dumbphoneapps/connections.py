@@ -111,25 +111,54 @@ def get_connections(event, user_data, body, connections_type):
         )
 
     print("connections db miss")
-
-    connections_uri = f"https://www.nytimes.com/svc/connections/v2/{date_value}.json"
     if connections_type == "_sports":
-        connections_uri = f"https://www.nytimes.com/games-assets/sports-connections/{date_value}.json"
+        connections_uri = f"https://api.theathletic.com/graphql"
 
-    response = http.request(
-        "GET",
-        connections_uri,
-    )
-
-    try:
-        response_text = response.data.decode("utf-8")
-        response_json = json.loads(response_text, parse_float=str, parse_int=str)
-    except:
-        return format_response(
-            event=event,
-            http_code=400,
-            body="bad data for some reason",
+        response = http.request(
+            method="POST",
+            url=connections_uri,
+            body=json.dumps({
+                "query": "query GetPuzzleById($puzzleId: String\u0021) { getPuzzleById(puzzleId: $puzzleId) { categories { title cards { content position img } } printDate id hint_url editor } }",
+                "variables": {"puzzleId": date_value}
+            }),
+            headers={
+                "accept": "*/*",
+                "accept-language": "en-US,en;q=0.9",
+                "cache-control": "no-cache",
+                "content-type": "application/json",
+                "origin": "https://www.nytimes.com",
+                "pragma": "no-cache",
+                "priority": "u=1, i",
+                "referer": "https://www.nytimes.com/",
+            },
         )
+
+        try:
+            response_text = response.data.decode("utf-8")
+            response_json = json.loads(response_text, parse_float=str, parse_int=str)
+        except:
+            return format_response(
+                event=event,
+                http_code=400,
+                body="bad data for some reason",
+            )
+    else:
+        connections_uri = f"https://www.nytimes.com/svc/connections/v2/{date_value}.json"
+
+        response = http.request(
+            "GET",
+            connections_uri,
+        )
+
+        try:
+            response_text = response.data.decode("utf-8")
+            response_json = json.loads(response_text, parse_float=str, parse_int=str)
+        except:
+            return format_response(
+                event=event,
+                http_code=400,
+                body="bad data for some reason",
+            )
 
     if response_json.get('errors'):
         return format_response(
@@ -137,6 +166,9 @@ def get_connections(event, user_data, body, connections_type):
             http_code=404,
             body="Puzzle not found",
         )
+
+    if response_json.get('data') and response_json.get('data').get('getPuzzleById'):
+        response_json = response_json['data']['getPuzzleById']
 
     token_data = {
         "key1": f"connections{connections_type}",
