@@ -384,6 +384,10 @@ function setStylesheet(uri) {
 
   head.appendChild(link);
 }
+function forceToDecimal(event) {
+  let textBox = event.target;
+  textBox.value = textBox.value.replace(/[^\d]+/g, ".");
+}
 // allows for clicking the background of the modal to exit the modal
 let modalBackgrounds = document.getElementsByClassName("modal-bg");
 for (let i = 0; i < modalBackgrounds.length; i++) {

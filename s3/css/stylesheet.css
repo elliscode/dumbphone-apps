@@ -191,6 +191,9 @@ a.selected, input.selected, button.selected, div.selected {
 .flex {
   display: flex;
 }
-.flex-column {
+.column {
   flex-direction: column;
+}
+.wrap {
+  flex-wrap: wrap;
 }

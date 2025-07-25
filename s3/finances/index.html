@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Finances</title>
+  <link rel="stylesheet" href="../css/stylesheet.css?v=029" />
+  <link rel="stylesheet" href="../css/loader.css?v=027" />
+  <link rel="icon" type="image/png" href="../img/finance.favicon.png?v=027" />
+</head>
+
+<body>
+  <div class="panel" id="add-transaction">
+    <div class="flex wrap">
+      <div>
+        <button input-group-name="add">Debit</button>
+      </div>
+      <div>
+        <button input-group-name="add">Credit</button>
+      </div>
+    </div>
+    <input input-group-name="add" type="tel" id="amount" onkeydown="forceToDecimal(event)"/>
+    <div class="flex wrap">
+      <div>
+        <button input-group-name="add">One-time</button>
+      </div>
+      <div>
+        <button input-group-name="add">Recurring</button>
+      </div>
+    </div>
+    <div class="flex wrap">
+      <div><button input-group-name="add">Takeout</button></div>
+      <div><button input-group-name="add">Fun</button></div>
+      <div><button input-group-name="add">Groceries</button></div>
+      <div><button input-group-name="add">Housing</button></div>
+      <div><button input-group-name="add">Utilities</button></div>
+      <div><button input-group-name="add">Subscriptions</button></div>
+    </div>
+    <div class="flex wrap">
+      <div>
+        <button input-group-name="add">+ Add</button>
+      </div>
+    </div>
+  </div>
+  <script src="../js/utils.js?v=028"></script>
+  <script src="../js/env.js"></script>
+  <script>
+const amount = document.getElementById('amount');
+function setFocusOnInput(event) {
+  amount.focus();
+}
+applyEmulators();
+setTimeout(setFocusOnInput, 100);
+  </script>
+</body>
+
+</html>

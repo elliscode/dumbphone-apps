@@ -900,10 +900,6 @@ function populateTable(event) {
   }
   loader.style.display = "none";
 }
-function forceToDecimal(event) {
-  let textBox = event.target;
-  textBox.value = textBox.value.replace(/[^\d]+/g, ".");
-}
 
 document.addEventListener(
   "keydown",
