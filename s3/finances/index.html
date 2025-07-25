@@ -7,6 +7,27 @@
   <link rel="stylesheet" href="../css/stylesheet.css?v=029" />
   <link rel="stylesheet" href="../css/loader.css?v=027" />
   <link rel="icon" type="image/png" href="../img/finance.favicon.png?v=027" />
+  <style>
+#add-transaction {
+  width: calc(100vw - 16px);
+  height: calc(100vh - 16px);
+}
+#add-transaction button, #add-transaction input {
+  font-size: max(16px, 4vh);
+  margin: max(4px, 1vh);
+  border-radius: max(4px, 1vh);
+}
+#add-transaction>div {
+  border-radius: max(4px, 1vh);
+  margin: max(4px, 1vh) 0;
+}
+#add-transaction>div:nth-child(even) {
+  background-color:#ccc;
+}
+#add-transaction>div:nth-child(odd) {
+  background-color:#ddd;
+}
+  </style>
 </head>
 
 <body>
@@ -19,7 +40,9 @@
         <button input-group-name="add">Credit</button>
       </div>
     </div>
+    <div>
     <input input-group-name="add" type="tel" id="amount" onkeydown="forceToDecimal(event)"/>
+    </div>
     <div class="flex wrap">
       <div>
         <button input-group-name="add">One-time</button>
