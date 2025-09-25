@@ -148,12 +148,12 @@ function handleShare(event) {
     }
 
     previousValues.push(value);
-    if (previousValues.length > 6) {
+    if (previousValues.length > 10) {
       previousValues.shift();
     }
 
     if (
-      previousValues.length == 6 &&
+      previousValues.length == 10 &&
       previousValues.every((val) => val === previousValues[0])
     ) {
       openInfoWindow("Reported position hasn't changed for the last 60 seconds, assuming the user stopped sharing...", true);
