@@ -6,14 +6,16 @@
 
 async function initMap() {
   const { Map } = await google.maps.importLibrary("maps");
+  const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
   map = new Map(document.getElementById("map"), {
     center: { lat: 0, lng: 0 },
     zoom: 1,
     streetViewControl: false,
-    mapTypeControl: false
+    mapTypeControl: false,
+    mapId: 'GPS_SHARER'
   });
-  marker = new google.maps.Marker({ map: map });
+  marker = new AdvancedMarkerElement({ map: map });
   moveMarker();
 }
 
@@ -21,7 +23,7 @@ let initialMove = true;
 
 moveMarker = function () {
   var myLatLng = new google.maps.LatLng(lat, lon);
-  marker.setPosition(myLatLng);
+  marker.position = myLatLng;
   map.panTo(myLatLng);
   if (initialMove) {
     map.setZoom(16);
