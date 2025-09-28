@@ -1,3 +1,5 @@
+from dumbphoneapps.dumbphoneapps_logger import log
+
 import json
 import traceback
 
@@ -94,7 +96,6 @@ def lambda_handler(event, context):
     try:
         print(json.dumps(event))
         result = route(event)
-        print(result)
         return result
     except Exception:
         traceback.print_exc()

@@ -17,40 +17,6 @@ from .utils import (
 
 
 @authenticate
-def sendsharelist_route(event, user_data, body):
-    phone = user_data["key2"]
-    target_user = body["user"]
-    list_id = body["list_id"]
-
-    # first figure out if the target user exists in our database
-    target_user_data = get_user_data(target_user)
-    if target_user_data is None:
-        return format_response(
-            event=event,
-            http_code=500,
-            body="Target user does not exist in our database",
-        )
-
-    source_list = get_list_data([list_id])[0]
-
-    link = f"{DOMAIN_NAME}/grocery-list/index.html?share={list_id}"
-    message = {
-        "phone": target_user,
-        "message": f"{phone} wants to share the list '{source_list['name']}' with you, follow this link to accept\n\n{link}",
-    }
-    print(message)
-    sqs.send_message(
-        QueueUrl=SMS_SQS_QUEUE_URL,
-        MessageBody=json.dumps(message),
-    )
-    return format_response(
-        event=event,
-        http_code=200,
-        body="Successfully shared the list",
-    )
-
-
-@authenticate
 def setlistorder_route(event, user_data, body):
     phone = user_data["key2"]
 
@@ -66,6 +32,7 @@ def setlistorder_route(event, user_data, body):
         event=event,
         http_code=200,
         body="Successfully set the order of the lists",
+        user_data=user_data,
     )
 
 
@@ -81,6 +48,7 @@ def acceptsharelist_route(event, user_data, body):
             event=event,
             http_code=500,
             body="Target user does not exist in our database",
+            user_data=user_data,
         )
 
     # first figure out what lists the target user has defined
@@ -94,6 +62,7 @@ def acceptsharelist_route(event, user_data, body):
             event=event,
             http_code=500,
             body="List is already shared with this user",
+            user_data=user_data,
         )
 
     # next figure out if the target user has a list with the same name, if they
@@ -108,6 +77,7 @@ def acceptsharelist_route(event, user_data, body):
             event=event,
             http_code=404,
             body=f"List adding failed, please contact the administrator",
+            user_data=user_data,
         )
     indexes = [userlist['id'] for userlist in target_user_list_ids]
     all_target_user_lists = get_list_data(indexes)
@@ -122,6 +92,7 @@ def acceptsharelist_route(event, user_data, body):
                 event=event,
                 http_code=400,
                 body=f"You already own this list",
+                user_data=user_data,
             )
         for key, value in source_list["items"].items():
             if key in found_list["items"].keys():
@@ -135,6 +106,7 @@ def acceptsharelist_route(event, user_data, body):
             event=event,
             http_code=200,
             body=f"Successfully merged list {source_list['name']}",
+            user_data=user_data,
         )
     else:
         target_user_list_ids.append(create_default_userlist_dict(list_id))
@@ -143,6 +115,7 @@ def acceptsharelist_route(event, user_data, body):
             event=event,
             http_code=200,
             body=f"Successfully shared list {source_list['name']}",
+                user_data=user_data,
         )
 
 
@@ -186,12 +159,14 @@ def setcrossedoff_route(event, user_data, body):
             event=event,
             http_code=200,
             body=f"Successfully toggled {len(body["data"])} items on {len(found_lists.keys())} lists",
+            user_data=user_data,
         )
 
     return format_response(
         event=event,
         http_code=201,
         body=f"Didn't do anything",
+        user_data=user_data,
     )
 
 
@@ -217,6 +192,7 @@ def cleanuplist_route(event, user_data, body):
                 event=event,
                 http_code=404,
                 body="Provided list does not exist",
+                user_data=user_data,
             )
 
         if found_list["items"] is None:
@@ -232,12 +208,14 @@ def cleanuplist_route(event, user_data, body):
             event=event,
             http_code=200,
             body=f"Successfully cleaned up {len(body["list_ids"])} items on {len(found_lists.keys())} lists",
+            user_data=user_data,
         )
 
     return format_response(
         event=event,
         http_code=201,
         body=f"Didn't do anything",
+        user_data=user_data,
     )
 
 
@@ -270,13 +248,23 @@ def deletelist_route(event, user_data, body):
             found_index = i
             break
     if not found_index:
-        return format_response(event=event, http_code=404, body="Provided list does not exist")
+        return format_response(
+            event=event,
+            http_code=404,
+            body="Provided list does not exist",
+            user_data=user_data,
+        )
 
     userlist_data["lists"].pop(found_index)
 
     set_userlist_data(phone, userlist_data["lists"])
 
-    return format_response(event=event, http_code=200, body="List successfully deleted")
+    return format_response(
+        event=event,
+        http_code=200,
+        body="List successfully deleted",
+        user_data=user_data,
+    )
 
 
 @authenticate
@@ -297,17 +285,32 @@ def deleteitem_route(event, user_data, body):
             found_list = this_list
             break
     if found_list is None:
-        return format_response(event=event, http_code=404, body="Provided list does not exist")
+        return format_response(
+            event=event,
+            http_code=404,
+            body="Provided list does not exist",
+            user_data=user_data,
+        )
 
     item = body["item"]
     if item not in found_list["items"]:
-        return format_response(event=event, http_code=200, body="Item already deleted")
+        return format_response(
+            event=event,
+            http_code=200,
+            body="Item already deleted",
+            user_data=user_data,
+        )
 
     found_list["items"].pop(item)
 
     set_list_data(found_list["key2"], found_list["name"], found_list["items"])
 
-    return format_response(event=event, http_code=200, body="Item successfully deleted")
+    return format_response(
+        event=event,
+        http_code=200,
+        body="Item successfully deleted",
+        user_data=user_data,
+    )
 
 
 @authenticate
@@ -347,7 +350,12 @@ def additem(event, user_data, body):
         items = {}
 
     if item.lower() in {k.lower(): v for k, v in items.items()}:
-        return format_response(event=event, http_code=200, body="Item already exists")
+        return format_response(
+            event=event,
+            http_code=200,
+            body="Item already exists",
+            user_data=user_data,
+        )
 
     items[item] = False
 
@@ -363,6 +371,7 @@ def additem(event, user_data, body):
             "group": {"hash": found_list["key2"], "name": found_list["name"], "cluster": userlist["cluster"], "visible": userlist["visible"]},
             "item": {"name": item, "crossed_off": False, "hash": create_id(32)},
         },
+        user_data=user_data,
     )
 
 
@@ -380,7 +389,12 @@ def getlist_route(event, user_data, body):
 
     formatted_list_data = format_list_data(list_data, userlist_data["lists"])
 
-    return format_response(event=event, http_code=200, body=formatted_list_data)
+    return format_response(
+        event=event,
+        http_code=200,
+        body=formatted_list_data,
+        user_data=user_data,
+    )
 
 
 def format_list_data(list_data, userlist_data):

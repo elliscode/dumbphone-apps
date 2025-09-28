@@ -1,3 +1,4 @@
+from .dumbphoneapps_logger import log
 import json
 import urllib3
 from .utils import (
@@ -67,6 +68,7 @@ def get_connections(event, user_data, body, connections_type):
             event=event,
             http_code=400,
             body="Improper date format, must be yyyy-MM-dd",
+            user_data=user_data,
         )
 
     earliest_date = "2023-06-12"
@@ -78,14 +80,16 @@ def get_connections(event, user_data, body, connections_type):
             event=event,
             http_code=400,
             body="Too early, the first connections puzzle was on 2023-06-12",
+            user_data=user_data,
         )
 
     if connections_data and connections_type in connections_data and date_value in connections_data[connections_type]:
-        print("connections cache hit")
+        log("connections cache hit", user_data)
         return format_response(
             event=event,
             http_code=200,
             body=connections_data[connections_type][date_value],
+            user_data=user_data,
         )
 
     response = dynamo.get_item(
@@ -99,7 +103,7 @@ def get_connections(event, user_data, body, connections_type):
     )
 
     if "Item" in response:
-        print("connections db hit")
+        log("connections db hit", user_data)
         connections_data_from_db = dynamo_obj_to_python_obj(response["Item"])
         if connections_type not in connections_data:
             connections_data[connections_type] = {}
@@ -108,9 +112,10 @@ def get_connections(event, user_data, body, connections_type):
             event=event,
             http_code=200,
             body=connections_data[connections_type][date_value],
+            user_data=user_data,
         )
 
-    print("connections db miss")
+    log("connections db miss", user_data)
     if connections_type == "_sports":
         connections_uri = f"https://api.theathletic.com/graphql"
 
@@ -141,6 +146,7 @@ def get_connections(event, user_data, body, connections_type):
                 event=event,
                 http_code=400,
                 body="bad data for some reason",
+                user_data=user_data,
             )
     else:
         connections_uri = f"https://www.nytimes.com/svc/connections/v2/{date_value}.json"
@@ -158,6 +164,7 @@ def get_connections(event, user_data, body, connections_type):
                 event=event,
                 http_code=400,
                 body="bad data for some reason",
+                user_data=user_data,
             )
 
     if response_json.get('errors'):
@@ -165,6 +172,7 @@ def get_connections(event, user_data, body, connections_type):
             event=event,
             http_code=404,
             body="Puzzle not found",
+            user_data=user_data,
         )
 
     if response_json.get('data') and response_json.get('data').get('getPuzzleById'):
@@ -185,6 +193,7 @@ def get_connections(event, user_data, body, connections_type):
         event=event,
         http_code=200,
         body=response_json,
+        user_data=user_data,
     )
 
 
@@ -196,6 +205,7 @@ def get_guesses(event, user_data, body, connections_type):
             event=event,
             http_code=400,
             body="Improper date format, must be yyyy-MM-dd",
+            user_data=user_data,
         )
 
     earliest_date = "2023-06-12"
@@ -207,6 +217,7 @@ def get_guesses(event, user_data, body, connections_type):
             event=event,
             http_code=400,
             body="Too early, the first connections puzzle was on 2023-06-12",
+            user_data=user_data,
         )
 
     response = dynamo.get_item(
@@ -225,12 +236,14 @@ def get_guesses(event, user_data, body, connections_type):
             event=event,
             http_code=200,
             body=guesses_data_from_db['guesses'],
+            user_data=user_data,
         )
 
     return format_response(
         event=event,
         http_code=200,
         body=[],
+        user_data=user_data,
     )
 
 
@@ -242,6 +255,7 @@ def set_guesses(event, user_data, body, connections_type):
             event=event,
             http_code=400,
             body="Improper date format, must be yyyy-MM-dd",
+            user_data=user_data,
         )
 
     guesses = validate_schema(body.get("guesses"), CONNECTIONS_SCHEMA)
@@ -251,6 +265,7 @@ def set_guesses(event, user_data, body, connections_type):
             event=event,
             http_code=400,
             body=f"Improper guesses format, must be {CONNECTIONS_SCHEMA}",
+            user_data=user_data,
         )
 
     guess_data = {
@@ -268,4 +283,5 @@ def set_guesses(event, user_data, body, connections_type):
         event=event,
         http_code=200,
         body=f"Wrote guess data for {date_value} to database",
+        user_data=user_data,
     )

@@ -1,3 +1,5 @@
+from .dumbphoneapps_logger import log
+
 import json
 import time
 
@@ -31,7 +33,7 @@ def determine_tokens(food_id, food_name):
     return food_tokens
 
 
-def remove_all_tokens(food_id, food_name):
+def remove_all_tokens(food_id, food_name, user_data):
     items = []
     token_map = determine_tokens(food_id, food_name)
     for token, value in token_map.items():
@@ -45,11 +47,11 @@ def remove_all_tokens(food_id, food_name):
         found_index = 0
         while found_index < len(json_data["food_ids"]):
             current_data = json_data["food_ids"][found_index]
-            print(current_data)
-            print(food_id)
-            print(food_name)
+            log(current_data, user_data)
+            log(food_id, user_data)
+            log(food_name, user_data)
             if current_data["hash"] == food_id and current_data["name"] == food_name:
-                print("matches!")
+                log("matches!", user_data)
                 break
             found_index = found_index + 1
         if found_index < len(json_data["food_ids"]):
@@ -60,15 +62,15 @@ def remove_all_tokens(food_id, food_name):
         else:
             items.append({"PutRequest": {"Item": python_obj_to_dynamo_obj(json_data)}})
         if len(items) >= 25:
-            print(items)
+            log(items, user_data)
             response = dynamo.batch_write_item(RequestItems={TABLE_NAME: items})
             items = []
-            print(response)
+            log(response, user_data)
     if len(items) > 0:
-        print(items)
+        log(items, user_data)
         response = dynamo.batch_write_item(RequestItems={TABLE_NAME: items})
         items = []
-        print(response)
+        log(response, user_data)
 
 
 def add_all_tokens(food_id, food_name):
@@ -101,6 +103,7 @@ def set_food_route(event, user_data, body):
             event=event,
             http_code=401,
             body="You are not authorized to modify foods in the database",
+            user_data=user_data,
         )
     diary_response = dynamo.get_item(
         TableName=TABLE_NAME,
@@ -113,13 +116,13 @@ def set_food_route(event, user_data, body):
     )
     food = dynamo_obj_to_python_obj(food_response["Item"])
     if body.get("name"):
-        print(f'modifying {food["name"]} to {body["name"]}')
-        remove_all_tokens(food["key2"], food["name"])
+        log(f'modifying {food["name"]} to {body["name"]}', user_data)
+        remove_all_tokens(food["key2"], food["name"], user_data)
         food["name"] = body["name"]
         add_all_tokens(food["key2"], food["name"])
         diary_entry["entries"][body["timestamp"]]["name"] = food["name"]
     if body.get("ingredients"):
-        print(f"Setting {food['name']} to a recipe!")
+        log(f"Setting {food['name']} to a recipe!", user_data)
         food_keys = []
         for ingredient in body["ingredients"]:
             key = python_obj_to_dynamo_obj(
@@ -179,12 +182,12 @@ def set_food_route(event, user_data, body):
         for value_key in ALL_VALUE_KEYS:
             if body[value_key]:
                 food["metadata"][value_key] = body[value_key]
-    print(food)
+    log(food, user_data)
     dynamo.put_item(
         TableName=TABLE_NAME,
         Item=python_obj_to_dynamo_obj(food),
     )
-    print(diary_entry)
+    log(diary_entry, user_data)
     dynamo.put_item(
         TableName=TABLE_NAME,
         Item=python_obj_to_dynamo_obj(diary_entry),
@@ -193,6 +196,7 @@ def set_food_route(event, user_data, body):
         event=event,
         http_code=200,
         body=f'Successfully updated {food["key2"]}',
+        user_data=user_data,
     )
 
 
@@ -206,11 +210,12 @@ def get_food_route(event, user_data, body):
     food["hash"] = food["key2"]
     food.pop("key1")
     food.pop("key2")
-    print(food)
+    log(food, user_data)
     return format_response(
         event=event,
         http_code=200,
         body=food,
+        user_data=user_data,
     )
 
 
@@ -221,6 +226,7 @@ def create_serving_route(event, user_data, body):
             event=event,
             http_code=401,
             body="You are not authorized to add servings to the database",
+            user_data=user_data,
         )
     food_response = dynamo.get_item(
         TableName=TABLE_NAME,
@@ -245,12 +251,13 @@ def create_serving_route(event, user_data, body):
             event=event,
             http_code=500,
             body=f"Unit already exists for {body_unit}",
+            user_data=user_data,
         )
 
-    print(body_calories)
-    print(multiplier)
-    print(body_unit)
-    print(body_quantity)
+    log(body_calories, user_data)
+    log(multiplier, user_data)
+    log(body_unit, user_data)
+    log(body_quantity, user_data)
 
     new_serving = {
         "amount": f"{body_quantity}",
@@ -269,6 +276,7 @@ def create_serving_route(event, user_data, body):
         event=event,
         http_code=200,
         body=f"Created unit {body_unit} on food {food['key2']}",
+        user_data=user_data,
     )
 
 
@@ -304,6 +312,7 @@ def set_serving_route(event, user_data, body):
                 event=event,
                 http_code=404,
                 body=f"No unit found for {body_unit}",
+                user_data=user_data,
             )
     determined_multiplier = (
         float(found_food_serving["multiplier"]) * float(body_amount) / float(found_food_serving["amount"])
@@ -336,6 +345,7 @@ def set_serving_route(event, user_data, body):
         event=event,
         http_code=200,
         body=f"Updated {body['key']} {body['timestamp']}",
+        user_data=user_data,
     )
 
 
@@ -349,11 +359,12 @@ def get_serving_route(event, user_data, body):
     output["hash"] = output["key2"]
     output.pop("key1")
     output.pop("key2")
-    print(output)
+    log(output, user_data)
     return format_response(
         event=event,
         http_code=200,
         body=output,
+        user_data=user_data,
     )
 
 
@@ -364,6 +375,7 @@ def delete_route(event, user_data, body):
             event=event,
             http_code=401,
             body="You are not authorized to delete foods from the database",
+            user_data=user_data,
         )
     partition_key = f"diary_{user_data['key2']}"
     sort_key = body["date"]
@@ -376,6 +388,7 @@ def delete_route(event, user_data, body):
             event=event,
             http_code=404,
             body="Item not found",
+            user_data=user_data,
         )
     diary_entry = dynamo_obj_to_python_obj(response["Item"])
     deleted_item = diary_entry["entries"].pop(body["timestamp"])
@@ -387,6 +400,7 @@ def delete_route(event, user_data, body):
         event=event,
         http_code=200,
         body=f"Successfully deleted item {json.dumps(deleted_item)}",
+        user_data=user_data,
     )
 
 
@@ -421,6 +435,7 @@ def add_route(event, user_data, body):
             event=event,
             http_code=400,
             body="Missing food hash",
+            user_data=user_data,
         )
     food_hashes = sorted(set(food_hashes))
     items_to_write = []
@@ -441,7 +456,7 @@ def add_route(event, user_data, body):
             }
         )
         responses = response["Responses"][TABLE_NAME]
-        print(responses)
+        log(responses, user_data)
         food_item = None
         serving_entry = None
         for response_item in responses:
@@ -497,25 +512,26 @@ def add_route(event, user_data, body):
             "unit": f"{serving_entry['unit']}",
         }
 
-        print(current_entry)
+        log(current_entry, user_data)
         current_entry["entries"][f"{time.mktime(time.gmtime())}{food_index:0>3}"] = new_diary_entry
-        print(current_entry)
+        log(current_entry, user_data)
 
         items_to_write.append({"PutRequest": {"Item": python_obj_to_dynamo_obj(serving_entry)}})
 
         if len(items_to_write) >= 25:
-            print(json.dumps(items_to_write))
+            log(json.dumps(items_to_write), user_data)
             dynamo.batch_write_item(RequestItems={TABLE_NAME: items_to_write})
             items_to_write = []
     items_to_write.append({"PutRequest": {"Item": python_obj_to_dynamo_obj(current_entry)}})
     if len(items_to_write) > 0:
-        print(json.dumps(items_to_write))
+        log(json.dumps(items_to_write), user_data)
         dynamo.batch_write_item(RequestItems={TABLE_NAME: items_to_write})
         items_to_write = []
     return format_response(
         event=event,
         http_code=200,
         body="Saved the diary entries",
+        user_data=user_data,
     )
 
 
@@ -557,6 +573,7 @@ def create_food_route(event, user_data, body):
             event=event,
             http_code=400,
             body="This food already exists in the database",
+            user_data=user_data,
         )
     else:
         if user_data["key2"] != ADMIN_PHONE:
@@ -564,6 +581,7 @@ def create_food_route(event, user_data, body):
                 event=event,
                 http_code=401,
                 body="You are not authorized to add foods to the database",
+                user_data=user_data,
             )
         metadata = {
             "servings": [
@@ -601,9 +619,9 @@ def create_food_route(event, user_data, body):
             "name": new_food["name"],
             "unit": "serving",
         }
-        print(current_entry)
+        log(current_entry, user_data)
         current_entry["entries"][f"{time.mktime(time.gmtime())}"] = new_diary_entry
-        print(current_entry)
+        log(current_entry, user_data)
         dynamo.put_item(
             TableName=TABLE_NAME,
             Item=python_obj_to_dynamo_obj(new_food),
@@ -617,6 +635,7 @@ def create_food_route(event, user_data, body):
             event=event,
             http_code=200,
             body=f"Successfully added food {new_food['key2']}",
+            user_data=user_data,
         )
 
 
@@ -648,6 +667,7 @@ def get_day_route(event, user_data, body):
             "date": sort_key,
             "totals": totals,
         },
+        user_data=user_data,
     )
 
 
@@ -659,6 +679,7 @@ def search_route(event, user_data, body):
             event=event,
             http_code=200,
             body=[],
+            user_data=user_data,
         )
     response = dynamo.query(
         TableName=TABLE_NAME,
@@ -693,4 +714,5 @@ def search_route(event, user_data, body):
         event=event,
         http_code=200,
         body=sorted_items,
+        user_data=user_data,
     )

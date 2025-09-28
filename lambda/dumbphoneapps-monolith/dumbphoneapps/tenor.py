@@ -1,3 +1,5 @@
+from .dumbphoneapps_logger import log
+
 import json
 import os
 
@@ -17,7 +19,7 @@ cached_searches = {}
 
 @authenticate
 def tenor_search_route(event, user_data, body):
-    print(body)
+    log(body, user_data)
     query = body.get("query").strip().lower()
     if not query:
         return format_response(
@@ -27,6 +29,7 @@ def tenor_search_route(event, user_data, body):
                 "results": [],
                 "message": "You need to search for something, you supplied a blank string for query",
             },
+            user_data=user_data,
         )
     key = query
     if body.get("pos"):
@@ -40,12 +43,13 @@ def tenor_search_route(event, user_data, body):
                 "results": cached_searches[key],
                 "message": f"I had a result cached for '{key}'",
             },
+            user_data=user_data,
         )
 
     uri = f"https://tenor.googleapis.com/v2/search?q={query}&key={TENOR_API_KEY}&limit=5"
     if body.get("pos"):
         uri = uri + f"&pos={body.get('pos')}"
-    print(uri)
+    log(uri, user_data)
     tenor_response = http.request("GET", uri)
     tenor_response_text = tenor_response.data.decode("utf-8")
     tenor_response_json = json.loads(tenor_response_text)
@@ -59,4 +63,5 @@ def tenor_search_route(event, user_data, body):
             "results": tenor_response_json,
             "message": f"I searched tenor for '{key}'",
         },
+        user_data=user_data,
     )

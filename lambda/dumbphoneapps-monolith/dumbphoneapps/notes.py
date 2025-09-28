@@ -49,6 +49,7 @@ def get_notes_route(event, user_data, body):
         event=event,
         http_code=200,
         body={"notes": output},
+        user_data=user_data,
     )
 
 
@@ -71,6 +72,7 @@ def set_note_route(event, user_data, body):
         event=event,
         http_code=200,
         body=f"Successfully set note with ID {note_id}",
+        user_data=user_data,
     )
 
 
@@ -87,4 +89,5 @@ def delete_note_route(event, user_data, body):
         event=event,
         http_code=200,
         body=f"Successfully deleted note with ID {note_id}",
+        user_data=user_data,
     )
