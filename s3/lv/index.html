@@ -142,9 +142,6 @@ function handleShare(event) {
       value +
       '">Click here for directions</a>';
     // openInfoWindow(`last updated ${timestamp.toLocaleString()}`);
-    if (window.isES6) {
-      moveMarker();
-    }
 
     previousValues.push(value);
     if (previousValues.length > 10) {
@@ -161,6 +158,10 @@ function handleShare(event) {
     }
 
     locationTimeout = setTimeout(getCurrentLocation, UPDATE_PERIOD_SECONDS * 1000);
+    
+    if (window.isES6) {
+      moveMarker();
+    }
   }
 }
 
