@@ -18,6 +18,7 @@ def schedule_sms_route(event, user_data, body):
             event=event,
             http_code=400,
             body="You must supply a time in the format yyyy-mm-ddThh:mm:ss",
+            user_data=user_data,
         )
     message_text = body["message"]
     if not message_text:
@@ -25,6 +26,7 @@ def schedule_sms_route(event, user_data, body):
             event=event,
             http_code=400,
             body="You must supply a message",
+            user_data=user_data,
         )
     message_dict = {
         "phone": user_data["key2"],
@@ -60,6 +62,7 @@ def schedule_sms_route(event, user_data, body):
         event=event,
         http_code=200,
         body=f"Scheduled a message for {time_to_send} {response['ScheduleArn']}",
+        user_data=user_data,
     )
 
 

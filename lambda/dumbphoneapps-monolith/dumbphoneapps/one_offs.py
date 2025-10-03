@@ -1,3 +1,5 @@
+from .dumbphoneapps_logger import log
+
 import json
 import os
 import re
@@ -23,6 +25,9 @@ from .utils import (
     boto3,
     SMS_SQS_QUEUE_URL,
 )
+from .input_validation import (
+    validate_date,
+)
 
 sts_connection = boto3.client("sts")
 
@@ -47,7 +52,7 @@ connections_data = {}
 
 def get_maps_key_route(event):
     body = json.loads(event["body"])
-    print(body)
+    log(body)
     location_token = body.get("locationToken")
     if location_token and re.compile(r"[a-zA-Z0-9]{10}").match(location_token):
         pass
@@ -79,7 +84,7 @@ def get_maps_key_route(event):
 
 def get_location_route(event):
     body = json.loads(event["body"])
-    print(body)
+    log(body)
     location_token = body.get("locationToken")
     if location_token and re.compile(r"[a-zA-Z0-9]{10}").match(location_token):
         pass
@@ -124,7 +129,7 @@ def get_location_route(event):
 
 @authenticate
 def share_location_route(event, user_data, body):
-    print(body)
+    log(body)
     location_token = body.get("locationToken")
     if location_token and re.compile(r"[a-zA-Z0-9]{10}").match(location_token):
         pass
@@ -148,15 +153,16 @@ def share_location_route(event, user_data, body):
         event=event,
         http_code=200,
         body={"locationToken": location_token},
+        user_data=user_data,
     )
 
 
 def twilio_route(event):
-    print(event)
+    log(event)
 
     parsed_body = urllib.parse.parse_qs(event["body"])
 
-    print(parsed_body)
+    log(parsed_body)
 
     from_number = parsed_body["From"][0]
 
@@ -165,7 +171,7 @@ def twilio_route(event):
             "phone": ADMIN_PHONE,
             "message": f"Received a text message from {from_number} which is not valid",
         }
-        print(message)
+        log(message)
         return {
             "statusCode": 200,
             "body": "<Response/>",
@@ -174,20 +180,20 @@ def twilio_route(event):
             },
         }
 
-    print(f"Received a text message from {from_number}, checking if account exists...")
+    log(f"Received a text message from {from_number}, checking if account exists...")
 
     username = from_number[2:]
 
     user_data = get_user_data(username)
 
-    print(user_data)
+    log(user_data)
 
     if not user_data:
         message = {
             "phone": from_number,
             "message": f"You do not have an account, please sign up at dumbphoneapps.com",
         }
-        print(message)
+        log(message, user_data)
         sqs.send_message(
             QueueUrl=SMS_SQS_QUEUE_URL,
             MessageBody=json.dumps(message),
@@ -202,11 +208,11 @@ def twilio_route(event):
 
     msg_text = parsed_body["Body"][0]
 
-    print(msg_text)
+    log(msg_text, user_data)
 
     message = parse_message_as_note(msg_text, user_data, from_number)
 
-    print(message)
+    log(message, user_data)
     sqs.send_message(
         QueueUrl=SMS_SQS_QUEUE_URL,
         MessageBody=json.dumps(message),
@@ -241,7 +247,7 @@ def parse_message_as_grocery_items(msg_text, from_number):
 
         add_response = additem(event, {"key2": from_number}, {"name": group, "item": item})
 
-        print(add_response)
+        log(add_response)
 
         count = count + 1
 
@@ -274,6 +280,7 @@ def gather_uploaded_items_route(event, user_data, body):
         event=event,
         http_code=200,
         body={"files": output},
+        user_data=user_data,
     )
 
 
@@ -286,6 +293,7 @@ def generate_presigned_post(event, user_data, body):
             event=event,
             http_code=400,
             body=f"Invalid extension supplied {extension}",
+            user_data=user_data,
         )
     s3 = boto3.client(
         "s3",
@@ -302,21 +310,21 @@ def generate_presigned_post(event, user_data, body):
             Fields={"Content-Type": CONTENT_TYPES[extension]},
             Conditions=[["starts-with", "$Content-Type", ""]],
         )
-        print("Got presigned POST URL: %s", response["url"])
+        log(f"Got presigned POST URL: {response["url"]}", user_data)
         return format_response(
             event=event,
             http_code=200,
             body=response,
+            user_data=user_data,
         )
     except Exception as e:
-        print(e)
-        print(
-            "Couldn't get a presigned POST URL",
-        )
+        log(e, user_data)
+        log("Couldn't get a presigned POST URL", user_data)
     return format_response(
         event=event,
         http_code=500,
         body="Could not create a presigned url",
+        user_data=user_data,
     )
 
 
@@ -331,6 +339,7 @@ def acknowledge_presigned_post_success_route(event, user_data, body):
             event=event,
             http_code=400,
             body="You did not supply a fullFileName in your POST body",
+            user_data=user_data,
         )
 
     acknowledge_time = int(time.time())
@@ -352,12 +361,13 @@ def acknowledge_presigned_post_success_route(event, user_data, body):
         event=event,
         http_code=200,
         body="Successfully acknowledged the post",
+        user_data=user_data,
     )
 
 
 def generate_presigned_get(event):
     body = json.loads(event["body"])
-    print(body)
+    log(body)
     data_id = body.get("id", "")
     s3 = boto3.client(
         "s3",
@@ -391,77 +401,10 @@ def generate_presigned_get(event):
             body={"url": view_url, "download_url": download_url},
         )
     except Exception as e:
-        print(e)
-        print("Couldn't get a presigned GET URL")
+        log(e)
+        log("Couldn't get a presigned GET URL")
     return format_response(
         event=event,
         http_code=500,
         body="Could not create a presigned url",
-    )
-
-
-@authenticate
-def get_connections_route(event, user_data, body):
-    global connections_data
-
-    date_value = body["date"]
-
-    if connections_data and date_value in connections_data:
-        print("connections cache hit")
-        return format_response(
-            event=event,
-            http_code=200,
-            body=connections_data[date_value],
-        )
-
-    response = dynamo.get_item(
-        TableName=TABLE_NAME,
-        Key=python_obj_to_dynamo_obj(
-            {
-                "key1": "connections",
-                "key2": date_value,
-            }
-        ),
-    )
-
-    if "Item" in response:
-        print("connections db hit")
-        connections_data_from_db = dynamo_obj_to_python_obj(response["Item"])
-        connections_data[date_value] = connections_data_from_db['puzzle']
-        return format_response(
-            event=event,
-            http_code=200,
-            body=connections_data[date_value],
-        )
-
-    print("connections db miss")
-
-    connections_uri = f"https://www.nytimes.com/svc/connections/v2/{date_value}.json"
-
-    response = http.request(
-        "GET",
-        connections_uri,
-    )
-
-    try:
-        response_text = response.data.decode("utf-8")
-        response_json = json.loads(response_text, parse_float=str, parse_int=str)
-    except:
-        return None
-
-    token_data = {
-        "key1": "connections",
-        "key2": date_value,
-        "puzzle": response_json,
-    }
-    dynamo_data = python_obj_to_dynamo_obj(token_data)
-    dynamo.put_item(
-        TableName=TABLE_NAME,
-        Item=dynamo_data,
-    )
-
-    return format_response(
-        event=event,
-        http_code=200,
-        body=response_json,
     )

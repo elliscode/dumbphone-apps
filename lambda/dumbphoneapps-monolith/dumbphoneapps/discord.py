@@ -1,3 +1,4 @@
+from .dumbphoneapps_logger import log
 import json
 import time
 
@@ -28,6 +29,7 @@ def set_discord_token_route(event, user_data, body):
             event=event,
             http_code=400,
             body="You must supply a discordToken",
+            user_data=user_data,
         )
 
     python_data = {
@@ -47,6 +49,7 @@ def set_discord_token_route(event, user_data, body):
         event=event,
         http_code=200,
         body="Successfully wrote the discordToken to the database",
+        user_data=user_data,
     )
 
 
@@ -63,6 +66,7 @@ def discord_route(event, user_data, body):
             event=event,
             http_code=404,
             body="Discord token not found in the database",
+            user_data=user_data,
         )
 
     discord_headers = {"Authorization": f"Bot {discord_token}"}
@@ -82,8 +86,7 @@ def discord_route(event, user_data, body):
         post_body = body.copy()
         post_body.pop("csrf")
         post_body.pop("method")
-        print(post_body)
-        print(discord_headers)
+        log(post_body, user_data, discord_headers)
         response = http.request(
             body["method"],
             discord_uri,
@@ -145,6 +148,7 @@ def discord_route(event, user_data, body):
         event=event,
         http_code=200,
         body=response_json,
+        user_data=user_data,
     )
 
 
@@ -187,7 +191,6 @@ def get_dm_channels(event, user_data, body):
     dm_channels = []
     for item in response["Items"]:
         python_item = dynamo_obj_to_python_obj(item)
-        print(python_item)
         channel_data = python_item["channel"]
         dm_channels.append(channel_data)
 
@@ -195,4 +198,5 @@ def get_dm_channels(event, user_data, body):
         event=event,
         http_code=200,
         body=dm_channels,
+        user_data=user_data,
     )

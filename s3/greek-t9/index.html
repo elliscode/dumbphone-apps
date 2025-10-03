@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Greek T9</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=027" />
+    <link rel="stylesheet" href="../css/loader.css?v=027" />
+    <link rel="icon" type="image/png" href="../img/lambda.favicon.png?v=027" />
+    <style>
+#content {
+    display: flex;
+    flex-direction: column;
+}
+#greek-text {
+    height: calc(100vh - 85px);
+    border: 1px solid black;
+    border-radius: 5px;
+    display:flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+}
+#greek-text > span {
+    display:inline;
+    white-space: pre;
+}
+.placeholder {
+    width: 0px;
+    margin-left: 1px;
+    min-height:1em;
+}
+#input-box {
+    display: block;
+}
+#real-words {
+    height: 20px;
+    border: 1px solid black;
+    border-radius: 5px;
+    display:flex;
+    flex-wrap: nowrap;
+    align-content: flex-start;
+    overflow: hidden;
+    flex-grow: 1;
+}
+#real-words > div {
+    margin: 0px 10px;
+}
+.caret {
+    animation-name: caret-blink;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+    animation-timing-function: steps(2, start);
+}
+.active {
+    background-color:rgb(217, 255, 179);
+}
+#quiz-info {
+    box-sizing: border-box;
+    position: fixed;
+    top: calc(50vh - 75px);
+    left: calc(50vw - 75px);
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 10px;
+    width: 150px;
+    height: 150px;
+    background-color: #fff;
+}
+#quiz-info > div {
+    display:flex;
+    flex-direction:column;
+}
+@keyframes caret-blink {
+  0% {border-right: 1px solid black;}
+  100% {border-right: 1px solid rgba(0, 0, 0, 0);}
+}
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>greek-t9</b>
+    </div>
+
+    <div id="content">
+    <div id="greek-text" onclick="focusInvisibleInput()"><div class="placeholder"></div></div><div style="display:flex;flex-direction:row;"><div id="real-words"></div><input class="invisible-input" input-group-name="text-edit" primary-input="true" id="input-box" type="number" onfocus="setCaret()" onblur="clearCaret()"></div>
+    </div>
+    <button onclick="startQuiz(event)">Start quiz</button>
+    <div id="quiz-info" style="display: none;">
+        <div>
+            <div id="quiz-word"></div>
+            <div id="quiz-result"></div>
+        </div>
+    </div>
+
+    <div class="logout">
+      <button onclick="logOut(event)">Log out</button>
+    </div>
+    <script src="../js/utils.js?v=027"></script>
+    <script src="../js/env.js"></script>
+    <!-- https://github.com/eellak/gsoc2019-greek-morpho/blob/master/data/spell_dict_with_freq.dic -->
+    <script>
+const ALPHABET = {
+    Alpha: {name: "Alpha", glyph: JSON.parse('"\u0391"'), tonos: JSON.parse('"\u0386"')},
+    Beta: {name: "Beta", glyph: JSON.parse('"\u0392"')},
+    Gamma: {name: "Gamma", glyph: JSON.parse('"\u0393"')},
+    Delta: {name: "Delta", glyph: JSON.parse('"\u0394"')},
+    Epsilon: {name: "Epsilon", glyph: JSON.parse('"\u0395"'), tonos: JSON.parse('"\u0388"')},
+    Zeta: {name: "Zeta", glyph: JSON.parse('"\u0396"')},
+    Eta: {name: "Eta", glyph: JSON.parse('"\u0397"'), tonos: JSON.parse('"\u0389"')},
+    Theta: {name: "Theta", glyph: JSON.parse('"\u0398"')},
+    Iota: {name: "Iota", glyph: JSON.parse('"\u0399"'), tonos: JSON.parse('"\u038A"'), dialytika: JSON.parse('"\u03AA"')},
+    Kappa: {name: "Kappa", glyph: JSON.parse('"\u039A"')},
+    Lambda: {name: "Lambda", glyph: JSON.parse('"\u039B"')},
+    Mu: {name: "Mu", glyph: JSON.parse('"\u039C"')},
+    Nu: {name: "Nu", glyph: JSON.parse('"\u039D"')},
+    Xi: {name: "Xi", glyph: JSON.parse('"\u039E"')},
+    Omicron: {name: "Omicron", glyph: JSON.parse('"\u039F"'), tonos: JSON.parse('"\u038C"')},
+    Pi: {name: "Pi", glyph: JSON.parse('"\u03A0"')},
+    Rho: {name: "Rho", glyph: JSON.parse('"\u03A1"')},
+    Sigma: {name: "Sigma", glyph: JSON.parse('"\u03A3"')},
+    Tau: {name: "Tau", glyph: JSON.parse('"\u03A4"')},
+    Upsilon: {name: "Upsilon", glyph: JSON.parse('"\u03A5"'), tonos: JSON.parse('"\u038E"'), dialytika: JSON.parse('"\u03AB"')},
+    Phi: {name: "Phi", glyph: JSON.parse('"\u03A6"')},
+    Chi: {name: "Chi", glyph: JSON.parse('"\u03A7"')},
+    Psi: {name: "Psi", glyph: JSON.parse('"\u03A8"')},
+    Omega: {name: "Omega", glyph: JSON.parse('"\u03A9"'), tonos: JSON.parse('"\u038F"')},
+    alpha: {name: "alpha", glyph: JSON.parse('"\u03B1"'), tonos: JSON.parse('"\u03AC"')},
+    beta: {name: "beta", glyph: JSON.parse('"\u03B2"')},
+    gamma: {name: "gamma", glyph: JSON.parse('"\u03B3"')},
+    delta: {name: "delta", glyph: JSON.parse('"\u03B4"')},
+    epsilon: {name: "epsilon", glyph: JSON.parse('"\u03B5"'), tonos: JSON.parse('"\u03AD"')},
+    zeta: {name: "zeta", glyph: JSON.parse('"\u03B6"')},
+    eta: {name: "eta", glyph: JSON.parse('"\u03B7"'), tonos: JSON.parse('"\u03AE"')},
+    theta: {name: "theta", glyph: JSON.parse('"\u03B8"')},
+    iota: {name: "iota", glyph: JSON.parse('"\u03B9"'), tonos: JSON.parse('"\u03AF"'), dialytika: JSON.parse('"\u03CA"'), dialytika_tonos: JSON.parse('"\u0390"')},
+    kappa: {name: "kappa", glyph: JSON.parse('"\u03BA"')},
+    lambda: {name: "lambda", glyph: JSON.parse('"\u03BB"')},
+    mu: {name: "mu", glyph: JSON.parse('"\u03BC"')},
+    nu: {name: "nu", glyph: JSON.parse('"\u03BD"')},
+    xi: {name: "xi", glyph: JSON.parse('"\u03BE"')},
+    omicron: {name: "omicron", glyph: JSON.parse('"\u03BF"'), tonos: JSON.parse('"\u03CC"')},
+    pi: {name: "pi", glyph: JSON.parse('"\u03C0"')},
+    rho: {name: "rho", glyph: JSON.parse('"\u03C1"')},
+    sigmaf: {name: "sigmaf", glyph: JSON.parse('"\u03C2"')},
+    sigma: {name: "sigma", glyph: JSON.parse('"\u03C3"')},
+    tau: {name: "tau", glyph: JSON.parse('"\u03C4"')},
+    upsilon: {name: "upsilon", glyph: JSON.parse('"\u03C5"'), tonos: JSON.parse('"\u03CD"'), dialytika: JSON.parse('"\u03CB"'), dialytika_tonos: JSON.parse('"\u03B0"')},
+    phi: {name: "phi", glyph: JSON.parse('"\u03C6"')},
+    chi: {name: "chi", glyph: JSON.parse('"\u03C7"')},
+    psi: {name: "psi", glyph: JSON.parse('"\u03C8"')},
+    omega: {name: "omega", glyph: JSON.parse('"\u03C9"'), tonos: JSON.parse('"\u03CE"')},
+    tonos: {name: "tonos", glyph: JSON.parse('"\u0384"')},
+};
+Object.values(ALPHABET).forEach(x=>x['toString']=()=>x.glyph);
+const REVERSE_MAP = {};
+Object.values(ALPHABET).forEach(x => REVERSE_MAP[x.glyph] = x);
+Object.values(ALPHABET).filter(x => !!x.tonos).forEach(x => REVERSE_MAP[x.tonos] = x);
+Object.values(ALPHABET).filter(x => !!x.dialytika).forEach(x => REVERSE_MAP[x.dialytika] = x);
+Object.values(ALPHABET).filter(x => !!x.dialytika_tonos).forEach(x => REVERSE_MAP[x.dialytika_tonos] = x);
+let greekText = document.getElementById('greek-text');
+let inputBox = document.getElementById('input-box');
+let realWords = document.getElementById('real-words');
+let quizWord = document.getElementById('quiz-word');
+let quizResult = document.getElementById('quiz-result');
+let quizInfo = document.getElementById('quiz-info');
+let uppercase = false;
+let previousNumber = ' ';
+let previousTime = 0;
+let count = 0;
+function resetCount () {
+    if (count != 0) {
+        uppercase = false;
+    }
+    count = 0;
+}
+function focusInvisibleInput() {
+    inputBox.focus();
+    setCaret();
+}
+function clearCaret() {
+    let carets = Array.from(document.getElementsByClassName('caret'));
+    if (carets.length) {
+        carets.forEach(x=>x.classList.remove('caret'));
+    }
+}
+function setCaret(newElement) {
+    clearCaret();
+    if (newElement) {
+        newElement.classList.add('caret');
+    } else if (greekText.lastElementChild) {
+        greekText.lastElementChild.classList.add('caret');
+    }
+}
+function clearWordBank() {
+    while (realWords.firstElementChild) {
+        realWords.firstElementChild.remove();
+    }
+}
+const cache = {};
+const cacheDispatched = {};
+function updateWordBank() {
+    clearWordBank();
+    let caretWord = getCaretWord();
+    if (!caretWord) {
+        return;
+    }
+    let firstLetter = caretWord.substring(0,1);
+    let activeLetter = REVERSE_MAP[firstLetter];
+    if (!activeLetter) {
+        return;
+    }
+    let url = UI_DOMAIN + `/greek-t9/txt/${activeLetter.name.toLocaleLowerCase()}.txt`;
+    if (!!cache[url]) {
+        handleWordBankFirstLetter({target: {responseURL: url, responseText: cache[url]}});
+    } else if (!cacheDispatched[url]) {
+        cacheDispatched[url] = true;
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("GET", url, true); // false for synchronous request
+        xmlHttp.withCredentials = false;
+        xmlHttp.onload = handleWordBankFirstLetter;
+        xmlHttp.send();
+    }
+}
+function handleWordBankFirstLetter(event) {
+    if (!cache[event.target.responseURL]) {
+        cache[event.target.responseURL] = event.target.responseText.toLocaleLowerCase();
+    }
+    let caretWord = getCaretWord();
+    let caretWordLowerCase = caretWord.toLocaleLowerCase();
+    let words = cache[event.target.responseURL].split(/[\r\n]+/).filter(x=>x.startsWith(caretWordLowerCase)).slice(0,20);
+    words.forEach(x=>{
+        let p = document.createElement('div');
+        p.textContent = x;
+        realWords.appendChild(p);
+    });
+    if (realWords.firstElementChild) {
+        realWords.firstElementChild.classList.add('active');
+    }
+}
+function startQuiz() {
+    let url = UI_DOMAIN + `/greek-t9/txt/quiz.txt?v=001`;
+    if (!!cache[url]) {
+        showQuiz({target: {responseURL: url, responseText: cache[url]}});
+    } else if (!cacheDispatched[url]) {
+        cacheDispatched[url] = true;
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("GET", url, true); // false for synchronous request
+        xmlHttp.withCredentials = false;
+        xmlHttp.onload = showQuiz;
+        xmlHttp.send();
+    }
+}
+let quizBank = undefined;
+function showQuiz(event) {
+    if (!cache[event.target.responseURL]) {
+        cache[event.target.responseURL] = event.target.responseText;
+    }
+    if (!quizBank) {
+        quizBank = [];
+        let lines = cache[event.target.responseURL].split('\n');
+        for (let line of lines) {
+            let parts = line.split('\t');
+            if (parts.length == 2) {
+                quizBank.push({'english': parts[1], 'greek': parts[0]});
+            }
+        }
+    }
+    displayQuizItem();
+}
+function displayQuizItem() {
+    quizInfo.style.display = 'block';
+    let item = quizBank[Math.floor(Math.random() * quizBank.length)];
+    quizWord.innerText = item.english;
+    quizWord.setAttribute('greek-word', item.greek);
+    quizWord.style.display = 'block';
+}
+function getCaretWord() {
+    let caretElement = document.querySelector('.caret');
+    if (!caretElement.textContent.trim()) {
+        return;
+    }
+    let text = caretElement.textContent;
+    // go forwards 
+    let next = caretElement;
+    while(next.nextElementSibling) {
+        next = next.nextElementSibling;
+        if (!next.textContent.trim()) {
+            break;
+        }
+        text = text + next.textContent;
+    }
+    // go forwards 
+    let prev = caretElement;
+    while(prev.previousElementSibling) {
+        prev = prev.previousElementSibling;
+        if (!prev.textContent.trim()) {
+            break;
+        }
+        text = prev.textContent + text;
+    }
+    return text;
+}
+function tNineEmulator(event) {
+    event.preventDefault();
+    if (event.type == 'keydown') {
+        let activeElement = document.querySelector('.active');
+        if (event.key == 'Enter') {
+            let active = document.querySelector('.active');
+            if (active) {
+                let newText = active.textContent.replace(new RegExp(`^${getCaretWord()}`, 'i'), '');
+                if (newText) {
+                    let character = document.createElement('span');
+                    character.textContent = newText;
+                    greekText.appendChild(character);
+                    setCaret();
+                }                
+                clearWordBank();
+            } else if (quizWord.textContent.trim()) {
+                validateQuizWord();
+                displayQuizItem();
+            } else {
+                const smsLink = document.createElement("a");
+                smsLink.style.display = "block";
+                smsLink.href = "sms://?&body=" + encodeURIComponent(greekText.textContent);
+                smsLink.click();
+            }
+        } else if (event.key == 'EndCall') {
+            if (activeElement) {
+                clearWordBank();
+            } else {
+                event.target.blur();
+            }
+        } else if (event.key && event.key == 'ArrowUp') {
+            uppercase = true;
+            count = 0;            
+        } else if (event.key && event.key == 'ArrowDown') {
+            uppercase = false;
+            count = 0;
+        } else if (event.key && event.key == 'ArrowLeft') {
+            if (activeElement) {
+                switchSelectedWord(-1);
+            } else {
+                moveCaret(-1);
+            }
+        } else if (event.key && event.key == 'ArrowRight') {
+            if (activeElement) {
+                switchSelectedWord(1);
+            } else {
+                moveCaret(1);
+            }
+        } else if (event.key && event.key == 'AudioVolumeDown') {
+            fullClear();
+        }
+    } else if (event.type == 'keyup') {
+        let caretElement = document.querySelector('.caret');
+        let number = event.key;
+        if (previousNumber == number) {
+            if (Date.now() - previousTime < 120) {
+                return;
+            }
+            count = count + 1;
+        } else {
+            resetCount();
+        }
+        previousNumber = number;
+        if (event.key == 'Backspace') {
+            let previous = caretElement.previousElementSibling;
+            if (caretElement && !caretElement.classList.contains('placeholder')) {
+                caretElement.remove();
+            }
+            setCaret(previous);
+            updateWordBank();
+        } else if (['0','1','2','3','4','5','6','7','8','9'].includes(event.key)) {
+            let greekLetter = getGreekLetter(number, count);
+            if (count > 0) {
+                let previous = caretElement.previousElementSibling;
+                caretElement.remove();
+                caretElement = previous;
+            }
+            if (uppercase) {
+                let newKey = greekLetter.name.substring(0,1).toLocaleUpperCase() + greekLetter.name.substring(1);
+                if (ALPHABET[newKey]) {
+                    greekLetter = ALPHABET[newKey];
+                }
+            }
+            let character = document.createElement('span');
+            if (greekLetter.name == 'tonos' && REVERSE_MAP[caretElement.textContent].tonos) {
+                character.textContent = REVERSE_MAP[caretElement.textContent].tonos;
+                let previous = caretElement.previousElementSibling;
+                caretElement.remove();
+                caretElement = previous;
+            } else {
+                character.textContent = greekLetter.toString();
+            }
+            greekText.insertBefore(character, caretElement.nextElementSibling);
+            setCaret(character);
+            updateWordBank();
+        }
+        previousTime = Date.now();
+    }
+}
+function validateQuizWord() {
+    if (greekText.textContent.trim() == quizWord.getAttribute('greek-word').trim()) {
+        quizResult.innerText = `Correct! ${quizWord.getAttribute('greek-word')}`;
+        fullClear();
+    } else {
+        quizResult.innerText = `WRONG! ${quizWord.getAttribute('greek-word')}`;
+    }
+}
+function moveCaret(direction) {
+    let caretElement = document.querySelector('.caret');
+    let next = caretElement;
+    if (caretElement) {
+        if (direction > 0) {
+            next = caretElement.nextElementSibling;
+        } else if (direction < 0) {
+            next = caretElement.previousElementSibling;
+        }
+    }
+    if (next) {
+        clearCaret();
+        next.classList.add('caret');
+    }
+}
+function fullClear() {
+    while (greekText.lastElementChild && !greekText.lastElementChild.classList.contains('placeholder')) {
+        greekText.lastElementChild.remove();
+    }
+    setCaret();
+    updateWordBank();
+}
+function switchSelectedWord(direction) {
+    let activeElement = document.querySelector('.active');
+    let next = activeElement;
+    if (activeElement) {
+        if (direction > 0) {
+            next = activeElement.nextElementSibling;
+            if (!next) {
+                next = realWords.firstElementChild;
+            }
+        } else if (direction < 0) {
+            next = activeElement.previousElementSibling;
+            if (!next) {
+                next = realWords.lastElementChild;
+            }
+        }
+        activeElement.classList.remove('active');
+    }
+    if (next) {
+        next.classList.add('active');
+        next.scrollIntoView();
+    }
+}
+/// sigmaf
+function getGreekLetter(number, count) {
+    if (number == '1') {
+        return ALPHABET['tonos'];
+    } else if (number == '2') {
+        if (count % 4 == 0) {
+            return ALPHABET['alpha'];
+        } else if (count % 4 == 1) {
+            return ALPHABET['beta'];
+        } else if (count % 4 == 2) {
+            return ALPHABET['chi'];
+        } else if (count % 4 == 3) {
+            return '2';
+        }
+    } else if (number == '3') {
+        if (count % 4 == 0) {
+            return ALPHABET['delta'];
+        } else if (count % 4 == 1) {
+            return ALPHABET['epsilon'];
+        } else if (count % 4 == 2) {
+            return ALPHABET['phi'];
+        } else if (count % 4 == 3) {
+            return '3';
+        }
+    } else if (number == '4') {
+        if (count % 4 == 0) {
+            return ALPHABET['gamma'];
+        } else if (count % 4 == 1) {
+            return ALPHABET['eta'];
+        } else if (count % 4 == 2) {
+            return ALPHABET['iota'];
+        } else if (count % 4 == 3) {
+            return '4';
+        }
+    } else if (number == '5') {
+        if (count % 4 == 0) {
+            return ALPHABET['gamma'];
+        } else if (count % 4 == 1) {
+            return ALPHABET['kappa'];
+        } else if (count % 4 == 2) {
+            return ALPHABET['lambda'];
+        } else if (count % 4 == 3) {
+            return '5';
+        }
+    } else if (number == '6') {
+        if (count % 5 == 0) {
+            return ALPHABET['mu'];
+        } else if (count % 5 == 1) {
+            return ALPHABET['nu'];
+        } else if (count % 5 == 2) {
+            return ALPHABET['omicron'];
+        } else if (count % 5 == 3) {
+            return ALPHABET['omega'];
+        } else if (count % 5 == 4) {
+            return '6';
+        } 
+    } else if (number == '7') {
+        if (count % 6  == 0) {
+            return ALPHABET['pi'];
+        } else if (count % 6 == 1) {
+            return ALPHABET['psi'];
+        } else if (count % 6 == 2) {
+            return ALPHABET['rho'];
+        } else if (count % 6 == 3) {
+            return ALPHABET['sigma'];
+        } else if (count % 6 == 4) {
+            return ALPHABET['sigmaf'];
+        } else if (count % 6 == 5) {
+            return '7';
+        }
+    } else if (number == '8') {
+        if (count % 4 == 0) {
+            return ALPHABET['tau'];
+        } else if (count % 4 == 1) {
+            return ALPHABET['upsilon'];
+        } else if (count % 4 == 2) {
+            return ALPHABET['theta'];
+        } else if (count % 4 == 3) {
+            return '8';
+        }
+    } else if (number == '9') {
+        if (count % 5 == 0) {
+            return ALPHABET['omega'];
+        } else if (count % 5 == 1) {
+            return ALPHABET['xi'];
+        } else if (count % 5 == 2) {
+            return ALPHABET['upsilon'];
+        } else if (count % 5 == 3) {
+            return ALPHABET['zeta'];
+        } else if (count % 5 == 4) {
+            return '9';
+        }
+    } else if (number == '0') {  
+        return ' ';
+    }
+}
+inputBox.addEventListener('keyup', tNineEmulator);
+inputBox.addEventListener('keydown', tNineEmulator);
+inputBox.addEventListener('keypress', tNineEmulator);
+inputBox.addEventListener('input', tNineEmulator);
+    </script>
+  </body>
+</html>
+

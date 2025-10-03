@@ -3,15 +3,14 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Location Viewer</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=024" />
-    <link rel="stylesheet" href="../css/loader.css?v=024" />
-    <link rel="icon" type="image/png" href="../img/pin.favicon.png?v=024" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=027" />
+    <link rel="stylesheet" href="../css/loader.css?v=027" />
+    <link rel="icon" type="image/png" href="../img/pin.favicon.png?v=027" />
     <style>
       .add-to-group button {
         height: 20px;
       }
     </style>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
   </head>
 
   <body>
@@ -51,7 +50,7 @@
       <button onclick="logOut(event)">Log out</button>
     </div>
 
-    <script src="../js/utils.js?v=024"></script>
+    <script src="../js/utils.js?v=027"></script>
     <script src="../js/env.js"></script>
     <script>
 if (!!csrfToken) {
@@ -143,17 +142,14 @@ function handleShare(event) {
       value +
       '">Click here for directions</a>';
     // openInfoWindow(`last updated ${timestamp.toLocaleString()}`);
-    if (window.isES6) {
-      moveMarker();
-    }
 
     previousValues.push(value);
-    if (previousValues.length > 6) {
+    if (previousValues.length > 10) {
       previousValues.shift();
     }
 
     if (
-      previousValues.length == 6 &&
+      previousValues.length == 10 &&
       previousValues.every((val) => val === previousValues[0])
     ) {
       openInfoWindow("Reported position hasn't changed for the last 60 seconds, assuming the user stopped sharing...", true);
@@ -162,6 +158,10 @@ function handleShare(event) {
     }
 
     locationTimeout = setTimeout(getCurrentLocation, UPDATE_PERIOD_SECONDS * 1000);
+    
+    if (window.isES6) {
+      moveMarker();
+    }
   }
 }
 

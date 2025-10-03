@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Location Sharer</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=024" />
-    <link rel="stylesheet" href="../css/loader.css?v=024" />
-    <link rel="icon" type="image/png" href="../img/pin.favicon.png?v=024" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=027" />
+    <link rel="stylesheet" href="../css/loader.css?v=027" />
+    <link rel="icon" type="image/png" href="../img/pin.favicon.png?v=027" />
     <style>
       body {
         padding-bottom: 30px;
@@ -29,12 +29,16 @@
     </button>
 
     <div id="link-div" style="display: none">
-      <p>Share your location! Send this link to your friends!</p>
+      <p>Share your location!</p>
       <p><a id="sms-link">Click here to send live updates as SMS</a></p>
       <p><a id="sms-directions-link">Click here to send directions as SMS</a></p>
     </div>
 
+    <pre id="wakelock"></pre>
+
     <pre id="json"></pre>
+
+    <pre id="location-text"></pre>
 
     <div id="loading">
       <div class="lds-spinner">
@@ -56,9 +60,9 @@
     <div class="logout">
       <button onclick="logOut(event)">Log out</button>
     </div>
-    <script src="../js/utils.js?v=024"></script>
+    <script src="../js/utils.js?v=027"></script>
     <script src="../js/env.js"></script>
-    <script src="js/location-sharer.js?v=024"></script>
+    <script src="js/location-sharer.js?v=132"></script>
     <script>
 if (
   !navigator.userAgent.includes("Chrome") &&

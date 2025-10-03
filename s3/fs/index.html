@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>File Sharer</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=024" />
-    <link rel="stylesheet" href="../css/loader.css?v=024" />
-    <link rel="icon" type="image/png" href="../img/share.favicon.png?v=024" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=027" />
+    <link rel="stylesheet" href="../css/loader.css?v=027" />
+    <link rel="icon" type="image/png" href="../img/share.favicon.png?v=027" />
     <style>
       .video {
         width: 100%;
@@ -25,11 +25,10 @@
       <button onclick="logOut(event)">Log out</button>
     </div>
 
-    <script src="../js/utils.js?v=024"></script>
+    <script src="../js/utils.js?v=027"></script>
     <script src="../js/env.js"></script>
     <script>
-const urlParams = new URLSearchParams(window.location.search);
-const dataId = urlParams.get("id");
+const dataId = getParameterByName('id');
 
 function loadFile(id) {
   let url = API_DOMAIN + "/one-offs/generate-presigned-get";

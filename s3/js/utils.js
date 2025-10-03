@@ -374,6 +374,20 @@ function hideLoader() {
   }
   Array.from(document.getElementsByClassName('hide-while-loading')).forEach(x=>x.classList.remove('hide-while-loading'));
 }
+function setStylesheet(uri) {
+  var head = document.head;
+  var link = document.createElement("link");
+
+  link.type = "text/css";
+  link.rel = "stylesheet";
+  link.href = uri;
+
+  head.appendChild(link);
+}
+function forceToDecimal(event) {
+  let textBox = event.target;
+  textBox.value = textBox.value.replace(/[^\d]+/g, ".");
+}
 // allows for clicking the background of the modal to exit the modal
 let modalBackgrounds = document.getElementsByClassName("modal-bg");
 for (let i = 0; i < modalBackgrounds.length; i++) {

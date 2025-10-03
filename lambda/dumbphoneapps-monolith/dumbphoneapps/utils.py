@@ -1,3 +1,4 @@
+from .dumbphoneapps_logger import log
 import json
 import os
 import re
@@ -25,7 +26,7 @@ sqs = boto3.client("sqs")
 scheduler = boto3.client("scheduler")
 
 
-def format_response(event, http_code, body, headers=None):
+def format_response(event, http_code, body, headers=None, user_data=None):
     if isinstance(body, str):
         body = {"message": body}
     if "origin" in event["headers"] and event["headers"]["origin"].startswith(DOMAIN_NAME_WWW):
@@ -33,7 +34,7 @@ def format_response(event, http_code, body, headers=None):
     elif "origin" in event["headers"] and event["headers"]["origin"].startswith(DOMAIN_NAME):
         domain_name = DOMAIN_NAME
     else:
-        print(f'Invalid origin {event["headers"].get("origin")}')
+        log(f'Invalid origin {event["headers"].get("origin")}')
         http_code = 403
         body = {"message": "Forbidden"}
         domain_name = "*"
@@ -46,6 +47,7 @@ def format_response(event, http_code, body, headers=None):
     }
     if headers is not None:
         all_headers.update(headers)
+    log(body, user_data, headers)
     return {
         "statusCode": http_code,
         "body": json.dumps(body),
@@ -93,7 +95,7 @@ def get_token(token_string):
 
 
 def delete_token(token_id):
-    print("deleting token")
+    log("deleting token")
     dynamo.delete_item(
         Key=python_obj_to_dynamo_obj({"key1": "token", "key2": token_id}),
         TableName=TABLE_NAME,
@@ -127,7 +129,11 @@ def authenticate(func):
     def wrapper_func(*args, **kwargs):
         event = args[0]
         if "cookie" not in event["headers"]:
-            return format_response(event=event, http_code=403, body="No active session, please log in")
+            return format_response(
+                event=event,
+                http_code=403,
+                body="No active session, please log in",
+            )
         cookie_string = event["headers"]["cookie"]
         cookie = parse_cookie(cookie_string)
         body = parse_body(event["body"])
@@ -154,6 +160,7 @@ def authenticate(func):
                 body="Your CSRF token is invalid, your session has expired, please re log in",
             )
         user_data = get_user_data(token_data["user"])
+        log(body, user_data)
         return func(event, user_data, body)
 
     return wrapper_func
@@ -171,6 +178,7 @@ def clear_all_tokens_route(event, user_data, body):
         event=event,
         http_code=200,
         body=f"Successfully logged out {user_data['key2']} of all devices",
+        user_data=user_data,
     )
 
 
@@ -188,6 +196,7 @@ def ios_cookie_refresh_route(event, user_data, body):
         headers={
             "Set-Cookie": f'dumbphoneapps-auth-token={token_data["key2"]}; Domain=.dumbphoneapps.com; Expires={date_string}; Secure; HttpOnly',
         },
+        user_data=user_data,
     )
 
 
@@ -196,13 +205,17 @@ def login_route(event):
     phone = body["phone"]
     submitted_otp = body["otp"]
 
-    print(phone)
-    print(submitted_otp)
+    log(phone)
+    log(submitted_otp, phone)
 
     # get user data
     user_data = get_user_data(phone)
     if user_data is None:
-        return format_response(event=event, http_code=500, body="No user exists")
+        return format_response(
+            event=event,
+            http_code=500,
+            body="No user exists",
+        )
 
     # get otp
     otp_data = get_otp(phone)
@@ -211,6 +224,7 @@ def login_route(event):
             event=event,
             http_code=500,
             body="OTP expired, please wait 30 seconds and try to log in again",
+            user_data=user_data,
         )
     diff = otp_data["last_failure"] + 30 - int(time.time())
     if diff > 0:
@@ -218,12 +232,18 @@ def login_route(event):
             event=event,
             http_code=403,
             body=f"Please wait {diff} seconds before trying to log in again",
+            user_data=user_data,
         )
 
     if submitted_otp != otp_data["otp"]:
         otp_data["last_failure"] = int(time.time())
         set_otp(phone, otp_data)
-        return format_response(event=event, http_code=403, body="Incorrect OTP, please try again")
+        return format_response(
+            event=event,
+            http_code=403,
+            body="Incorrect OTP, please try again",
+            user_data=user_data,
+        )
 
     # delete the OTP
     delete_otp(phone)
@@ -243,6 +263,7 @@ def login_route(event):
             "x-csrf-token": token_data["csrf"],
             "Set-Cookie": f'dumbphoneapps-auth-token={token_data["key2"]}; Domain=.dumbphoneapps.com; Expires={date_string}; Secure; HttpOnly',
         },
+        user_data=user_data,
     )
 
 
@@ -262,7 +283,7 @@ def otp_route(event):
     if user_data is None:
         user_data = create_user_data(phone)
         alert_admin_of_new_user(phone)
-    print(user_data)
+    log(user_data)
 
     # generate and set OTP
     otp_data = get_otp(phone)
@@ -279,15 +300,20 @@ def otp_route(event):
             "phone": f"+1{phone}",
             "message": f"{otp_data['otp']} is your dumbphoneapps.com one-time passcode\n\n@dumbphoneapps.com #{otp_data['otp']}",
         }
-        print(message)
+        log(message, user_data)
         sqs.send_message(
             QueueUrl=SMS_SQS_QUEUE_URL,
             MessageBody=json.dumps(message),
         )
         body_value = {"username": phone}
-    print(otp_data)
+    log(otp_data, user_data)
 
-    return format_response(event=event, http_code=200, body=body_value)
+    return format_response(
+        event=event,
+        http_code=200,
+        body=body_value,
+        user_data=user_data,
+    )
 
 
 def alert_admin_of_new_user(phone):
@@ -296,7 +322,7 @@ def alert_admin_of_new_user(phone):
         "phone": ADMIN_PHONE,
         "message": f"A new user has joined dumbphoneapps!\n\nPhone: {phone}",
     }
-    print(message)
+    log(message, user_data)
     sqs.send_message(
         QueueUrl=SMS_SQS_QUEUE_URL,
         MessageBody=json.dumps(message),
@@ -418,6 +444,7 @@ def logged_in_check_route(event, user_data, body):
         event=event,
         http_code=200,
         body="You are logged in",
+        user_data=user_data,
     )
 
 
@@ -427,4 +454,5 @@ def get_ip_geo_api_key(event, user_data, body):
         event=event,
         http_code=200,
         body={"api_key": IP_GEO_API_KEY},
+        user_data=user_data,
     )

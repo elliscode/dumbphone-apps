@@ -1,3 +1,5 @@
+from dumbphoneapps.dumbphoneapps_logger import log
+
 import json
 import traceback
 
@@ -42,7 +44,14 @@ from dumbphoneapps.one_offs import (
     generate_presigned_get,
     acknowledge_presigned_post_success_route,
     gather_uploaded_items_route,
+)
+from dumbphoneapps.connections import (
     get_connections_route,
+    get_guesses_route,
+    set_guesses_route,
+    get_connections_sports_route,
+    get_guesses_sports_route,
+    set_guesses_sports_route,
 )
 from dumbphoneapps.quiz_diary import (
     get_questions_route,
@@ -87,7 +96,6 @@ def lambda_handler(event, context):
     try:
         print(json.dumps(event))
         result = route(event)
-        print(result)
         return result
     except Exception:
         traceback.print_exc()
@@ -209,8 +217,18 @@ def route(event):
         return get_timestamp_report_data_route(event)
     if path_equals(event=event, method="POST", path="/one-offs/get-ip-geo-api-key"):
         return get_ip_geo_api_key(event)
-    if path_equals(event=event, method="POST", path="/one-offs/get-connections"):
+    if path_equals(event=event, method="POST", path="/connections/get-connections"):
         return get_connections_route(event)
+    if path_equals(event=event, method="POST", path="/connections/get-guesses"):
+        return get_guesses_route(event)
+    if path_equals(event=event, method="POST", path="/connections/set-guesses"):
+        return set_guesses_route(event)
+    if path_equals(event=event, method="POST", path="/connections/get-connections-sports"):
+        return get_connections_sports_route(event)
+    if path_equals(event=event, method="POST", path="/connections/get-guesses-sports"):
+        return get_guesses_sports_route(event)
+    if path_equals(event=event, method="POST", path="/connections/set-guesses-sports"):
+        return set_guesses_sports_route(event)
     if path_starts_with(event=event, method="POST", path="/discord/"):
         return discord_route(event)
 

@@ -1,3 +1,5 @@
+from .dumbphoneapps_logger import log
+
 import base64
 import json
 import os
@@ -50,12 +52,13 @@ def get_forecast_route(event, user_data, body):
             event=event,
             http_code=400,
             body=f"Improperly formatted events, must be in the format {GET_FORECAST_SCHEMA}",
+            user_data=user_data,
         )
 
-    found_token = get_token()
+    found_token = get_token(user_data)
 
     uri = f"https://api.meteomatics.com/{body['today']}T{body['midnight']}Z--{body['eightDaysFromNow']}T{body['midnight']}Z:PT24H/t_min_2m_24h:F,t_max_2m_24h:F,weather_symbol_24h:idx/{body['lat']},{body['lon']}/json"
-    print(uri)
+    log(uri, user_data)
     daily_response = http.request(
         "GET",
         uri,
@@ -76,14 +79,15 @@ def get_forecast_route(event, user_data, body):
         event=event,
         http_code=200,
         body={"daily": daily_response_json, "hourly": hourly_response_json},
+        user_data=user_data,
     )
 
 
-def get_token():
+def get_token(user_data):
     global weather_token
     global weather_token_expiration
     if weather_token and time.time() < weather_token_expiration:
-        print("weather cache hit")
+        log("weather cache hit", user_data)
         return weather_token
 
     response = dynamo.get_item(
@@ -97,14 +101,14 @@ def get_token():
     )
 
     if "Item" in response:
-        print("weather db hit")
+        log("weather db hit", user_data)
         token_data = dynamo_obj_to_python_obj(response["Item"])
         if token_data["expiration"] > int(time.time()):
             weather_token = token_data["token"]
             weather_token_expiration = token_data["expiration"]
             return token_data["token"]
 
-    print("weather db miss")
+    log("weather db miss", user_data)
 
     base64_encoded_auth = base64.b64encode(f"{WEATHER_API_USERNAME}:{WEATHER_API_PASSWORD}".encode("utf-8")).decode(
         "utf-8"

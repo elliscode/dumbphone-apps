@@ -1,3 +1,5 @@
+from .dumbphoneapps_logger import log
+
 import datetime
 import time
 
@@ -30,6 +32,7 @@ def set_questions_route(event, user_data, body):
         event=event,
         http_code=201,
         body="Successfully wrote questions to database",
+        user_data=user_data,
     )
 
 
@@ -51,7 +54,7 @@ def get_questions_route(event, user_data, body):
     latest_questions = []
     for item in response["Items"]:
         python_item = dynamo_obj_to_python_obj(item)
-        print(python_item)
+        log(python_item, user_data)
         latest_questions = python_item["questions"]
         break
 
@@ -59,6 +62,7 @@ def get_questions_route(event, user_data, body):
         event=event,
         http_code=200,
         body={"questions": latest_questions},
+        user_data=user_data,
     )
 
 
@@ -81,6 +85,7 @@ def get_answers_route(event, user_data, body):
             event=event,
             http_code=200,
             body={"answers": {}},
+            user_data=user_data,
         )
 
     answers = dynamo_obj_to_python_obj(response["Item"])
@@ -90,12 +95,14 @@ def get_answers_route(event, user_data, body):
             event=event,
             http_code=200,
             body={"answers": {}},
+            user_data=user_data,
         )
 
     return format_response(
         event=event,
         http_code=200,
         body={"answers": answers["answers"]},
+        user_data=user_data,
     )
 
 
@@ -108,6 +115,7 @@ def get_report_data_route(event, user_data, body):
             event=event,
             http_code=400,
             body="You need to supply a date in your POST body",
+            user_data=user_data,
         )
     date_obj = datetime.datetime.strptime(body["date"], "%Y-%m-%d")
     keys = []
@@ -142,6 +150,7 @@ def get_report_data_route(event, user_data, body):
         event=event,
         http_code=200,
         body={"answers": output_answers, "foodDiary": output_diary},
+        user_data=user_data,
     )
 
 
@@ -154,6 +163,7 @@ def set_answers_route(event, user_data, body):
             event=event,
             http_code=400,
             body="You need to provide a list of answers",
+            user_data=user_data,
         )
 
     answers = body["answers"]
@@ -178,4 +188,5 @@ def set_answers_route(event, user_data, body):
         event=event,
         http_code=201,
         body="Successfully wrote all answers to the database",
+        user_data=user_data,
     )

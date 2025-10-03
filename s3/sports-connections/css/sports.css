@@ -1,0 +1,64 @@
+body {
+    background-color: #121212;
+}
+
+#guesses {
+    color: #f0f0ee;
+}
+
+.guess {
+    background-color: #f0f0ee;
+}
+
+.card {
+    border-radius: 100%;
+    background-color: #323232;
+    color: #f0f0ee;
+}
+
+.card>div {
+    border-radius: 100%;
+}
+
+.chosen {
+    border-radius: 100%;
+    background-color: #efefe6;
+    color: #000;
+}
+
+#game-controls>button {
+    background-color:#121212;
+    color: #f0f0ee;
+}
+
+#game-controls>button:hover {
+    background-color:#2d2d2d;
+}
+
+.answer {
+    border-radius: calc((((100vw - 20px) / 4) - 2px) / 2);
+}
+
+.result-cell {
+    border-radius: 100%;
+}
+
+#display-text {
+    color: #f0f0ee;
+}
+
+#date-text {
+    color: #f0f0ee;
+}
+
+.sports-nav {
+    color: #f0f0ee;
+}
+
+a {
+  color: rgb(3, 152, 234);
+}
+
+a:visited {
+  color: rgb(196, 3, 234);;
+}

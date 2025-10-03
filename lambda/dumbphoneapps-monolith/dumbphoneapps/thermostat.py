@@ -27,6 +27,7 @@ def get_token_from_code_route(event, user_data, body):
             event=event,
             http_code=400,
             body="You must supply a code",
+            user_data=user_data,
         )
 
     auth_code = body["code"]
@@ -57,12 +58,14 @@ def get_token_from_code_route(event, user_data, body):
                 "access_token": google_token_response_json["access_token"],
                 "expires_in": google_token_response_json["expires_in"],
             },
+            user_data=user_data,
         )
     else:
         return format_response(
             event=event,
             http_code=google_token_response.status,
             body="Token could not be retrieved, please reauthorize the application",
+            user_data=user_data,
         )
 
 
@@ -77,6 +80,7 @@ def get_token_from_existing_refresh_token_route(event, user_data, body):
             event=event,
             http_code=404,
             body="No existing token found for user, please reauthorize the application",
+            user_data=user_data,
         )
 
     nest_token_item = dynamo_obj_to_python_obj(nest_token_response["Item"])
@@ -96,10 +100,12 @@ def get_token_from_existing_refresh_token_route(event, user_data, body):
                 "access_token": google_token_response_json["access_token"],
                 "expires_in": google_token_response_json["expires_in"],
             },
+            user_data=user_data,
         )
     else:
         return format_response(
             event=event,
             http_code=google_token_response.status,
             body="Token could not be retrieved, please reauthorize the application",
+            user_data=user_data,
         )

@@ -505,26 +505,16 @@ function removeItem(item) {
     groupParent.style.display = 'none';
   }
 }
-function setStylesheet(uri) {
-  var head = document.head;
-  var link = document.createElement("link");
-
-  link.type = "text/css";
-  link.rel = "stylesheet";
-  link.href = uri;
-
-  head.appendChild(link);
-}
 let oldUi = true;
 const addItemButton = document.getElementById('add-item');
 if (!navigator.userAgent.includes("Chrome") && navigator.userAgent.includes("Safari")) {
   oldUi = false;
   iosCookieRefresh();
-  setStylesheet("css/grocery-list-new.css?v=024");
+  setStylesheet("css/grocery-list-new.css?v=027");
   document.getElementById("item-text-box").addEventListener("blur", startHide);
   addItemButton.parentElement.appendChild(document.getElementById('submit-bar'));
 } else {
-  setStylesheet("css/grocery-list-old.css?v=024");
+  setStylesheet("css/grocery-list-old.css?v=027");
 }
 function handleGetList(event) {
   let resultFromDefaultHandler = defaultHandler(event);

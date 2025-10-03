@@ -3,9 +3,9 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Timestamp Logger Report</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=024" />
-    <link rel="stylesheet" href="../css/loader.css?v=024" />
-    <link rel="icon" type="image/png" href="../img/stopwatch.favicon.png?v=024" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=027" />
+    <link rel="stylesheet" href="../css/loader.css?v=027" />
+    <link rel="icon" type="image/png" href="../img/stopwatch.favicon.png?v=027" />
     <style>
 .timeline {
   width: 100%;
@@ -91,7 +91,7 @@
       </div>
     </div>
 
-    <script src="../js/utils.js?v=024"></script>
+    <script src="../js/utils.js?v=027"></script>
     <script src="../js/env.js"></script>
     <script>
 let loader = document.getElementById("loading");
@@ -194,7 +194,7 @@ function handleReportData(event) {
         let totalMinutes = total / 1000 / 60;
         let totalHours = totalMinutes / 60;
         let roundedHours = `${Math.floor(totalHours)}`.padStart(2,'0');
-        let roundedMinutes = `${Math.round(totalMinutes) % 60}`.padStart(2,'0');
+        let roundedMinutes = `${Math.floor(totalMinutes) % 60}`.padStart(2,'0');
         let totalDiv = document.createElement('p');
         totalDiv.display = 'block';
         totalDiv.innerText = `Total: ${roundedHours}:${roundedMinutes}`;

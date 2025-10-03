@@ -1,3 +1,5 @@
+from .dumbphoneapps_logger import log
+
 import datetime
 import time
 
@@ -50,6 +52,7 @@ def set_timestamps_route(event, user_data, body):
             event=event,
             http_code=400,
             body=f"Improperly formatted events, must be in the format {TIMESTAMPS_LIST_SCHEMA}",
+            user_data=user_data,
         )
 
     timestamps_entry = {
@@ -67,6 +70,7 @@ def set_timestamps_route(event, user_data, body):
         event=event,
         http_code=201,
         body="Successfully wrote timestamp events to database",
+        user_data=user_data,
     )
 
 
@@ -88,7 +92,7 @@ def get_timestamps_route(event, user_data, body):
     latest_timestamps = []
     for item in response["Items"]:
         python_item = dynamo_obj_to_python_obj(item)
-        print(python_item)
+        log(python_item, user_data)
         latest_timestamps = python_item["events"]
         break
 
@@ -96,6 +100,7 @@ def get_timestamps_route(event, user_data, body):
         event=event,
         http_code=200,
         body={"events": latest_timestamps},
+        user_data=user_data,
     )
 
 
@@ -118,6 +123,7 @@ def get_values_route(event, user_data, body):
             event=event,
             http_code=200,
             body={"timestamp": 0, "values": []},
+            user_data=user_data,
         )
 
     values = dynamo_obj_to_python_obj(response["Item"])
@@ -127,12 +133,14 @@ def get_values_route(event, user_data, body):
             event=event,
             http_code=200,
             body={"timestamp": 0, "values": []},
+            user_data=user_data,
         )
 
     return format_response(
         event=event,
         http_code=200,
         body={"timestamp": values.get("timestamp", 0), "values": values["values"]},
+        user_data=user_data,
     )
 
 
@@ -149,6 +157,7 @@ def add_value_route(event, user_data, body):
             event=event,
             http_code=400,
             body=f"Improperly formatted timestamp, date, or hash_value",
+            user_data=user_data,
         )
 
     key = {
@@ -182,6 +191,7 @@ def add_value_route(event, user_data, body):
         event=event,
         http_code=201,
         body="Successfully wrote all values to the database",
+        user_data=user_data,
     )
 
 
@@ -195,6 +205,7 @@ def get_timestamp_report_data_route(event, user_data, body):
             event=event,
             http_code=400,
             body=f"Improperly formatted date",
+            user_data=user_data,
         )
     date_obj = datetime.datetime.strptime(body["date"], "%Y-%m-%d")
     keys = []
@@ -220,6 +231,7 @@ def get_timestamp_report_data_route(event, user_data, body):
         event=event,
         http_code=200,
         body={"values": output_values},
+        user_data=user_data,
     )
 
 
@@ -232,6 +244,7 @@ def delete_timestamp_value(event, user_data, body):
             event=event,
             http_code=400,
             body=f"Improperly formatted body, must contain the fields {TIMESTAMP_VALUE_SCHEMA}",
+            user_data=user_data,
         )
 
     key = {
@@ -252,7 +265,7 @@ def delete_timestamp_value(event, user_data, body):
 
     found_index = None
     for i in range(0, len(python_data['values'])):
-        print(f"{python_data['values'][i]['hash']} == {body['hash']} and {python_data['values'][i]['timestamp']} == {body['timestamp']}")
+        log(f"{python_data['values'][i]['hash']} == {body['hash']} and {python_data['values'][i]['timestamp']} == {body['timestamp']}", user_data)
         if python_data['values'][i]['hash'] == body['hash'] and python_data['values'][i]['timestamp'] == body['timestamp']:
             found_index = i
             break
@@ -262,6 +275,7 @@ def delete_timestamp_value(event, user_data, body):
             event=event,
             http_code=400,
             body=f"The value you requested to delete did not exist, no operation",
+            user_data=user_data,
         )
 
     python_data['values'].pop(found_index)
@@ -276,4 +290,5 @@ def delete_timestamp_value(event, user_data, body):
         event=event,
         http_code=201,
         body="Successfully wrote all values to the database",
+        user_data=user_data,
     )
