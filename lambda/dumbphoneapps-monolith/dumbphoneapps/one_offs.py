@@ -124,6 +124,7 @@ def get_location_route(event):
             "lat": location_data["lat"],
             "lon": location_data["lon"],
         },
+        log_this=False,
     )
 
 
