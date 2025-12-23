@@ -26,7 +26,7 @@ sqs = boto3.client("sqs")
 scheduler = boto3.client("scheduler")
 
 
-def format_response(event, http_code, body, headers=None, user_data=None):
+def format_response(event, http_code, body, headers=None, user_data=None, log_this=True):
     if isinstance(body, str):
         body = {"message": body}
     if "origin" in event["headers"] and event["headers"]["origin"].startswith(DOMAIN_NAME_WWW):
@@ -47,7 +47,8 @@ def format_response(event, http_code, body, headers=None, user_data=None):
     }
     if headers is not None:
         all_headers.update(headers)
-    log(body, user_data, headers)
+    if log_this:
+        log(body, user_data, headers)
     return {
         "statusCode": http_code,
         "body": json.dumps(body),

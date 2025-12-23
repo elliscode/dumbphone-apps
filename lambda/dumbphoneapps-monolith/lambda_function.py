@@ -94,7 +94,8 @@ from dumbphoneapps.timestamp_logger import (
 
 def lambda_handler(event, context):
     try:
-        print(json.dumps(event))
+        if not path_equals(event=event, method="POST", path="/one-offs/share-location"):
+            print(json.dumps(event))
         result = route(event)
         return result
     except Exception:

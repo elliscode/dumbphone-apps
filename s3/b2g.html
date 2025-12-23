@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <style>
+  </style>
+</head>
+
+<body>
+  <script>
+    (function () {
+      const originalLog = console.log;
+
+      console.log = function (...args) {
+        const pre = document.createElement('pre');
+        // Print to device console
+        originalLog.apply(console, args);
+
+        // Print to screen
+        const text = args.map(a => formatForKaiOS(a)).join(" ");
+        pre.textContent += text + "\n";
+
+        // Auto-scroll
+        document.body.appendChild(pre);
+      };
+    })();
+    function formatForKaiOS(value) {
+      if (value === null) return "null";
+      if (value === undefined) return "undefined";
+
+      // Pretty-print objects and class instances
+      if (typeof value === "object") {
+        try {
+          return JSON.stringify(value, replacer, 2);
+        } catch (e) {
+          return String(value);
+        }
+      }
+
+      return String(value);
+    }
+
+    function replacer(key, value) {
+      // Avoid circular references
+      if (typeof value === "object" && value !== null) {
+        if (seen.has(value)) return "[Circular]";
+        seen.add(value);
+      }
+      return value;
+    }
+
+    const seen = new WeakSet();
+
+    if (navigator.b2g && navigator.b2g.requestWakeLock) {
+      try {
+        console.log("WakeLockInternal exists? ", typeof WakeLockInternal);
+        console.log("Constructor name:", WakeLockInternal && WakeLockInternal.name);
+        console.log("Prototype keys:", WakeLockInternal && Object.getOwnPropertyNames(WakeLockInternal.prototype));
+        console.log("Instance keys:", (() => {
+          try {
+            const inst = new WakeLockInternal();
+            return Object.getOwnPropertyNames(inst);
+          } catch (e) {
+            return "cannot instantiate: " + e;
+          }
+        })());
+      } catch {
+        pre.innerText += "Failed to get GPS wake lock" + "\n\n";
+      }
+    } else if (navigator.wakeLock && navigator.wakeLock.request) {
+      pre.innerText = navigator.toString();
+    }
+
+    function testTopic(topic) {
+      try {
+        navigator.b2g.requestWakeLock(topic).unlock();
+        console.log(`${topic}: OK`);
+      } catch (e) {
+        console.log(`${topic}: ERROR`, e);
+      }
+    }
+
+    [
+      "screen", "cpu", "gps", "wifi",
+      "proximity", "nfc", "audio",
+      "notification", "wifi-scan",
+      "bluetooth", "geolocation"
+    ].forEach(t => testTopic(t));
+  </script>
+</body>
+
+</html>
