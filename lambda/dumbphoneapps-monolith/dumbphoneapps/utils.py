@@ -115,8 +115,10 @@ def get_user_data(username):
 
 
 def path_equals(event, method, path):
-    event_path = event["path"]
-    event_method = event["httpMethod"]
+    if not event:
+        return False
+    event_path = event.get("path")
+    event_method = event.get("httpMethod")
     return event_method == method and (event_path == path or event_path == path + "/" or path == "*")
 
 
