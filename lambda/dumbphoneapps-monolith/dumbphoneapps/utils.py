@@ -284,9 +284,12 @@ def otp_route(event):
     # get or create user data
     user_data = get_user_data(phone)
     if user_data is None:
-        user_data = create_user_data(phone)
-        alert_admin_of_new_user(phone)
-    log(user_data)
+        return format_response(
+            event=event,
+            http_code=401,
+            body="You are not permitted to log in. Please ask the administrator to create you an account.",
+        )
+    log(str(user_data))
 
     # generate and set OTP
     otp_data = get_otp(phone)
