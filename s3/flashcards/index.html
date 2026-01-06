@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flash Cards</title>
+    <link rel="icon" type="image/png" href="../img/flashcards.favicon.png?v=027" />
+    <style>
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  flex-direction: column;
+}
+.card {
+  box-sizing:border-box;
+  border: 1px solid black;
+  border-radius: min(10vw, 10vh);
+  cursor: pointer;
+  width: min(100vw, 100vh);
+  height: min(85vw, 85vh);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.card span {
+  padding: min(10vw, 10vh);
+}
+.card * {
+  pointer-events: none;
+}
+#next {
+  width: min(100vw, 100vh);
+  height: min(15vw, 15vh);
+  font-size: min(8vw, 8vh);
+  border-radius: min(10vw, 10vh);
+  line-height:1;
+}
+    </style>
+  </head>
+
+  <body>
+    <div id="card-holder"></div>
+    <button id="next" onclick="displayCard(event);">Next</button>
+    <script src="aws-cards.js"></script>
+    <script>
+const cardHolder = document.getElementById('card-holder');
+let activeCards = [];
+function displayCard() {
+  if (activeCards.length == 0) {
+    activeCards = awsCards.slice();
+    activeCards = shuffle(activeCards);
+  }
+  let card = activeCards.pop();
+  createDomCard(card);
+}
+function createDomCard(card) {
+  // delete old cards
+  let divsNodeList = document.getElementsByClassName("card");
+  let divs = Array.prototype.slice.call(divsNodeList).map(function(s) { return s; });
+  divs.forEach(function (x) { x.remove(); });
+  // create new card
+  let cardDom = document.createElement('div');
+  cardDom.classList.add('card');
+  cardDom.addEventListener('click', toggleCard);
+  
+  let front = document.createElement('span');
+  front.classList.add('front');
+  front.innerHTML = card.front;
+  front.style.display = 'block';
+  front.style.fontSize = `${Math.min(window.innerWidth, window.innerHeight) * 0.08}px`;
+  cardDom.appendChild(front);
+
+  let back = document.createElement('span');
+  back.classList.add('back');
+  back.innerHTML = card.back;
+  back.style.display = 'none';
+  back.style.fontSize = `${Math.min(window.innerWidth, window.innerHeight) * 0.08}px`;
+  cardDom.appendChild(back);
+
+  cardHolder.appendChild(cardDom);
+}
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element at random.
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // Swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+function toggleCard(event) {
+  let limit = 0;
+  let card = document.querySelector('.card');
+  let front = card.querySelector('.front');
+  let back = card.querySelector('.back');
+  if (front.style.display == 'none') {
+    front.style.display = 'block';
+    back.style.display = 'none';
+    while (front.getBoundingClientRect().top < 0 && limit < 100) {
+      front.style.fontSize = (parseInt(front.style.fontSize) - 1) + 'px';
+      limit = limit + 1;
+    }
+  } else if (back.style.display == 'none') {
+    back.style.display = 'block';
+    front.style.display = 'none';
+    while (back.getBoundingClientRect().top < 0 && limit < 100) {
+      back.style.fontSize = (parseInt(back.style.fontSize) - 1) + 'px';
+      limit = limit + 1;
+    }
+  }
+}
+document.addEventListener('keydown', function(event) {
+  if (event.key == '4' || event.key == '6') {
+    toggleCard(event);
+  }
+  if (event.key == '7' || event.key == '8' || event.key == '9') {
+    displayCard();
+  }
+});
+displayCard();
+    </script>
+  </body>
+</html>
