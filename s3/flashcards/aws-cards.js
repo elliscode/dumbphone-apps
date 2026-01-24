@@ -148,7 +148,10 @@ awsCards = [
   { "front": "How can you decrease latency when you are serving files from multiple S3 buckets in different regions using CloudFront?", "back": "Create a Lambda@Edge function to inspect the request header and route the request to the nearest S3 bucket" },
   { "front": "What is the NFS protocol?", "back": "a distributed file system that lets users access files and folders on a remote server as if they were local" },
   { "front": "What is the SMB protocol?", "back": "a network communication protocol that allows computers to share files, printers, and other resources (like serial ports) over a network, primarily in Windows environments but also used by Linux/Unix via Samba" },
-  { "front": "What is the iSCSI protocol?", "back": "a protocol that lets SCSI commands (for block storage) travel over standard TCP/IP networks, effectively extending storage area networks (SANs) over Ethernet, the internet, or LANs/WANs" }
+  { "front": "What is the iSCSI protocol?", "back": "a protocol that lets SCSI commands (for block storage) travel over standard TCP/IP networks, effectively extending storage area networks (SANs) over Ethernet, the internet, or LANs/WANs" },
+  { "front": "What is AWS CodeCommit?", "back": "AWS CodeCommit is a version control service hosted by Amazon Web Services that you can use to privately store and manage assets (such as documents, source code, and binary files) in the cloud."},
+  { "front": "What is AWS CodeBuild?", "back": "AWS CodeBuild is a fully managed continuous integration (CI) service that compiles source code, runs tests, and produces software packages that are ready to deploy. It eliminates the need for users to provision, manage, and scale their own build servers by automatically scaling capacity and providing prepackaged build environments. " },
+  { "front": "", "back": "" }
 ];
 
 /*

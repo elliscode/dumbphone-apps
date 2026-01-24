@@ -3,11 +3,10 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Connections</title>
-    <link rel="stylesheet" href="../css/stylesheet.css?v=027" />
-    <link rel="stylesheet" href="../css/loader.css?v=027" />
-    <link rel="stylesheet" href="css/stylesheet.css?v=030" />
-    <link id="kaios-stylesheet" rel="stylesheet" href="css/kaios.css?v=030" />
-    <link rel="icon" type="image/png" href="../img/connections.favicon.png?v=027" />
+    <link rel="stylesheet" href="../css/stylesheet.css?v=032" />
+    <link rel="stylesheet" href="../css/loader.css?v=032" />
+    <link rel="stylesheet" href="css/stylesheet.css?v=032" />
+    <link rel="icon" type="image/png" href="../img/connections.favicon.png?v=032" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
@@ -26,21 +25,19 @@
     <div id="comment"><span id="comment-span"></span></div>
 
     <div class="panel" id="content">
-      <div style="display:flex;">
-        <b><a href="../index.html">Home</a></b> <span style="margin: 0px 5px;">&gt;</span> <b class="moul">Connections</b>    <div style="flex-grow:1;"></div>    <input onchange="setDate(event)" id="date-picker" type="date" />
+      <div>
+        <input onchange="setDate(event)" id="date-picker" type="date" />
       </div>
-
-      <div id="json"></div>
 
       <div class="game-div">
         <div id="puzzle"><div id="answers"></div></div>
 
-        <div id="guesses"><span>Mistakes Remaining:</span><div id="guess-spot"></div></div>
+        <div id="guesses"><span>Chances:</span><div id="guess-spot"></div></div>
 
         <div id="game-controls"><button onclick="shuffleTiles(event);">Shuffle</button><button onclick="deselectAll(event);">Deselect All</button><button onclick="checkGuessCallback(event);">Submit</button></div>
       </div>
     </div>
-    <script src="../js/utils.js?v=027"></script>
+    <script src="../js/utils.js?v=032"></script>
     <script src="../js/env.js"></script>
     <script>
 const SPORTS = false;

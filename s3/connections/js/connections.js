@@ -420,10 +420,6 @@ function setDate(event) {
   clearThePuzzle();
   getThePuzzle();
 }
-if (!navigator.userAgent.includes('KAIOS/')) {
-  document.getElementById('kaios-stylesheet').remove();
-  setStylesheet("../connections/css/normal.css?v=030");
-}
 datePicker.value = getTodayOrUrlParam();
 clearThePuzzle();
 getThePuzzle();

@@ -34,6 +34,7 @@ sts_connection = boto3.client("sts")
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 PRESIGNED_AWS_ACCESS_KEY_ID = os.environ.get("PRESIGNED_AWS_ACCESS_KEY_ID")
 PRESIGNED_AWS_SECRET_ACCESS_KEY = os.environ.get("PRESIGNED_AWS_SECRET_ACCESS_KEY")
+LOCATION_TABLE_NAME = os.environ.get("LOCATION_TABLE_NAME", TABLE_NAME)
 
 CONTENT_TYPES = {
     "mov": "video/quicktime",
@@ -64,8 +65,8 @@ def get_maps_key_route(event):
         )
 
     response = dynamo.get_item(
-        TableName=TABLE_NAME,
-        Key=python_obj_to_dynamo_obj({"key1": "location", "key2": location_token}),
+        TableName=LOCATION_TABLE_NAME,
+        Key=python_obj_to_dynamo_obj({"key1": location_token, "key2": "location"}),
     )
 
     if "Item" not in response:
@@ -96,8 +97,8 @@ def get_location_route(event):
         )
 
     response = dynamo.get_item(
-        TableName=TABLE_NAME,
-        Key=python_obj_to_dynamo_obj({"key1": "location", "key2": location_token}),
+        TableName=LOCATION_TABLE_NAME,
+        Key=python_obj_to_dynamo_obj({"key1": location_token, "key2": "location"}),
     )
 
     if "Item" not in response:
@@ -138,11 +139,11 @@ def share_location_route(event, user_data, body):
         location_token = create_id(10)
 
     dynamo.put_item(
-        TableName=TABLE_NAME,
+        TableName=LOCATION_TABLE_NAME,
         Item=python_obj_to_dynamo_obj(
             {
-                "key1": "location",
-                "key2": location_token,
+                "key1": location_token,
+                "key2": "location",
                 "lat": str(body["lat"]),
                 "lon": str(body["lon"]),
                 "expiration": int(time.time()) + (60 * 60),
