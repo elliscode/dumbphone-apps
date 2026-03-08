@@ -344,8 +344,268 @@ awsCards = [
   , { "exam": "CLF-C02", "front": "What is AWS Cost & Usage Report (AWS CUR)?", "back": "AWS Cost & Usage Report (AWS CUR) contains the most comprehensive set of cost and usage data available. You can use AWS Cost & Usage Report (AWS CUR) to publish your AWS billing reports to an Amazon Simple Storage Service (Amazon S3) bucket that you own. You can receive reports that break down your costs by the hour or month, by product or product resource, or by tags that you define yourself. AWS updates the report in your bucket once a day in comma-separated value (CSV) format." }
   , { "exam": "CLF-C02", "front": "A customer is running a comparative study of pricing models of Amazon EFS and Amazon Elastic Block Store (Amazon EBS) that are used with the Amazon EC2 instances that host the application. Which of the following statements are correct regarding this use-case? (Select two)", "back": "Amazon Elastic Block Store (Amazon EBS) Snapshots are stored incrementally, which means you are billed only for the changed blocks stored, You will pay a fee each time you read from or write data stored on the Amazon Elastic File System (Amazon EFS) - Infrequent Access storage class" }
   , { "exam": "CLF-C02", "front": "Which of the following statements are true about Cost Allocation Tags in AWS Billing? (Select two)", "back": "For each resource, each tag key must be unique, and each tag key can have only one value, You must activate both AWS generated tags and user-defined tags separately before they can appear in Cost Explorer or on a cost allocation report" }
+  , { "exam": "CLF-C02", "front": "Which AWS entity enables you to privately connect your Amazon Virtual Private Cloud (Amazon VPC) to an Amazon Simple Queue Service (Amazon SQS) queue?", "back": "VPC Interface Endpoint" }
+  , { "exam": "CLF-C02", "front": "An organization maintains a separate Virtual Private Cloud (VPC) for each of its business units. Two units need to privately share data. Which is the most optimal way of privately sharing data between the two VPCs?", "back": "VPC peering connection" }
+  , { "exam": "CLF-C02", "front": "Which of the following AWS storage services can be directly used with on-premises systems?", "back": "Amazon Elastic File System (Amazon EFS)" }
+  , { "exam": "CLF-C02", "front": "A cargo shipping company runs its server fleet on Amazon Elastic Compute Cloud (Amazon EC2) instances. Some of these instances host the CRM (Customer Relationship Management) applications that need to be accessible 24*7. These applications are not mission-critical. In case of a disaster, these applications can be managed on a lesser number of instances for some time. Which disaster recovery strategy is well-suited as well as cost-effective for this requirement?", "back": "Warm Standby strategy" }
+  , { "exam": "CLF-C02", "front": "A multi-national organization has a separate virtual private cloud (VPC) for each of its business units on the AWS Cloud. The organization also wants to connect its on-premises data center with the different virtual private clouds (VPC) for better organization-wide collaboration. Which AWS services can be combined to build the MOST efficient solution for this use-case? (Select two)", "back": "AWS Direct Connect, AWS Transit Gateway" }
+  , { "exam": "CLF-C02", "front": "Which pillar of AWS Well-Architected Framework is responsible for making sure that you select the right resource types and sizes based on your workload requirements?", "back": "Performance Efficiency" }
+  , { "exam": "CLF-C02", "front": "Bob and Susan each have an AWS account in AWS Organizations. Susan has five Reserved Instances (RIs) of the same type and Bob has none. During one particular hour, Susan uses three instances and Bob uses six for a total of nine instances on the organization's consolidated bill. Which of the following statements are correct about consolidated billing in AWS Organizations? (Select two)", "back": "AWS bills five instances as Reserved Instances, and the remaining four instances as regular instances, Bob receives the cost-benefit from Susan's Reserved Instances (RI) only if he launches his instances in the same Availability Zone (AZ) where Susan purchased her Reserved Instances" }
+  , { "exam": "CLF-C02", "front": "The DevOps team at an IT company wants to centrally manage its servers on AWS Cloud as well as on-premise data center so that it can collect software inventory, run commands, configure and patch servers at scale. As a Cloud Practitioner, which AWS service would you recommend for this use-case?", "back": "AWS Systems Manager" }
+  , { "exam": "CLF-C02", "front": "A company would like to reserve Amazon Elastic Compute Cloud (Amazon EC2) compute capacity for three years to reduce costs. The company also plans to increase their workloads during this period. As a Cloud Practitioner, which Amazon Elastic Compute Cloud (Amazon EC2) reserved instance (RI) type would you recommend?", "back": "Convertible reserved instance (RI)" }
+  , { "exam": "CLF-C02", "front": "According to the AWS Well-Architected Framework, which of the following statements are recommendations in the Operational Excellence pillar? (Select two)", "back": "Anticipate failure, Make frequent, small, reversible changes" }
+  , { "exam": "CLF-C02", "front": "Which AWS service can inspect Amazon CloudFront distributions running on any HTTP web server?", "back": "AWS Web Application Firewall (AWS WAF)" }
+  , { "exam": "CLF-C02", "front": "A brand-new startup would like to remove its need to manage the underlying infrastructure and focus on the deployment and management of its applications. Which type of cloud computing does this refer to?", "back": "Platform as a Service (PaaS)" }
+  , { "exam": "CLF-C02", "front": "An enterprise is planning to move one of its older applications from its local data center to AWS. The IT team wants the fastest migration path and has decided not to update the application code or make any architectural changes. Which migration strategy is the most appropriate for this scenario?", "back": "Rehost" }
+  , { "exam": "CLF-C02", "front": "Which of the following AWS Support plans is the MOST cost-effective when getting enhanced technical support by Cloud Support Engineers?", "back": "AWS Business Support" }
+  , { "exam": "CLF-C02", "front": "Which of the following AWS Identity and Access Management (AWS IAM) Security Tools allows you to review permissions granted to an IAM user?", "back": "AWS Identity and Access Management (IAM) access advisor" }
+  , { "exam": "CLF-C02", "front": "A company needs to use a secure online data transfer tool/service that can automate the ongoing transfers from on-premises systems into AWS while providing support for incremental data backups. Which AWS tool/service is an optimal fit for this requirement?", "back": "AWS DataSync" }
+  , { "exam": "CLF-C02", "front": "Which of the following AWS services can be used to generate, use, and manage encryption keys on the AWS Cloud?", "back": "AWS CloudHSM" }
+  , { "exam": "CLF-C02", "front": "A team manager needs data about the changes that have taken place for AWS resources in his account during the past two weeks. Which AWS service can help get this data?", "back": "AWS Config" }
+  , { "exam": "CLF-C02", "front": "Which of the following statements are correct regarding the AWS Control Tower and Service Control Policies? (Select two)", "back": "Service Control Policies (SCPs) are a type of organization policy that you can use to manage permissions in your organization, AWS Control Tower is an AWS native service providing a pre-defined set of blueprints and guardrails to help customers implement a landing zone for new AWS accounts" }
+  , { "exam": "CLF-C02", "front": "As part of a flexible pricing model, AWS offers two types of Savings Plans. Which of the following are the Savings Plans from AWS?", "back": "Compute Savings Plans, EC2 Instance Savings Plans" }
+  , { "exam": "CLF-C02", "front": "Which of the following represents the correct scenario where an Auto Scaling group's (ASG) predictive scaling can be effectively used to maintain the required number of AWS resources?", "back": "To manage a workload that exhibits recurring load patterns that are specific to the day of the week or the time of day" }
+  , { "exam": "CLF-C02", "front": "Which of the following statements are correct regarding the health monitoring and reporting capabilities supported by AWS Elastic Beanstalk? (Select two)", "back": "The AWS Elastic Beanstalk health monitoring can determine that the environment's Auto Scaling group is available and has a minimum of at least one instance, With basic health reporting, the AWS Elastic Beanstalk service does not publish any metrics to Amazon CloudWatch" }
+  , { "exam": "CLF-C02", "front": "AWS Support offers five support plans for its customers. Which of the following features are covered as part of the AWS Basic Support Plan? (Select two)", "back": "Service health checks, One-on-one responses to account and billing questions" }
+  , { "exam": "CLF-C02", "front": "AWS Web Application Firewall (AWS WAF) can be deployed on which of the following services?", "back": "Amazon CloudFront, Application Load Balancer, Amazon API Gateway, AWS AppSync" }
+  , { "exam": "CLF-C02", "front": "By default, which of the following events are logged by AWS CloudTrail?", "back": "Management events" }
+  , { "exam": "CLF-C02", "front": "Which free tool helps to review the state of your workloads and compares them to the latest AWS architectural best practices after you have answered a series of questions about your workload?", "back": "AWS Well-Architected Tool" }
+  , { "exam": "CLF-C02", "front": "An organization in the US plans to launch a new product line and needs additional IT infrastructure to support the workload. They want a solution that enables rapid deployment of resources and minimizes setup time. Which advantages of cloud computing can help the organization achieve this goal? (Select two)", "back": "Increase speed and agility, Enable automatic scaling of resources based on demand" }
+  , { "exam": "CLF-C02", "front": "Which of the following services/tools offers a user-friendly graphical user interface to manage AWS Snowball devices without a need for command-line interface or REST APIs?", "back": "AWS OpsHub" }
+  , { "exam": "SAA-C03", "front": "What is a proper definition of an IAM Role?<ul>"
+                                + "<li>IAM Users in multiple User Groups</li>"
+                                + "<li>An IAM entity that defines a password policy for IAM Users</li>"
+                                + "<li>An IAM entity that defines a set of permissions for making requests to AWS services, and will be used in an AWS service</li>"
+                                + "<li>Permissions assigned to IAM Users to perform actions</li></ul>", "back": "<b>An IAM entity that defines a set of permissions for making requests to AWS services, and will be used by an AWS service. Some AWS services need to perform actions on your behalf. To do so, you assign permissions to AWS services with IAM Roles.</b>. Some AWS services need to perform actions on your behalf. To do so, you assign permissions to AWS services with IAM roles." }
+  , { "exam": "SAA-C03", "front": "Which of the following is an IAM Security Tool?<ul>"
+                                + "<li>IAM Credentials Report</li>"
+                                + "<li>IAM Root Account Manager</li>"
+                                + "<li>IAM Services Report</li>"
+                                + "<li>IAM Security Advisor</li></ul>", "back": "<b>IAM Credentials Report</b> lists all your AWS Account's IAM Users and the status of their various credentials." }
+  , { "exam": "SAA-C03", "front": "Which answer is INCORRECT regarding IAM users?<ul>"
+                                + "<li>IAM Users can belong to multiple User Groups</li>"
+                                + "<li>IAM Users don't have to beling to a User Group</li>"
+                                + "<li>IAM Policies can be attached directly to IAM Users</li>"
+                                + "<li>IAM Users access AWS services using root account credentials</li></ul>", "back": "<b>IAM Users access AWS services using root account credentials</b>. IAM Users access AWS services using their own credentials (username + password or Access Keys)" }
+  , { "exam": "SAA-C03", "front": "Which of the following is an IAM best practice?<ul>"
+                                + "<li>Create several IAM Users for one physical person</li>"
+                                + "<li>Don't use the root user account</li>"
+                                + "<li>Share your AWS account credentials with your colleague, so (s)he can perform a task for you</li>"
+                                + "<li>Do not enable MFA for easier access</li></ul>", "back": "<b>Don't use the root user account</b>, use the root account only to create your first IAM user and a few account/service management tasks. For every day dasks, use an IAM user." }
+  , { "exam": "SAA-C03", "front": "What are IAM Policies?<ul>"
+                                + "<li>A set of policies that define how AWS accounts interact with each other</li>"
+                                + "<li>JSON documents that define a set of permissions for making requests to AWS services, and can be used by IAM users, User Groups, and IAM Roles</li>"
+                                + "<li>A set of policies that define a password for IAM Users</li>"
+                                + "<li>A set of policies defined by AWS that show how customers interact with AWS</li></ul>", "back": "<b>JSON documents that define a set of permissions for making requests to AWS services, and can be used by IAM users, User Groups, and IAM Roles</b>" }
+  , { "exam": "SAA-C03", "front": "Which principle should you apply regarding IAM Permissions?<ul>"
+                                + "<li>Grant most privilege</li>"
+                                + "<li>Grant more permissions if your employee asks you to</li>"
+                                + "<li>Grant least privilege</li>"
+                                + "<li>Restrict root account permissions</li></ul>", "back": "<b>Grant least privilege</b>" }
+  , { "exam": "SAA-C03", "front": "What should you do to increase your root account security?<ul>"
+                                + "<li>Remove permissions from the root account</li>"
+                                + "<li>Only access AWS services through AWS command line interface (CLI)</li>"
+                                + "<li>Don't create IAM Users, only access your AWS account using the root account</li>"
+                                + "<li>Enable Multi-Factor Authentication (MFA)</li></ul>", "back": "<b>Enable Multi-Factor Authentication (MFA)</b>" }
+  , { "exam": "SAA-C03", "front": "IAM User Groups can contain IAM Users and other User Groups.<ul>"
+                                + "<li>True</li>"
+                                + "<li>False</li></ul>", "back": "<b>False</b>, IAM User Groups can contain only IAM Users." }
+  , { "exam": "SAA-C03", "front": "An IAM policy consists of one or more statements. A statement in an IAM Policy consists of the following, EXCEPT:<ul>"
+                                + "<li>Effect</li>"
+                                + "<li>Principal</li>"
+                                + "<li>Version</li>"
+                                + "<li>Action</li>"
+                                + "<li>Resource</li></ul>", "back": "<b>Version</b>, A statement in an IAM Policy consists of Sid, Effect, Principal, Action, Resource, and Condition. Version is part of the IAM Policy itself, not the statement." }
+  , { "exam": "SAA-C03", "front": "Which EC2 Purchasing Option can provide you the biggest discount, but it is not suitable for critical jobs or databases?<ul>"
+                                + "<li>Convertible Reserved Instances</li>"
+                                + "<li>Dedicated Hosts</li>"
+                                + "<li>Spot Instances</li></ul>", "back": "<b>Spot Instances</b> are good for short workloads and this is the cheapest EC2 Purchasing Option, but they are less reliable because you can lose your EC2 instance. They are up to 90% off regular pricing." }
+  , { "exam": "SAA-C03", "front": "What should you use to control traffic in and out of EC2 instances?<ul>"
+                                + "<li>Network Access Control List (NACL)</li>"
+                                + "<li>Security Groups</li>"
+                                + "<li>IAM Policies</li></ul>", "back": "<b>Security Groups</b> operate at the EC2 instance level and can control traffic." }
+  , { "exam": "SAA-C03", "front": "How long can you reserve an EC2 Reserved Instance?<ul>"
+                                + "<li>1 or 3 years</li>"
+                                + "<li>2 or 4 years</li>"
+                                + "<li>6 months to 1 year</li>"
+                                + "<li>Anytime between 1 and 3 years</li></ul>", "back": "<b>1 or 3 years</b>. EC2 reserved instances can be reserved for 1 or 3 years only." }
+  , { "exam": "SAA-C03", "front": "You would like to deploy a High-Performance Computing (HPC) application on EC2 instances. Which EC2 instance type should you choose?<ul>"
+                                + "<li>Storage Optimized</li>"
+                                + "<li>Compute Optimized</li>"
+                                + "<li>Memory Optimized</li>"
+                                + "<li>General Purpose</li></ul>", "back": "<b>Compute Optimized</b> EC2 instances are great for compute-intensive workloads requiring high-performance processors (e.g., batch processing, media transcoding, high-performance computing, scientific modeling & machine learning, and dedicated gaming servers)." }
+  , { "exam": "SAA-C03", "front": "Which EC2 Purchasing Option should you use for an application you plan to run on a server continuously for 1 year?<ul>"
+                                + "<li>Reserved Instances</li>"
+                                + "<li>Spot Instances</li>"
+                                + "<li>On-Demand Instances</li></ul>", "back": "<b>Reserved Instances</b> are good for long workloads. You can reserve EC2 instances for 1 or 3 years." }
+  , { "exam": "SAA-C03", "front": "You are preparing to launch an application that will be hosted on a set of EC2 instances. This application needs some software installation and some OS packages need to be updated during the first launch. What is the best way to achieve this when you launch the EC2 instances?<ul>"
+                                + "<li>Connect to each EC2 instance using SSH, then install the required software and update your OS packages manually</li>"
+                                + "<li>Write a bash script that installs the required software and updates to your OS, then contact AWS Support and provide them with the script. They will run it on your EC2 instances at launch</li>"
+                                + "<li>Write a bash script that installs the required software and updates to your OS, then use this script in EC2 User Data when you launch your EC2 instances</li></ul>", "back": "<b>Write a bash script that installs the required software and updates to your OS, then use this script in EC2 User Data when you launch your EC2 instances</b>. EC2 User Data is used to bootstrap your EC2 instances using a bash script. This script can contain commands such as installing software/packages, download files from the Internet, or anything you want." }
+  , { "exam": "SAA-C03", "front": "Which EC2 Instance Type should you choose for a critical application that uses an in-memory database?<ul>"
+                                + "<li>Compute Optimized</li>"
+                                + "<li>Storage Optimized</li>"
+                                + "<li>Memory Optimized</li>"
+                                + "<li>General Purpose</li></ul>", "back": "<b>Memory Optimized</b> EC2 instances are great for workloads requiring large data sets in memory." }
+  , { "exam": "SAA-C03", "front": "You have an e-commerce application with an OLTP database hosted on-premises. This application has popularity which results in its database has thousands of requests per second. You want to migrate the database to an EC2 instance. Which EC2 Instance Type should you choose to handle this high-frequency OLTP database?<ul>"
+                                + "<li>Compute Optimized</li>"
+                                + "<li>Storage Optimized</li>"
+                                + "<li>Memory Optimized</li>"
+                                + "<li>General Purpose</li></ul>", "back": "<b>Storage Optimized</b> EC2 instances are great for workloads requiring high, sequential read/write access to large data sets on local storage." }
+  , { "exam": "SAA-C03", "front": "Security Groups can be attached to only one EC2 instance.<ul>"
+                                + "<li>False</li>"
+                                + "<li>True</li></ul>", "back": "<b>False</b>, Security Groups can be attached to multiple EC2 instances within the same AWS Region/VPC." }
+  , { "exam": "SAA-C03", "front": "You're planning to migrate on-premises applications to AWS. Your company has strict compliance requirements that require your applications to run on dedicated servers. You also need to use your own server-bound software license to reduce costs. Which EC2 Purchasing Option is suitable for you?<ul>"
+                                + "<li>Convertible Reserved Instances</li>"
+                                + "<li>Dedicated Hosts</li>"
+                                + "<li>Spot Instances</li></ul>", "back": "<b>Dedicated Hosts</b> are good for companies with strong compliance needs or for software that have complicated licensing models. This is the most expensive EC2 Purchasing Option available." }
+  , { "exam": "SAA-C03", "front": "You would like to deploy a database technology on an EC2 instance and the vendor license bills you based on the physical cores and underlying network socket visibility. Which EC2 Purchasing Option allows you to get visibility into them?<ul>"
+                                + "<li>Spot Instances</li>"
+                                + "<li>On-Demand</li>"
+                                + "<li>Dedicated Hosts</li>"
+                                + "<li>Reserved Instances</li></ul>", "back": "<b>Dedicated Hosts</b>" }
+  , { "exam": "SAA-C03", "front": "Spot Fleet is a set of Spot Instances and optionally ...............<ul>"
+                                + "<li>Reserved Instances</li>"
+                                + "<li>On-Demand Instances</li>"
+                                + "<li>Dedicated Hosts</li>"
+                                + "<li>Dedicated Instances</li></ul>", "back": "<b>On-Demand Instances</b> Spot Fleet is a set of Spot Instances and optionally On-demand Instances. It allows you to automatically request Spot Instances with the lowest price." }
+  , { "exam": "SAA-C03", "front": "You have launched an EC2 instance that will host a NodeJS application. After installing all the required software and configured your application, you noted down the EC2 instance public IPv4 so you can access it. Then, you stopped and then started your EC2 instance to complete the application configuration. After restart, you can't access the EC2 instance, and you found that the EC2 instance public IPv4 has been changed. What should you do to assign a fixed public IPv4 to your EC2 instance?<ul>"
+                                + "<li>Allocate an Elastic IP and assign it to your EC2 instance</li>"
+                                + "<li>From inside your EC2 instance OS, change network configuration from DHCP to static and assign it a public IPv4</li>"
+                                + "<li>Contact AWS Support and request a fixed public IPv4 to your EC2 instance</li>"
+                                + "<li>This can't be done, you can only assign a fixed private IPv4 to your EC2 instance</li></ul>", "back": "<b>Allocate an Elastic IP and assign it to your EC2 instance</b> Elastic IP is a public IPv4 that you own as long as you want and you can attach it to one EC2 instance at a time." }
+  , { "exam": "SAA-C03", "front": "You have an application performing big data analysis hosted on a fleet of EC2 instances. You want to ensure your EC2 instances have the highest networking performance while communicating with each other. Which EC2 Placement Group should you choose?<ul>"
+                                + "<li>Spread Placement Group</li>"
+                                + "<li>Cluster Placement Group</li>"
+                                + "<li>Partition Placement Group</li></ul>", "back": "<b>Cluster Placement Groups</b> place your EC2 instances next to each other which gives you high-performance computing and networking." }
+  , { "exam": "SAA-C03", "front": "You have a critical application hosted on a fleet of EC2 instances in which you want to achieve maximum availability when there's an AZ failure. Which EC2 Placement Group should you choose?<ul>"
+                                + "<li>Cluster Placement Group</li>"
+                                + "<li>Partition Placement Group</li>"
+                                + "<li>Spread Placement Group</li></ul>", "back": "<b>Spread Placement Group</b> places your EC2 instances on different physical hardware across different AZs." }
+  , { "exam": "SAA-C03", "front": "Elastic Network Interface (ENI) can be attached to EC2 instances in another AZ.<ul>"
+                                + "<li>True</li>"
+                                + "<li>False</li></ul>", "back": "<b>False</b> Elastic Network Interfaces (ENIs) are bounded to a specific AZ. You can not attach an ENI to an EC2 instance in a different AZ." }
+  , { "exam": "SAA-C03", "front": "The following are true regarding EC2 Hibernate, EXCEPT:<ul>"
+                                + "<li>EC2 Instance Root Volume must be an Instance Store volume</li>"
+                                + "<li>Supports On-Demand and Reserved Instances</li>"
+                                + "<li>EC2 Instance RAM must be less than 150GB</li>"
+                                + "<li>EC2 Instance Root Volume type must be an EBS volume</li></ul>", "back": "<b>EC2 Instance Root Volume must be an Instance Store volume</b> To enable EC2 Hibernate, the EC2 Instance Root Volume type must be an EBS volume and must be encrypted to ensure the protection of sensitive content." }
+  , { "exam": "SAA-C03", "front": "You have just terminated an EC2 instance in <code>us-east-1a</code>, and its attached EBS volume is now available. Your teammate tries to attach it to an EC2 instance in <code>us-east-1b</code> but he can't. What is a possible cause for this?<ul>"
+                                + "<li>He's missing IAM permissions</li>"
+                                + "<li>EBS volumes are locked to an AWS Region</li>"
+                                + "<li>EBS volumes are locked to an Availability Zone</li></ul>", "back": "<b>EBS volumes are locked to an Availability Zone</b> EBS Volumes are created for a specific AZ. It is possible to migrate them between different AZs using EBS Snapshots." }
+  , { "exam": "SAA-C03", "front": "You have launched an EC2 instance with two EBS volumes, Root volume type and the other EBS volume type to store the data. A month later you are planning to terminate the EC2 instance. What's the default behavior that will happen to each EBS volume?<ul>"
+                                + "<li>Both the root volume type and the EBS volume type will be deleted</li>"
+                                + "<li>The Root volume type will be deleted and the EBS volume type will not be deleted</li>"
+                                + "<li>The root volume type will not be deleted and the EBS volume type will be deleted</li>"
+                                + "<li>Both the root volume type and the EBS volume type will not be deleted</li></ul>", "back": "<b>The Root volume type will be deleted and the EBS volume type will not be deleted</b> By default, the Root volume type will be deleted as its 'Delete On Termination' attribute checked by default. Any other EBS volume types will not be deleted as its 'Delete On Termination' attribute disabled by default." }
+  , { "exam": "SAA-C03", "front": "You can use an AMI in N.Virginia Region us-east-1 to launch an EC2 instance in any AWS Region.<ul>"
+                                + "<li>True</li>"
+                                + "<li>False</li></ul>", "back": "<b>False</b> AMIs are built for a specific AWS Region, they're unique for each AWS Region. You can't launch an EC2 instance using an AMI in another AWS Region, but you can copy the AMI to the target AWS Region and then use it to create your EC2 instances." }
+  , { "exam": "SAA-C03", "front": "Which of the following EBS volume types can be used as boot volumes when you create EC2 instances?<ul>"
+                                + "<li>gp2, gp3, st1, sc1</li>"
+                                + "<li>gp2, gp3, io1, io2</li>"
+                                + "<li>io1, io2, st1, sc1</li></ul>", "back": "<b>gp2, gp3, io1, io2</b> When creating EC2 instances, you can only use the following EBS volume types as boot volumes: gp2, gp3, io1, io2, and Magnetic (Standard)." }
+  , { "exam": "SAA-C03", "front": "What is EBS Multi-Attach?<ul>"
+                                + "<li>Attach the same EBS volume to multiple EC2 instances in multiple AZs</li>"
+                                + "<li>Attach multiple EBS volumes in the same AZ to the same EC2 instance</li>"
+                                + "<li>Attach the same EBS volume to multiple EC2 instances in the same AZ</li>"
+                                + "<li>Attach multiple EBS volumes in multiple AZs to the same EC2 instance</li></ul>", "back": "<b>Attach the same EBS volume to multiple EC2 instances in the same AZ</b> Using EBS Multi-Attach, you can attach the same EBS volume to multiple EC2 instances in the same AZ. Each EC2 instance has full read/write permissions." }
+  , { "exam": "SAA-C03", "front": "You would like to encrypt an unencrypted EBS volume attached to your EC2 instance. What should you do?<ul>"
+                                + "<li>Create an EBS snapshot of your EBS volume. Copy the snapshot and tick the option to encrypt the copied snapshot. Then, use the encrypted snapshot to create a new EBS volume</li>"
+                                + "<li>Select your EBS volume, choose Edit Attributes, then tick the Encrypt using KMS option</li>"
+                                + "<li>Create a new encrypted EBS volume, then copy data from your unencrypted EBS volume to the new EBS volume.</li>"
+                                + "<li>Submit a request to AWS Support to encrypt your EBS volume</li></ul>", "back": "<b>Create an EBS snapshot of your EBS volume. Copy the snapshot and tick the option to encrypt the copied snapshot. Then, use the encrypted snapshot to create a new EBS volume</b>" }
+  , { "exam": "SAA-C03", "front": "You have a fleet of EC2 instances distributes across AZs that process a large data set. What do you recommend to make the same data to be accessible as an NFS drive to all of your EC2 instances?<ul>"
+                                + "<li>Use EBS</li>"
+                                + "<li>Use EFS</li>"
+                                + "<li>Use an Instance Store</li></ul>", "back": "<b>Use EFS</b> EFS is a network file system (NFS) that allows you to mount the same file system on EC2 instances that are in different AZs." }
+  , { "exam": "SAA-C03", "front": "You would like to have a high-performance local cache for your application hosted on an EC2 instance. You don't mind losing the cache upon the termination of your EC2 instance. Which storage mechanism do you recommend as a Solutions Architect?<ul>"
+                                + "<li>EBS</li>"
+                                + "<li>EFS</li>"
+                                + "<li>Instance Store</li></ul>", "back": "<b>Instance Store</b> EC2 Instance Store provides the best disk I/O performance." }
+  , { "exam": "SAA-C03", "front": "You are running a high-performance database that requires an IOPS of 310,000 for its underlying storage. What do you recommend?<ul>"
+                                + "<li>Use an EBS gp2 drive</li>"
+                                + "<li>Use an EBS io1 drive</li>"
+                                + "<li>Use an EC2 Instance Store</li>"
+                                + "<li>Use an EBS io2 Block Express drive</li></ul>", "back": "<b>Use an EC2 Instance Store</b> You can run a database on an EC2 instance that uses an Instance Store, but you'll have a problem that the data will be lost if the EC2 instance is stopped (it can be restarted without problems). One solution is that you can set up a replication mechanism on another EC2 instance with an Instance Store to have a standby copy. Another solution is to set up backup mechanisms for your data. It's all up to you how you want to set up your architecture to validate your requirements. In this use case, it's around IOPS, so we have to choose an EC2 Instance Store." }
+  , { "exam": "SAA-C03", "front": "Scaling an EC2 instance from r4.large to r4.4xlarge is called .....................<ul>"
+                                + "<li>Horizontal Scalability</li>"
+                                + "<li>Vertical Scalability</li></ul>", "back": "<b>Vertical Scalability</b>" }
+  , { "exam": "SAA-C03", "front": "Running an application on an Auto Scaling Group that scales the number of EC2 instances in and out is called .....................<ul>"
+                                + "<li>Horizontal Scalability</li>"
+                                + "<li>Vertical Scalability</li></ul>", "back": "<b>Horizontal Scalability</b>" }
+  , { "exam": "SAA-C03", "front": "Elastic Load Balancers provide a .......................<ul>"
+                                + "<li>static IPv4 we can use in our application</li>"
+                                + "<li>static DNS name we can use in our application</li>"
+                                + "<li>static IPv6 we can use in our application</li></ul>", "back": "<b>static DNS name we can use in our application</b> Only Network Load Balancer provides both static DNS name and static IP. While, Application Load Balancer provides a static DNS name but it does NOT provide a static IP. The reason being that AWS wants your Elastic Load Balancer to be accessible using a static endpoint, even if the underlying infrastructure that AWS manages changes." }
+  , { "exam": "SAA-C03", "front": "You are running a website on 10 EC2 instances fronted by an Elastic Load Balancer. Your users are complaining about the fact that the website always asks them to re-authenticate when they are moving between website pages. You are puzzled because it's working just fine on your machine and in the Dev environment with 1 EC2 instance. What could be the reason?<ul>"
+                                + "<li>Your website must have an issue when hosted on multiple EC2 instances</li>"
+                                + "<li>The EC2 instances log out users as they can't see their IP addresses, instead, they receive ELB IP addresses.</li>"
+                                + "<li>The Elastic Load Balancer does not have Sticky Sessions enabled</li></ul>", "back": "<b>The Elastic Load Balancer does not have Sticky Sessions enabled</b> ELB Sticky Session feature ensures traffic for the same client is always redirected to the same target (e.g., EC2 instance). This helps that the client does not lose his session data." }
+  , { "exam": "SAA-C03", "front": "You are using an Application Load Balancer to distribute traffic to your website hosted on EC2 instances. It turns out that your website only sees traffic coming from private IPv4 addresses which are in fact your Application Load Balancer's IP addresses. What should you do to get the IP address of clients connected to your website?<ul>"
+                                + "<li>Modify your website's frontend so that users send their IP in every request</li>"
+                                + "<li>Modify your website's backend to get the client IP address from the X-Forwarded-For header</li>"
+                                + "<li>Modify your website's backend to get the client IP address from the X-Forwarded-Port header</li>"
+                                + "<li>Modify your website's backend to get the client IP address from the X-Forwarded-Proto header</li></ul>", "back": "<b>Modify your website's backend to get the client IP address from the X-Forwarded-For header</b> When using an Application Load Balancer to distribute traffic to your EC2 instances, the IP address you'll receive requests from will be the ALB's private IP addresses. To get the client's IP address, ALB adds an additional header called 'X-Forwarded-For' contains the client's IP address." }
+  , { "exam": "SAA-C03", "front": "You hosted an application on a set of EC2 instances fronted by an Elastic Load Balancer. A week later, users begin complaining that sometimes the application just doesn't work. You investigate the issue and found that some EC2 instances crash from time to time. What should you do to protect users from connecting to the EC2 instances that are crashing?<ul>"
+                                + "<li>Enable ELB Health Checks</li>"
+                                + "<li>Enable ELB Stickiness</li>"
+                                + "<li>Enable SSL Termination</li>"
+                                + "<li>Enable Cross-Zone Load Balancing</li></ul>", "back": "<b>Enable ELB Health Checks</b> When you enable ELB Health Checks, your ELB won't send traffic to unhealthy (crashed) EC2 instances." }
+  , { "exam": "SAA-C03", "front": "You are working as a Solutions Architect for a company and you are required to design an architecture for a high-performance, low-latency application that will receive millions of requests per second. Which type of Elastic Load Balancer should you choose?<ul>"
+                                + "<li>Application Load Balancer</li>"
+                                + "<li>Network Load Balancer</li></ul>", "back": "<b>Network Load Balancer</b> provides the highest performance and lowest latency if your application needs it." }
+  , { "exam": "SAA-C03", "front": "Application Load Balancers support the following protocols, EXCEPT:<ul>"
+                                + "<li>HTTP</li>"
+                                + "<li>HTTPS</li>"
+                                + "<li>TCP</li>"
+                                + "<li>WebSocket</li></ul>", "back": "<b>TCP</b> Application Load Balancers support HTTP, HTTPS and WebSocket" }
+  , { "exam": "SAA-C03", "front": "Application Load Balancers can route traffic to different Target Groups based on the following, EXCEPT:<ul>"
+                                + "<li>Client's Location (Geography)</li>"
+                                + "<li>Hostname</li>"
+                                + "<li>Request URL Path</li>"
+                                + "<li>Source IP Address</li></ul>", "back": "<b>Client's Location (Geography)</b> ALBs can route traffic to different Target Groups based on URL Path, Hostname, HTTP Headers, and Query Strings." }
+  , { "exam": "SAA-C03", "front": "Registered targets in a Target Groups for an Application Load Balancer can be one of the following, EXCEPT:<ul>"
+                                + "<li>EC2 Instances</li>"
+                                + "<li>Network Load Balancer</li>"
+                                + "<li>Private IP Addresses</li>"
+                                + "<li>Lambda Functions</li></ul>", "back": "<b>Network Load Balancer</b> " }
+  , { "exam": "SAA-C03", "front": "For compliance purposes, you would like to expose a fixed static IP address to your end-users so that they can write firewall rules that will be stable and approved by regulators. What type of Elastic Load Balancer would you choose?<ul>"
+                                + "<li>Application Load Balancer with an Elastic IP attached to it</li>"
+                                + "<li>Network Load Balancer</li></ul>", "back": "<b>Network Load Balancer</b> Network Load Balancer has one static IP address per AZ and you can attach an Elastic IP address to it. Application Load Balancers and Classic Load Balancers have a static DNS name." }
+  , { "exam": "SAA-C03", "front": "You want to create a custom application-based cookie in your Application Load Balancer. Which of the following you can use as a cookie name?<ul>"
+                                + "<li>AWSALBAPP</li>"
+                                + "<li>APPUSERC</li>"
+                                + "<li>AWSALBTG</li>"
+                                + "<li>AWSALB</li></ul>", "back": "<b>APPUSERC</b> The following cookie names are reserved by the ELB (AWSALB, AWSALBAPP, AWSALBTG)." }
+  , { "exam": "SAA-C03", "front": "You have a Network Load Balancer that distributes traffic across a set of EC2 instances in us-east-1. You have 2 EC2 instances in us-east-1b AZ and 5 EC2 instances in us-east-1e AZ. You have noticed that the CPU utilization is higher in the EC2 instances in us-east-1b AZ. After more investigation, you noticed that the traffic is equally distributed across the two AZs. How would you solve this problem?<ul>"
+                                + "<li>Enable Cross-Zone Load Balancing</li>"
+                                + "<li>Enable Sticky Sessions</li>"
+                                + "<li>Enable ELB Health Checks</li>"
+                                + "<li>Enable SSL Termination</li></ul>", "back": "<b>Enable Cross-Zone Load Balancing</b> When Cross-Zone Load Balancing is enabled, ELB distributes traffic evenly across all registered EC2 instances in all AZs." }
 ];
 
 /*
-  , { "exam": "CLF-C02", "front": "", "back": "" }
+copy(`  , { "exam": "SAA-C03", "front": "${document.querySelector('#question-prompt').innerText}<ul>"\n                                + "<li>${Array.from(document.querySelectorAll('[aria-labelledby="question-prompt"] .ud-heading-md>div>div>div[data-purpose="safely-set-inner-html:rich-text-viewer:html"]')).map(x=>x.innerText).join('</li>"\n                                + "<li>')}</li></ul>", "back": "<b>${document.querySelector('.ud-text-xs').parentElement.parentElement.firstElementChild.innerText}</b> ${document.querySelector('[aria-labelledby="question-prompt"] .ud-heading-md .ud-text-sm div').innerText}" }\n`)
+copy(document.querySelector('[aria-labelledby="question-prompt"] .ud-heading-md .ud-text-sm div').innerText)
+<ul>"
+                                + "<li></li>"
+                                + "<li></li>"
+                                + "<li></li>"
+                                + "<li></li></ul>
+<ul>"
+                                + "<li></li>"
+                                + "<li></li>"
+                                + "<li></li>"
+                                + "<li></li>"
+                                + "<li></li></ul>
+<ul>"
+                                + "<li></li>"
+                                + "<li></li>"
+                                + "<li></li>"
+                                + "<li></li>"
+                                + "<li></li>"
+                                + "<li></li></ul>
+  , { "exam": "SAA-C03", "front": "", "back": "" }
 */
