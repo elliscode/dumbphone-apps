@@ -12,6 +12,32 @@ body {
   margin: 0;
   flex-direction: column;
 }
+#deck-selector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: min(3vw, 3vh);
+  padding: min(5vw, 5vh);
+  width: min(90vw, 90vh);
+}
+#deck-selector h1 {
+  font-size: min(8vw, 8vh);
+  margin: 0;
+}
+#deck-select {
+  font-size: min(6vw, 6vh);
+  padding: min(2vw, 2vh);
+  border-radius: min(5vw, 5vh);
+  width: 100%;
+  cursor: pointer;
+}
+#start-btn {
+  font-size: min(6vw, 6vh);
+  border-radius: min(5vw, 5vh);
+  padding: min(2vw, 2vh) min(6vw, 6vh);
+  cursor: pointer;
+  width: 100%;
+}
 .card {
   box-sizing:border-box;
   border: 1px solid black;
@@ -30,10 +56,21 @@ body {
 }
 #next {
   width: min(100vw, 100vh);
-  height: min(15vh);
+  height: min(12vh);
   font-size: min(8vw, 8vh);
   border-radius: min(10vw, 10vh);
   line-height:1;
+}
+#change-deck {
+  font-size: min(3.5vw, 3.5vh);
+  border-radius: min(5vw, 5vh);
+  padding: min(1vw, 1vh) min(3vw, 3vh);
+  cursor: pointer;
+  background: none;
+  border: 1px solid #aaa;
+  color: #666;
+  margin-top: min(1vw, 1vh);
+  height: min(3vh);
 }
 ul {
   padding:0;
@@ -44,97 +81,155 @@ li {
   padding:0;
   margin:0;
 }
+code {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
     </style>
   </head>
 
   <body>
-    <div id="card-holder"></div>
-    <button id="next" onclick="displayCard(event);">Next</button>
-    <script src="aws-cards.js?v=001"></script>
+    <div id="deck-selector">
+      <h1>Flash Cards</h1>
+      <select id="deck-select"></select>
+      <button id="start-btn">Start</button>
+    </div>
+    <div id="card-holder" style="display:none;"></div>
+    <button id="next" style="display:none;" onclick="displayCard(event);">Next</button>
+    <button id="change-deck" style="display:none;" onclick="showDeckSelector();">Change Deck</button>
     <script>
-const filter = 'SAA-C03';
-const cardHolder = document.getElementById('card-holder');
-let activeCards = [];
+var activeDeck = null;
+var activeCards = [];
+var loadedScripts = {};
+
+var cardHolder = document.getElementById('card-holder');
+var deckSelector = document.getElementById('deck-selector');
+var nextBtn = document.getElementById('next');
+var changeDeckBtn = document.getElementById('change-deck');
+var allDecks = [];
+
+fetch('manifest.json')
+  .then(function(r) { return r.json(); })
+  .then(function(decks) {
+    allDecks = decks;
+    var select = document.getElementById('deck-select');
+    decks.forEach(function(deck, i) {
+      var opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = deck.name;
+      select.appendChild(opt);
+    });
+  });
+
+document.getElementById('start-btn').addEventListener('click', function() {
+  var select = document.getElementById('deck-select');
+  var deck = allDecks[parseInt(select.value)];
+  if (!deck) return;
+  loadDeck(deck);
+});
+
+function loadDeck(deck) {
+  if (loadedScripts[deck.file]) {
+    startGame(deck);
+    return;
+  }
+  var script = document.createElement('script');
+  script.src = deck.file + '?v=' + (deck.version || '1');
+  script.onload = function() {
+    loadedScripts[deck.file] = true;
+    startGame(deck);
+  };
+  document.head.appendChild(script);
+}
+
+function startGame(deck) {
+  activeDeck = deck;
+  activeCards = [];
+  deckSelector.style.display = 'none';
+  cardHolder.style.display = '';
+  nextBtn.style.display = '';
+  changeDeckBtn.style.display = '';
+  displayCard();
+}
+
+function showDeckSelector() {
+  var divsNodeList = document.getElementsByClassName('card');
+  var divs = Array.prototype.slice.call(divsNodeList);
+  divs.forEach(function(x) { x.remove(); });
+  cardHolder.style.display = 'none';
+  nextBtn.style.display = 'none';
+  changeDeckBtn.style.display = 'none';
+  deckSelector.style.display = '';
+}
+
 function displayCard() {
   if (activeCards.length == 0) {
-    activeCards = awsCards.slice();
-    activeCards = activeCards.filter(x=>x.exam==filter);
+    activeCards = window[activeDeck.variable].slice();
+    if (activeDeck.filter) {
+      activeCards = activeCards.filter(function(x) { return x.exam == activeDeck.filter; });
+    }
     activeCards = shuffle(activeCards);
   }
-  let card = activeCards.pop();
+  var card = activeCards.pop();
   createDomCard(card);
   resizeCardText(card);
 }
 function createDomCard(card) {
-  // delete old cards
-  let divsNodeList = document.getElementsByClassName("card");
-  let divs = Array.prototype.slice.call(divsNodeList).map(function(s) { return s; });
-  divs.forEach(function (x) { x.remove(); });
-  // create new card
-  let cardDom = document.createElement('div');
+  var divsNodeList = document.getElementsByClassName('card');
+  var divs = Array.prototype.slice.call(divsNodeList);
+  divs.forEach(function(x) { x.remove(); });
+
+  var cardDom = document.createElement('div');
   cardDom.classList.add('card');
   cardDom.addEventListener('click', toggleCard);
-  
-  let front = document.createElement('span');
+
+  var front = document.createElement('span');
   front.classList.add('front');
   front.innerHTML = card.front;
   front.style.display = 'block';
-  front.style.fontSize = `${Math.min(window.innerWidth, window.innerHeight) * 0.08}px`;
+  front.style.fontSize = Math.min(window.innerWidth, window.innerHeight) * 0.08 + 'px';
   cardDom.appendChild(front);
 
-  let list = front.querySelector('ul');
+  var list = front.querySelector('ul');
   if (list) {
     shuffleList(list);
   }
 
-  let back = document.createElement('span');
+  var back = document.createElement('span');
   back.classList.add('back');
   back.innerHTML = card.back;
   back.style.display = 'none';
-  back.style.fontSize = `${Math.min(window.innerWidth, window.innerHeight) * 0.08}px`;
+  back.style.fontSize = Math.min(window.innerWidth, window.innerHeight) * 0.08 + 'px';
   cardDom.appendChild(back);
 
   cardHolder.appendChild(cardDom);
 }
 function shuffleList(listDom) {
-    if (!listDom) return;
-
-    // Get only the immediate <li> children
-    const items = Array.from(listDom.children).filter(el => el.tagName === "LI");
-
-    // Fisher–Yates shuffle
-    for (let i = items.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [items[i], items[j]] = [items[j], items[i]];
-    }
-
-    // Re-append in shuffled order
-    const frag = document.createDocumentFragment();
-    items.forEach(item => frag.appendChild(item));
-    listDom.appendChild(frag);
+  if (!listDom) return;
+  var items = Array.from(listDom.children).filter(function(el) { return el.tagName === 'LI'; });
+  for (var i = items.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = items[i]; items[i] = items[j]; items[j] = tmp;
+  }
+  var frag = document.createDocumentFragment();
+  items.forEach(function(item) { frag.appendChild(item); });
+  listDom.appendChild(frag);
 }
 function shuffle(array) {
   var currentIndex = array.length, temporaryValue, randomIndex;
-
-  // While there remain elements to shuffle...
   while (0 !== currentIndex) {
-
-    // Pick a remaining element at random.
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex -= 1;
-
-    // Swap it with the current element.
     temporaryValue = array[currentIndex];
     array[currentIndex] = array[randomIndex];
     array[randomIndex] = temporaryValue;
   }
-
   return array;
 }
 function toggleCard(event) {
-  let card = document.querySelector('.card');
-  let front = card.querySelector('.front');
-  let back = card.querySelector('.back');
+  var card = document.querySelector('.card');
+  var front = card.querySelector('.front');
+  var back = card.querySelector('.back');
   if (front.style.display == 'none') {
     front.style.display = 'block';
     back.style.display = 'none';
@@ -145,10 +240,11 @@ function toggleCard(event) {
   resizeCardText(event);
 }
 function resizeCardText(event) {
-  let card = document.querySelector('.card');
-  let front = card.querySelector('.front');
-  let back = card.querySelector('.back');
-  let limit = 0;
+  var card = document.querySelector('.card');
+  if (!card) return;
+  var front = card.querySelector('.front');
+  var back = card.querySelector('.back');
+  var limit = 0;
   if (front.style.display == 'none') {
     while (back.getBoundingClientRect().height > back.parentElement.getBoundingClientRect().height && limit < 100) {
       back.style.fontSize = (parseInt(back.style.fontSize) - 1) + 'px';
@@ -162,6 +258,7 @@ function resizeCardText(event) {
   }
 }
 document.addEventListener('keydown', function(event) {
+  if (activeDeck == null) return;
   if (event.key == '4' || event.key == '6') {
     toggleCard(event);
   }
@@ -169,7 +266,6 @@ document.addEventListener('keydown', function(event) {
     displayCard();
   }
 });
-displayCard();
     </script>
   </body>
 </html>

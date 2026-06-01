@@ -31,9 +31,8 @@ def tenor_search_route(event, user_data, body):
             },
             user_data=user_data,
         )
-    key = query
-    if body.get("pos"):
-        key = key + "_" + body.get("pos")
+    page = body.get("pos", 1)
+    key = query if page == 1 else f"{query}_{page}"
 
     if key in cached_searches:
         return format_response(
@@ -46,22 +45,27 @@ def tenor_search_route(event, user_data, body):
             user_data=user_data,
         )
 
-    uri = f"https://tenor.googleapis.com/v2/search?q={query}&key={TENOR_API_KEY}&limit=5"
-    if body.get("pos"):
-        uri = uri + f"&pos={body.get('pos')}"
+    uri = f"https://api.klipy.com/api/v1/{TENOR_API_KEY}/gifs/search?q={query}&per_page=5&page={page}"
     log(uri, user_data)
-    tenor_response = http.request("GET", uri)
-    tenor_response_text = tenor_response.data.decode("utf-8")
-    tenor_response_json = json.loads(tenor_response_text)
+    klipy_response = http.request("GET", uri)
+    klipy_response_text = klipy_response.data.decode("utf-8")
+    klipy_response_json = json.loads(klipy_response_text)
 
-    cached_searches[key] = tenor_response_json
+    current_page = klipy_response_json["data"]["current_page"]
+    has_next = klipy_response_json["data"]["has_next"]
+    normalized = {
+        "results": klipy_response_json["data"]["data"],
+        "next": current_page + 1 if has_next else None,
+    }
+
+    cached_searches[key] = normalized
 
     return format_response(
         event=event,
         http_code=200,
         body={
-            "results": tenor_response_json,
-            "message": f"I searched tenor for '{key}'",
+            "results": normalized,
+            "message": f"I searched klipy for '{key}'",
         },
         user_data=user_data,
     )

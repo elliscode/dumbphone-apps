@@ -32,7 +32,7 @@
 
     <div class="panel" id="content">
       <div class="search-bar">
-        <input placeholder="Search on tenor.com" id="search-text-input" input-group-name="search" class="big" type="text" related-button-id="search-button" />
+        <input placeholder="Search on klipy.com" id="search-text-input" input-group-name="search" class="big" type="text" related-button-id="search-button" />
         <button id="search-button" input-group-name="search" onclick="runSearch(event)">Search</button>
       </div>
 
@@ -88,10 +88,10 @@ function handleSearch(event) {
     let div = document.createElement('div');
     let a = document.createElement('a');
     a.classList.add('search-result');
-    a.href = "sms://?&body=" + encodeURIComponent(item.url); 
+    a.href = "sms://?&body=" + encodeURIComponent(item.file.md.gif.url);
     a.setAttribute('input-group-name', 'search');
     let img = document.createElement('img');
-    img.src = item.media_formats.nanogif.url;
+    img.src = item.file.sm.gif.url;
     a.appendChild(img);
     div.appendChild(a);
     resultsDiv.appendChild(div);
