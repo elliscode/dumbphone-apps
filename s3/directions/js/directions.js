@@ -5,6 +5,7 @@ const mapDiv = document.getElementById("map");
 const routesDiv = document.getElementById("routes");
 const stepsDiv = document.getElementById("steps");
 const historyDiv = document.getElementById("history");
+const openInMapsButton = document.getElementById("open-in-maps-button");
 
 const CURRENT_LOCATION_LABEL = "Current Location";
 const HISTORY_KEY = "dumbphoneapps-directions-history";
@@ -188,6 +189,7 @@ function handleDirectionsResult(result, status) {
     showError("Could not find directions for that origin and destination");
     routesDiv.innerHTML = "";
     mapDiv.style.display = "none";
+    openInMapsButton.style.display = "none";
     return;
   }
 
@@ -237,6 +239,8 @@ function finalizeRoutes() {
   directionsRenderer.setRouteIndex(0);
 
   renderRouteOptions(0);
+
+  openInMapsButton.style.display = "";
 
   saveToHistory(lastOriginDisplay, lastDestination);
 }
@@ -299,6 +303,23 @@ function renderSteps(route) {
 function selectRoute(index) {
   directionsRenderer.setRouteIndex(index);
   renderRouteOptions(index);
+}
+
+function openInGoogleMaps(event) {
+  if (!lastOrigin || !lastDestination) {
+    return;
+  }
+
+  const originParam =
+    typeof lastOrigin === "string" ? lastOrigin : `${lastOrigin.lat},${lastOrigin.lng}`;
+
+  const url =
+    "https://www.google.com/maps/dir/?api=1" +
+    "&origin=" + encodeURIComponent(originParam) +
+    "&destination=" + encodeURIComponent(lastDestination) +
+    "&travelmode=driving";
+
+  window.location.href = url;
 }
 
 prefillFromHistory();
