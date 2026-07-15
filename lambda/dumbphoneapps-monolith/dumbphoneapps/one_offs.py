@@ -83,6 +83,16 @@ def get_maps_key_route(event):
     )
 
 
+@authenticate
+def get_authenticated_maps_key_route(event, user_data, body):
+    return format_response(
+        event=event,
+        http_code=200,
+        body={"key": GOOGLE_API_KEY},
+        user_data=user_data,
+    )
+
+
 def get_location_route(event):
     body = json.loads(event["body"])
     log(body)

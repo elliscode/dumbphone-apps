@@ -40,6 +40,7 @@ from dumbphoneapps.one_offs import (
     share_location_route,
     get_location_route,
     get_maps_key_route,
+    get_authenticated_maps_key_route,
     generate_presigned_post,
     generate_presigned_get,
     acknowledge_presigned_post_success_route,
@@ -166,6 +167,8 @@ def route(event):
         return get_location_route(event)
     if path_equals(event=event, method="POST", path="/one-offs/get-maps-key"):
         return get_maps_key_route(event)
+    if path_equals(event=event, method="POST", path="/one-offs/get-authenticated-maps-key"):
+        return get_authenticated_maps_key_route(event)
     if path_equals(event=event, method="POST", path="/weather/get-forecast"):
         return get_forecast_route(event)
     if path_equals(event=event, method="POST", path="/one-offs/generate-presigned-post"):
