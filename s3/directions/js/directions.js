@@ -9,6 +9,7 @@ const stepByStepButton = document.getElementById("step-by-step-button");
 const stepOverlay = document.getElementById("step-overlay");
 const stepInstructionDiv = document.getElementById("step-instruction");
 const stepProgressDiv = document.getElementById("step-progress");
+const showLocationCheckbox = document.getElementById("show-location-checkbox");
 
 const CURRENT_LOCATION_LABEL = "Current Location";
 const HISTORY_KEY = "dumbphoneapps-directions-history";
@@ -27,6 +28,8 @@ let lastOriginDisplay = undefined;
 let selectedRouteIndex = 0;
 let stepByStepActive = false;
 let stepByStepIndex = 0;
+let myLocationMarker = undefined;
+let locationWatchId = undefined;
 
 function showError(message) {
   errorDiv.innerText = message;
@@ -115,6 +118,64 @@ function onMapReady(mapInstance) {
   directionsService = new google.maps.DirectionsService();
   directionsRenderer = new google.maps.DirectionsRenderer({ map: map });
   hideLoader();
+}
+
+function createLocationDotElement() {
+  const dot = document.createElement("div");
+  dot.style.width = "14px";
+  dot.style.height = "14px";
+  dot.style.borderRadius = "50%";
+  dot.style.background = "#4285f4";
+  dot.style.border = "2px solid #ffffff";
+  dot.style.boxShadow = "0 0 4px rgba(0, 0, 0, 0.5)";
+  return dot;
+}
+
+function handleShowLocationToggle(event) {
+  if (showLocationCheckbox.checked) {
+    startWatchingLocationDot();
+  } else {
+    stopWatchingLocationDot();
+  }
+}
+
+function startWatchingLocationDot() {
+  if (!navigator.geolocation || !map || locationWatchId !== undefined) {
+    return;
+  }
+
+  locationWatchId = navigator.geolocation.watchPosition(
+    (position) => {
+      const latLng = { lat: position.coords.latitude, lng: position.coords.longitude };
+
+      if (!myLocationMarker) {
+        myLocationMarker = new google.maps.marker.AdvancedMarkerElement({
+          map: map,
+          position: latLng,
+          content: createLocationDotElement(),
+          title: "Your location",
+        });
+      } else {
+        myLocationMarker.position = latLng;
+      }
+    },
+    (error) => {
+      showLocationCheckbox.checked = false;
+      stopWatchingLocationDot();
+    },
+    { enableHighAccuracy: true }
+  );
+}
+
+function stopWatchingLocationDot() {
+  if (locationWatchId !== undefined) {
+    navigator.geolocation.clearWatch(locationWatchId);
+    locationWatchId = undefined;
+  }
+  if (myLocationMarker) {
+    myLocationMarker.map = null;
+    myLocationMarker = undefined;
+  }
 }
 
 function useCurrentLocationAsOrigin(event, autoContinue) {
