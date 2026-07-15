@@ -22,6 +22,82 @@
         max-height: 40vh;
         display: none;
       }
+      #map.fullscreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
+        z-index: 500;
+      }
+      body.step-mode > *:not(#map):not(#step-overlay) {
+        display: none !important;
+      }
+      #step-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 600;
+        pointer-events: none;
+        font-size: 12px;
+      }
+      #step-overlay-top {
+        pointer-events: auto;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 6px;
+        background: rgba(255, 255, 255, 0.9);
+      }
+      #step-overlay-top button {
+        font-size: 12px;
+        padding: 2px 6px;
+      }
+      #step-instruction {
+        pointer-events: auto;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 26px;
+        padding: 6px;
+        background: rgba(255, 255, 255, 0.9);
+        text-align: center;
+      }
+      #step-hint-left,
+      #step-hint-right,
+      #step-zoom-hint-left,
+      #step-zoom-hint-right {
+        pointer-events: auto;
+        position: absolute;
+        font-weight: bold;
+        font-size: 14px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 1px 5px;
+      }
+      #step-hint-left,
+      #step-hint-right {
+        bottom: 4px;
+      }
+      #step-zoom-hint-left,
+      #step-zoom-hint-right {
+        top: 30px;
+      }
+      #step-hint-left,
+      #step-zoom-hint-left {
+        left: 4px;
+      }
+      #step-hint-right,
+      #step-zoom-hint-right {
+        right: 4px;
+      }
       #routes {
         margin-top: 8px;
       }
@@ -97,9 +173,21 @@
 
     <div id="steps"></div>
 
-    <button id="open-in-maps-button" class="giant-button-half" style="display: none" onclick="openInGoogleMaps(event)">
-      Open in Google Maps
+    <button id="step-by-step-button" class="giant-button-half" style="display: none" onclick="openStepByStep(event)">
+      Go step by step
     </button>
+
+    <div id="step-overlay">
+      <div id="step-overlay-top">
+        <button id="step-close-button" onclick="closeStepByStep(event)">Close</button>
+        <div id="step-progress"></div>
+      </div>
+      <div id="step-zoom-hint-left">- 4</div>
+      <div id="step-zoom-hint-right">6 +</div>
+      <div id="step-instruction"></div>
+      <div id="step-hint-left">&lt; 7</div>
+      <div id="step-hint-right">9 &gt;</div>
+    </div>
 
     <div id="loading">
       <div class="lds-spinner">

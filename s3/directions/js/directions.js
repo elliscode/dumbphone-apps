@@ -5,7 +5,10 @@ const mapDiv = document.getElementById("map");
 const routesDiv = document.getElementById("routes");
 const stepsDiv = document.getElementById("steps");
 const historyDiv = document.getElementById("history");
-const openInMapsButton = document.getElementById("open-in-maps-button");
+const stepByStepButton = document.getElementById("step-by-step-button");
+const stepOverlay = document.getElementById("step-overlay");
+const stepInstructionDiv = document.getElementById("step-instruction");
+const stepProgressDiv = document.getElementById("step-progress");
 
 const CURRENT_LOCATION_LABEL = "Current Location";
 const HISTORY_KEY = "dumbphoneapps-directions-history";
@@ -21,6 +24,9 @@ let baseDirectionsResult = undefined;
 let lastOrigin = undefined;
 let lastDestination = undefined;
 let lastOriginDisplay = undefined;
+let selectedRouteIndex = 0;
+let stepByStepActive = false;
+let stepByStepIndex = 0;
 
 function showError(message) {
   errorDiv.innerText = message;
@@ -189,7 +195,7 @@ function handleDirectionsResult(result, status) {
     showError("Could not find directions for that origin and destination");
     routesDiv.innerHTML = "";
     mapDiv.style.display = "none";
-    openInMapsButton.style.display = "none";
+    stepByStepButton.style.display = "none";
     return;
   }
 
@@ -240,12 +246,14 @@ function finalizeRoutes() {
 
   renderRouteOptions(0);
 
-  openInMapsButton.style.display = "";
+  stepByStepButton.style.display = "";
 
   saveToHistory(lastOriginDisplay, lastDestination);
 }
 
 function renderRouteOptions(selectedIndex) {
+  selectedRouteIndex = selectedIndex;
+
   routesDiv.innerHTML = "";
 
   currentRoutes.forEach((route, index) => {
@@ -305,21 +313,79 @@ function selectRoute(index) {
   renderRouteOptions(index);
 }
 
-function openInGoogleMaps(event) {
-  if (!lastOrigin || !lastDestination) {
+function openStepByStep(event) {
+  const route = currentRoutes[selectedRouteIndex];
+  if (!route) {
     return;
   }
 
-  const originParam =
-    typeof lastOrigin === "string" ? lastOrigin : `${lastOrigin.lat},${lastOrigin.lng}`;
+  stepByStepActive = true;
+  stepByStepIndex = 0;
 
-  const url =
-    "https://www.google.com/maps/dir/?api=1" +
-    "&origin=" + encodeURIComponent(originParam) +
-    "&destination=" + encodeURIComponent(lastDestination) +
-    "&travelmode=driving";
+  document.body.classList.add("step-mode");
+  mapDiv.classList.add("fullscreen");
+  stepOverlay.style.display = "block";
+  google.maps.event.trigger(map, "resize");
 
-  window.location.href = url;
+  showStepByStepIndex(stepByStepIndex);
+
+  document.addEventListener("keydown", handleStepByStepKeydown);
+}
+
+function closeStepByStep(event) {
+  stepByStepActive = false;
+
+  document.body.classList.remove("step-mode");
+  mapDiv.classList.remove("fullscreen");
+  stepOverlay.style.display = "none";
+
+  document.removeEventListener("keydown", handleStepByStepKeydown);
+
+  google.maps.event.trigger(map, "resize");
+  directionsRenderer.setDirections({ ...baseDirectionsResult, routes: currentRoutes });
+  directionsRenderer.setRouteIndex(selectedRouteIndex);
+}
+
+function handleStepByStepKeydown(event) {
+  if (!stepByStepActive) {
+    return;
+  }
+  if (event.key === "7") {
+    event.preventDefault();
+    goToStep(stepByStepIndex - 1);
+  } else if (event.key === "9") {
+    event.preventDefault();
+    goToStep(stepByStepIndex + 1);
+  } else if (event.key === "4") {
+    event.preventDefault();
+    map.setZoom(map.getZoom() - 1);
+  } else if (event.key === "6") {
+    event.preventDefault();
+    map.setZoom(map.getZoom() + 1);
+  } else if (event.key === "Backspace" || event.key === "EndCall") {
+    event.preventDefault();
+    closeStepByStep();
+  }
+}
+
+function goToStep(newIndex) {
+  const steps = currentRoutes[selectedRouteIndex].legs[0].steps;
+  if (newIndex < 0 || newIndex >= steps.length) {
+    return;
+  }
+  stepByStepIndex = newIndex;
+  showStepByStepIndex(stepByStepIndex);
+}
+
+function showStepByStepIndex(index) {
+  const steps = currentRoutes[selectedRouteIndex].legs[0].steps;
+  const step = steps[index];
+
+  stepInstructionDiv.innerHTML = step.instructions;
+  stepProgressDiv.innerText = `${index + 1} / ${steps.length}`;
+
+  map.setZoom(18);
+  map.panTo(step.start_location);
 }
 
 prefillFromHistory();
