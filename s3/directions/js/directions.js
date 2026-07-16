@@ -14,6 +14,7 @@ const showLocationCheckbox = document.getElementById("show-location-checkbox");
 const CURRENT_LOCATION_LABEL = "Current Location";
 const HISTORY_KEY = "dumbphoneapps-directions-history";
 const HISTORY_LIMIT = 5;
+const SHOW_LOCATION_KEY = "dumbphoneapps-directions-show-location";
 
 let apiKey = undefined;
 let map = undefined;
@@ -127,6 +128,10 @@ function onMapReady(mapInstance) {
 }
 
 function handleShowLocationToggle(event) {
+  try {
+    localStorage.setItem(SHOW_LOCATION_KEY, showLocationCheckbox.checked ? "true" : "false");
+  } catch (e) {}
+
   if (showLocationCheckbox.checked) {
     startWatchingLocationDot();
   } else {
@@ -462,5 +467,12 @@ function showStepByStepIndex(index) {
   map.panTo(step.start_location);
 }
 
+function restoreShowLocationCheckbox() {
+  try {
+    showLocationCheckbox.checked = localStorage.getItem(SHOW_LOCATION_KEY) === "true";
+  } catch (e) {}
+}
+
 prefillFromHistory();
 renderHistory();
+restoreShowLocationCheckbox();
