@@ -7,14 +7,12 @@
 async function initMap() {
   const { Map } = await google.maps.importLibrary("maps");
   await google.maps.importLibrary("routes");
-  await google.maps.importLibrary("marker");
 
   const map = new Map(document.getElementById("map"), {
     center: { lat: 0, lng: 0 },
     zoom: 1,
     streetViewControl: false,
     mapTypeControl: false,
-    mapId: "DIRECTIONS",
   });
 
   onMapReady(map);

@@ -118,17 +118,12 @@ function onMapReady(mapInstance) {
   directionsService = new google.maps.DirectionsService();
   directionsRenderer = new google.maps.DirectionsRenderer({ map: map });
   hideLoader();
-}
 
-function createLocationDotElement() {
-  const dot = document.createElement("div");
-  dot.style.width = "14px";
-  dot.style.height = "14px";
-  dot.style.borderRadius = "50%";
-  dot.style.background = "#4285f4";
-  dot.style.border = "2px solid #ffffff";
-  dot.style.boxShadow = "0 0 4px rgba(0, 0, 0, 0.5)";
-  return dot;
+  // the checkbox may already be checked if the user toggled it before the
+  // map finished loading; onchange won't fire again, so check state here too
+  if (showLocationCheckbox.checked) {
+    startWatchingLocationDot();
+  }
 }
 
 function handleShowLocationToggle(event) {
@@ -149,21 +144,36 @@ function startWatchingLocationDot() {
       const latLng = { lat: position.coords.latitude, lng: position.coords.longitude };
 
       if (!myLocationMarker) {
-        myLocationMarker = new google.maps.marker.AdvancedMarkerElement({
+        mapDiv.style.display = "block";
+        map.setCenter(latLng);
+        map.setZoom(15);
+
+        myLocationMarker = new google.maps.Marker({
           map: map,
           position: latLng,
-          content: createLocationDotElement(),
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 7,
+            fillColor: "#4285f4",
+            fillOpacity: 1,
+            strokeColor: "#ffffff",
+            strokeWeight: 2,
+          },
           title: "Your location",
         });
       } else {
-        myLocationMarker.position = latLng;
+        myLocationMarker.setPosition(latLng);
       }
     },
     (error) => {
-      showLocationCheckbox.checked = false;
-      stopWatchingLocationDot();
+      // PERMISSION_DENIED won't recover on its own; anything else (no fix yet,
+      // timeout) may still succeed on a later update, so keep the watch alive
+      if (error && error.code === error.PERMISSION_DENIED) {
+        showLocationCheckbox.checked = false;
+        stopWatchingLocationDot();
+      }
     },
-    { enableHighAccuracy: true }
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 }
   );
 }
 
@@ -173,8 +183,11 @@ function stopWatchingLocationDot() {
     locationWatchId = undefined;
   }
   if (myLocationMarker) {
-    myLocationMarker.map = null;
+    myLocationMarker.setMap(null);
     myLocationMarker = undefined;
+  }
+  if (!baseDirectionsResult) {
+    mapDiv.style.display = "none";
   }
 }
 
@@ -388,6 +401,7 @@ function openStepByStep(event) {
   stepOverlay.style.display = "block";
   google.maps.event.trigger(map, "resize");
 
+  map.setZoom(18);
   showStepByStepIndex(stepByStepIndex);
 
   document.addEventListener("keydown", handleStepByStepKeydown);
@@ -445,7 +459,6 @@ function showStepByStepIndex(index) {
   stepInstructionDiv.innerHTML = step.instructions;
   stepProgressDiv.innerText = `${index + 1} / ${steps.length}`;
 
-  map.setZoom(18);
   map.panTo(step.start_location);
 }
 
