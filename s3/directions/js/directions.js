@@ -16,6 +16,9 @@ const CURRENT_LOCATION_LABEL = "Current Location";
 const HISTORY_KEY = "dumbphoneapps-directions-history";
 const HISTORY_LIMIT = 5;
 const SHOW_LOCATION_KEY = "dumbphoneapps-directions-show-location";
+const MIN_ARRIVAL_THRESHOLD_METERS = 40;
+const MAX_ARRIVAL_THRESHOLD_METERS = 150;
+const ADVANCE_LOOKAHEAD_STEPS = 5;
 
 let apiKey = undefined;
 let map = undefined;
@@ -177,11 +180,76 @@ function updateFollowIndicatorVisibility() {
   }
 }
 
+function distanceMeters(a, b) {
+  const aLat = typeof a.lat === "function" ? a.lat() : a.lat;
+  const aLng = typeof a.lng === "function" ? a.lng() : a.lng;
+  const bLat = typeof b.lat === "function" ? b.lat() : b.lat;
+  const bLng = typeof b.lng === "function" ? b.lng() : b.lng;
+
+  const R = 6371000;
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const dLat = toRad(bLat - aLat);
+  const dLng = toRad(bLng - aLng);
+  const sinDLat = Math.sin(dLat / 2);
+  const sinDLng = Math.sin(dLng / 2);
+  const h = sinDLat * sinDLat + Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * sinDLng * sinDLng;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+function resyncToNearestStep(latLng) {
+  const steps = currentRoutes[selectedRouteIndex].legs[0].steps;
+  if (!steps || steps.length === 0) {
+    return;
+  }
+
+  let bestIndex = 0;
+  let bestDist = Infinity;
+  steps.forEach((step, i) => {
+    const d = distanceMeters(latLng, step.end_location);
+    if (d < bestDist) {
+      bestDist = d;
+      bestIndex = i;
+    }
+  });
+
+  stepByStepIndex = bestIndex;
+  showStepByStepIndex(stepByStepIndex, { panToStep: false });
+}
+
+function maybeAdvanceStep(latLng, accuracyMeters) {
+  const steps = currentRoutes[selectedRouteIndex].legs[0].steps;
+  const threshold = Math.min(
+    MAX_ARRIVAL_THRESHOLD_METERS,
+    Math.max(MIN_ARRIVAL_THRESHOLD_METERS, accuracyMeters || MIN_ARRIVAL_THRESHOLD_METERS)
+  );
+  const windowEnd = Math.min(steps.length - 1, stepByStepIndex + ADVANCE_LOOKAHEAD_STEPS);
+
+  let reachedIndex = -1;
+  for (let i = stepByStepIndex; i <= windowEnd; i++) {
+    if (distanceMeters(latLng, steps[i].end_location) <= threshold) {
+      reachedIndex = i;
+    }
+  }
+
+  if (reachedIndex === -1) {
+    return;
+  }
+
+  const nextIndex = Math.min(reachedIndex + 1, steps.length - 1);
+  if (nextIndex !== stepByStepIndex) {
+    stepByStepIndex = nextIndex;
+    showStepByStepIndex(stepByStepIndex, { panToStep: false });
+  }
+}
+
 function toggleFollowLocation() {
   followingLocation = !followingLocation;
   stepFollowIndicator.classList.toggle("active", followingLocation);
 
   if (followingLocation && myLocationMarker) {
+    if (stepByStepActive) {
+      resyncToNearestStep(myLocationMarker.getPosition());
+    }
     map.panTo(myLocationMarker.getPosition());
   }
 }
@@ -217,6 +285,9 @@ function startWatchingLocationDot() {
         myLocationMarker.setPosition(latLng);
         if (followingLocation) {
           map.panTo(latLng);
+          if (stepByStepActive) {
+            maybeAdvanceStep(latLng, position.coords.accuracy);
+          }
         }
       }
     },
@@ -513,9 +584,15 @@ function handleStepByStepKeydown(event) {
   }
   if (event.key === "7") {
     event.preventDefault();
+    if (followingLocation) {
+      toggleFollowLocation();
+    }
     goToStep(stepByStepIndex - 1);
   } else if (event.key === "9") {
     event.preventDefault();
+    if (followingLocation) {
+      toggleFollowLocation();
+    }
     goToStep(stepByStepIndex + 1);
   } else if (event.key === "4") {
     event.preventDefault();
@@ -543,14 +620,17 @@ function goToStep(newIndex) {
   showStepByStepIndex(stepByStepIndex);
 }
 
-function showStepByStepIndex(index) {
+function showStepByStepIndex(index, options) {
+  const panToStep = !options || options.panToStep !== false;
   const steps = currentRoutes[selectedRouteIndex].legs[0].steps;
   const step = steps[index];
 
   stepInstructionDiv.innerHTML = step.instructions;
   stepProgressDiv.innerText = `${index + 1} / ${steps.length}`;
 
-  map.panTo(step.start_location);
+  if (panToStep) {
+    map.panTo(step.start_location);
+  }
 }
 
 function restoreShowLocationCheckbox() {
