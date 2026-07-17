@@ -10,6 +10,7 @@ const stepOverlay = document.getElementById("step-overlay");
 const stepInstructionDiv = document.getElementById("step-instruction");
 const stepProgressDiv = document.getElementById("step-progress");
 const showLocationCheckbox = document.getElementById("show-location-checkbox");
+const stepFollowIndicator = document.getElementById("step-follow-indicator");
 
 const CURRENT_LOCATION_LABEL = "Current Location";
 const HISTORY_KEY = "dumbphoneapps-directions-history";
@@ -31,6 +32,7 @@ let stepByStepActive = false;
 let stepByStepIndex = 0;
 let myLocationMarker = undefined;
 let locationWatchId = undefined;
+let followingLocation = false;
 
 function showError(message) {
   errorDiv.innerText = message;
@@ -66,13 +68,37 @@ function renderHistory() {
   const history = loadHistory();
   historyDiv.innerHTML = "";
   history.forEach((entry) => {
+    const row = document.createElement("div");
+    row.className = "history-row";
+
     const button = document.createElement("button");
     button.className = "history-entry";
     button.type = "button";
     button.innerText = entry.origin + " to " + entry.destination;
     button.onclick = () => applyHistoryEntry(entry);
-    historyDiv.appendChild(button);
+    row.appendChild(button);
+
+    const removeButton = document.createElement("button");
+    removeButton.className = "history-remove";
+    removeButton.type = "button";
+    removeButton.innerText = "X";
+    removeButton.onclick = (event) => {
+      event.stopPropagation();
+      removeHistoryEntry(entry);
+    };
+    row.appendChild(removeButton);
+
+    historyDiv.appendChild(row);
   });
+}
+
+function removeHistoryEntry(entry) {
+  let history = loadHistory();
+  history = history.filter((e) => !(e.origin === entry.origin && e.destination === entry.destination));
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  } catch (e) {}
+  renderHistory();
 }
 
 function applyHistoryEntry(entry) {
@@ -137,6 +163,27 @@ function handleShowLocationToggle(event) {
   } else {
     stopWatchingLocationDot();
   }
+
+  updateFollowIndicatorVisibility();
+}
+
+function updateFollowIndicatorVisibility() {
+  if (stepByStepActive && showLocationCheckbox.checked) {
+    stepFollowIndicator.style.display = "";
+  } else {
+    stepFollowIndicator.style.display = "none";
+    followingLocation = false;
+    stepFollowIndicator.classList.remove("active");
+  }
+}
+
+function toggleFollowLocation() {
+  followingLocation = !followingLocation;
+  stepFollowIndicator.classList.toggle("active", followingLocation);
+
+  if (followingLocation && myLocationMarker) {
+    map.panTo(myLocationMarker.getPosition());
+  }
 }
 
 function startWatchingLocationDot() {
@@ -168,6 +215,9 @@ function startWatchingLocationDot() {
         });
       } else {
         myLocationMarker.setPosition(latLng);
+        if (followingLocation) {
+          map.panTo(latLng);
+        }
       }
     },
     (error) => {
@@ -222,6 +272,25 @@ function useCurrentLocationAsOrigin(event, autoContinue) {
   );
 }
 
+function swapSourceAndDestination(event) {
+  clearError();
+
+  const originValue = originInput.value;
+  const destinationValue = destinationInput.value;
+
+  // only the origin field supports the "Current Location" shortcut, so if
+  // it's currently live-tracked, freeze it to plain coordinates before it
+  // moves into the destination field
+  const newDestinationValue =
+    originValue === CURRENT_LOCATION_LABEL && originLatLng
+      ? `${originLatLng.lat},${originLatLng.lng}`
+      : originValue;
+
+  originInput.value = destinationValue;
+  destinationInput.value = newDestinationValue;
+  originLatLng = undefined;
+}
+
 function getDirections(event) {
   clearError();
 
@@ -263,6 +332,10 @@ function getDirections(event) {
       destination: lastDestination,
       travelMode: google.maps.TravelMode.DRIVING,
       provideRouteAlternatives: true,
+      drivingOptions: {
+        departureTime: new Date(),
+        trafficModel: "bestguess",
+      },
     },
     handleDirectionsResult
   );
@@ -291,6 +364,10 @@ function handleDirectionsResult(result, status) {
         travelMode: google.maps.TravelMode.DRIVING,
         provideRouteAlternatives: true,
         avoidHighways: true,
+        drivingOptions: {
+          departureTime: new Date(),
+          trafficModel: "bestguess",
+        },
       },
       handleAvoidHighwaysResult
     );
@@ -344,7 +421,7 @@ function renderRouteOptions(selectedIndex) {
 
     const durationP = document.createElement("p");
     durationP.className = "duration";
-    durationP.innerText = leg.duration.text;
+    durationP.innerText = (leg.duration_in_traffic || leg.duration).text;
     optionDiv.appendChild(durationP);
 
     const detailP = document.createElement("p");
@@ -406,6 +483,8 @@ function openStepByStep(event) {
   stepOverlay.style.display = "block";
   google.maps.event.trigger(map, "resize");
 
+  updateFollowIndicatorVisibility();
+
   map.setZoom(18);
   showStepByStepIndex(stepByStepIndex);
 
@@ -418,6 +497,8 @@ function closeStepByStep(event) {
   document.body.classList.remove("step-mode");
   mapDiv.classList.remove("fullscreen");
   stepOverlay.style.display = "none";
+
+  updateFollowIndicatorVisibility();
 
   document.removeEventListener("keydown", handleStepByStepKeydown);
 
@@ -442,6 +523,11 @@ function handleStepByStepKeydown(event) {
   } else if (event.key === "6") {
     event.preventDefault();
     map.setZoom(map.getZoom() + 1);
+  } else if (event.key === "*") {
+    event.preventDefault();
+    if (stepFollowIndicator.style.display !== "none") {
+      toggleFollowLocation();
+    }
   } else if (event.key === "Backspace" || event.key === "EndCall") {
     event.preventDefault();
     closeStepByStep();

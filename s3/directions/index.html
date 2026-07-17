@@ -52,51 +52,56 @@
         left: 0;
         right: 0;
         display: flex;
+        flex-wrap: nowrap;
         justify-content: space-between;
         align-items: center;
-        padding: 4px 6px;
+        gap: 2px;
+        padding: 3px 4px;
         background: rgba(255, 255, 255, 0.9);
+        overflow-x: auto;
       }
       #step-overlay-top button {
-        font-size: 12px;
-        padding: 2px 6px;
+        font-size: 10px;
+        padding: 1px 4px;
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
+      #step-controls {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 3px;
+        flex-shrink: 0;
+      }
+      .step-key-hint {
+        font-weight: bold;
+        font-size: 10px;
+        padding: 1px 3px;
+        white-space: nowrap;
+      }
+      #step-follow-indicator {
+        font-size: 10px;
+        font-weight: bold;
+        padding: 1px 3px;
+        white-space: nowrap;
+      }
+      #step-follow-indicator.active {
+        background: #4285f4;
+        color: #ffffff;
+      }
+      #step-progress {
+        flex-shrink: 0;
+        white-space: nowrap;
       }
       #step-instruction {
         pointer-events: auto;
         position: absolute;
         left: 0;
         right: 0;
-        bottom: 26px;
+        bottom: 0;
         padding: 6px;
-        background: rgba(255, 255, 255, 0.9);
+        background: rgba(255, 255, 255, 0.5);
         text-align: center;
-      }
-      #step-hint-left,
-      #step-hint-right,
-      #step-zoom-hint-left,
-      #step-zoom-hint-right {
-        pointer-events: auto;
-        position: absolute;
-        font-weight: bold;
-        font-size: 14px;
-        background: rgba(255, 255, 255, 0.9);
-        padding: 1px 5px;
-      }
-      #step-hint-left,
-      #step-hint-right {
-        bottom: 4px;
-      }
-      #step-zoom-hint-left,
-      #step-zoom-hint-right {
-        top: 30px;
-      }
-      #step-hint-left,
-      #step-zoom-hint-left {
-        left: 4px;
-      }
-      #step-hint-right,
-      #step-zoom-hint-right {
-        right: 4px;
       }
       #routes {
         margin-top: 8px;
@@ -125,12 +130,18 @@
       #steps li {
         margin-bottom: 8px;
       }
-      .history-entry {
-        display: block;
-        width: 100%;
-        text-align: left;
+      .history-row {
+        display: flex;
+        gap: 4px;
         margin-bottom: 4px;
+      }
+      .history-entry {
+        flex-grow: 1;
+        text-align: left;
         box-sizing: border-box;
+      }
+      .history-remove {
+        flex-shrink: 0;
       }
     </style>
   </head>
@@ -150,6 +161,9 @@
           input-group-name="directions"
         />
         <button onclick="useCurrentLocationAsOrigin(event)">&#128204;</button>
+      </div>
+      <div class="flex" style="justify-content: center">
+        <button onclick="swapSourceAndDestination(event)">&#128260;</button>
       </div>
       <div class="flex">
         <input
@@ -184,13 +198,16 @@
     <div id="step-overlay">
       <div id="step-overlay-top">
         <button id="step-close-button" onclick="closeStepByStep(event)">Close</button>
+        <div id="step-controls">
+          <span class="step-key-hint">- 4</span>
+          <span class="step-key-hint">&lt; 7</span>
+          <span id="step-follow-indicator" style="display: none">* &#128694;</span>
+          <span class="step-key-hint">9 &gt;</span>
+          <span class="step-key-hint">6 +</span>
+        </div>
         <div id="step-progress"></div>
       </div>
-      <div id="step-zoom-hint-left">- 4</div>
-      <div id="step-zoom-hint-right">6 +</div>
       <div id="step-instruction"></div>
-      <div id="step-hint-left">&lt; 7</div>
-      <div id="step-hint-right">9 &gt;</div>
     </div>
 
     <div id="loading">
