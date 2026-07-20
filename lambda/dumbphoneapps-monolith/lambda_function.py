@@ -45,6 +45,7 @@ from dumbphoneapps.one_offs import (
     generate_presigned_get,
     acknowledge_presigned_post_success_route,
     gather_uploaded_items_route,
+    bookmarks_sync_route,
 )
 from dumbphoneapps.connections import (
     get_connections_route,
@@ -179,6 +180,8 @@ def route(event):
         return acknowledge_presigned_post_success_route(event)
     if path_equals(event=event, method="POST", path="/one-offs/get-uploaded-items"):
         return gather_uploaded_items_route(event)
+    if path_equals(event=event, method="POST", path="/one-offs/bookmarks/sync"):
+        return bookmarks_sync_route(event)
     if path_equals(event=event, method="POST", path="/set-discord-token"):
         return set_discord_token_route(event)
     if path_equals(event=event, method="POST", path="/get-discord-dm-channels"):
