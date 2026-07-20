@@ -202,6 +202,8 @@ function resyncToNearestStep(latLng) {
     return;
   }
 
+  // find which segment we're physically inside (nearest end_location),
+  // then display the NEXT maneuver, not the one that got us onto this segment
   let bestIndex = 0;
   let bestDist = Infinity;
   steps.forEach((step, i) => {
@@ -212,7 +214,7 @@ function resyncToNearestStep(latLng) {
     }
   });
 
-  stepByStepIndex = bestIndex;
+  stepByStepIndex = Math.min(bestIndex + 1, steps.length - 1);
   showStepByStepIndex(stepByStepIndex, { panToStep: false });
 }
 
@@ -224,9 +226,11 @@ function maybeAdvanceStep(latLng, accuracyMeters) {
   );
   const windowEnd = Math.min(steps.length - 1, stepByStepIndex + ADVANCE_LOOKAHEAD_STEPS);
 
+  // the displayed step's maneuver happens at its start_location; once we've
+  // arrived there, that maneuver is done, so show what comes next
   let reachedIndex = -1;
   for (let i = stepByStepIndex; i <= windowEnd; i++) {
-    if (distanceMeters(latLng, steps[i].end_location) <= threshold) {
+    if (distanceMeters(latLng, steps[i].start_location) <= threshold) {
       reachedIndex = i;
     }
   }
