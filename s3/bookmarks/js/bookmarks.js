@@ -44,8 +44,9 @@ function renderBookmarks() {
     const link = document.createElement("a");
     link.className = "bookmark-title";
     link.href = bookmark.url;
-    link.innerText = bookmark.title;
     link.setAttribute("input-group-name", "bookmarks-list");
+    link.innerText = bookmark.title;
+
     row.appendChild(link);
 
     const controls = document.createElement("div");
