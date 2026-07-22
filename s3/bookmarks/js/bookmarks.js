@@ -29,7 +29,37 @@ function saveLocalBookmarks(bookmarks) {
   } catch (e) {}
 }
 
+function getFocusedBookmarkId() {
+  const active = document.activeElement;
+  if (!active) {
+    return null;
+  }
+  const row = findParentWithClass(active, "bookmark-row");
+  return row ? row.getAttribute("data-bookmark-id") : null;
+}
+
+function restoreFocusToBookmark(bookmarkId) {
+  if (!bookmarkId) {
+    return;
+  }
+  const row = bookmarksDiv.querySelector(`[data-bookmark-id="${bookmarkId}"]`);
+  if (!row) {
+    return;
+  }
+  const invisibleInput = row.getElementsByClassName("invisible-input")[0];
+  if (!invisibleInput) {
+    return;
+  }
+  invisibleInput.focus();
+  const selectable = row.getElementsByClassName("selectable")[0];
+  if (selectable) {
+    selectable.classList.add("selected");
+  }
+}
+
 function renderBookmarks() {
+  const focusedBookmarkId = getFocusedBookmarkId();
+
   bookmarksDiv.innerHTML = "";
 
   const activeBookmarks = localBookmarks
@@ -75,6 +105,7 @@ function renderBookmarks() {
   });
 
   applyEmulators(scrollToItem);
+  restoreFocusToBookmark(focusedBookmarkId);
   loader.style.display = "none";
 }
 

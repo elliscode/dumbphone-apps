@@ -34,10 +34,10 @@
     <div id="main-list" class="panel">
       <div id="bookmarks"></div>
       <div>
-        <button input-group-name="bookmarks-list" onclick="openAddBookmark(event)">Add +</button>
+        <button onclick="openAddBookmark(event)">Add +</button>
       </div>
       <div>
-        <button input-group-name="bookmarks-list" onclick="toggleManageMode(event)" id="manage-button">Manage</button>
+        <button onclick="toggleManageMode(event)" id="manage-button">Manage</button>
       </div>
       <div class="logout">
         <button onclick="logOut(event)">Log out</button>
@@ -47,22 +47,22 @@
     <div id="bookmark-editor" style="display: none" class="panel">
       <div class="toolbar">
         <input
-          input-group-name="bookmark-editor"
+         
           id="bookmark-title-input"
           type="text"
           placeholder="Title"
         />
         <input
-          input-group-name="bookmark-editor"
+         
           id="bookmark-url-input"
           type="text"
           placeholder="https://..."
         />
         <div style="display: flex">
-          <button input-group-name="bookmark-editor" onclick="saveBookmark(event)">Save</button>
+          <button onclick="saveBookmark(event)">Save</button>
         </div>
         <div style="display: flex">
-          <button input-group-name="bookmark-editor" onclick="showPanel('main-list')">&times;</button>
+          <button onclick="showPanel('main-list')">&times;</button>
         </div>
       </div>
     </div>
@@ -70,8 +70,8 @@
     <div id="confirm-delete-bookmark" style="display: none" class="panel">
       <div class="modal">
         <p>Delete bookmark <span id="pending-delete-title"></span>?</p>
-        <button input-group-name="confirm-delete" onclick="deleteBookmarkConfirmed(event)">Yes</button>
-        <button input-group-name="confirm-delete" onclick="showPanel('main-list')">Cancel</button>
+        <button onclick="deleteBookmarkConfirmed(event)">Yes</button>
+        <button onclick="showPanel('main-list')">Cancel</button>
       </div>
     </div>
 
