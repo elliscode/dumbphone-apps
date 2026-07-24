@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bookmarks</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=027" />
+    <link rel="stylesheet" href="../css/loader.css?v=027" />
+    <link rel="icon" type="image/png" href="../img/phone.favicon.png?v=027" />
+    <style>
+      .bookmark-row {
+        position: relative;
+        overflow-wrap: anywhere;
+        margin-bottom: 2px;
+        display:flex;
+      }
+      .bookmark-title {
+        display: block;
+      }
+      .bookmark-controls {
+        display: none;
+        gap: 8px;
+      }
+      body {
+        margin-bottom: 40px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>bookmarks</b>
+    </div>
+
+    <div id="main-list" class="panel">
+      <div id="bookmarks"></div>
+      <div>
+        <button onclick="openAddBookmark(event)">Add +</button>
+      </div>
+      <div>
+        <button onclick="toggleManageMode(event)" id="manage-button">Manage</button>
+      </div>
+      <div class="logout">
+        <button onclick="logOut(event)">Log out</button>
+      </div>
+    </div>
+
+    <div id="bookmark-editor" style="display: none" class="panel">
+      <div class="toolbar">
+        <input
+         
+          id="bookmark-title-input"
+          type="text"
+          placeholder="Title"
+        />
+        <input
+         
+          id="bookmark-url-input"
+          type="text"
+          placeholder="https://..."
+        />
+        <div style="display: flex">
+          <button onclick="saveBookmark(event)">Save</button>
+        </div>
+        <div style="display: flex">
+          <button onclick="showPanel('main-list')">&times;</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="confirm-delete-bookmark" style="display: none" class="panel">
+      <div class="modal">
+        <p>Delete bookmark <span id="pending-delete-title"></span>?</p>
+        <button onclick="deleteBookmarkConfirmed(event)">Yes</button>
+        <button onclick="showPanel('main-list')">Cancel</button>
+      </div>
+    </div>
+
+    <div id="loading">
+      <div class="lds-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+
+    <script src="../js/utils.js?v=027"></script>
+    <script src="../js/env.js"></script>
+    <script src="js/bookmarks.js?v=001"></script>
+    <script>
+if (
+  !navigator.userAgent.includes("Chrome") &&
+  navigator.userAgent.includes("Safari")
+) {
+  iosCookieRefresh();
+}
+checkIfLoggedIn();
+    </script>
+  </body>
+</html>

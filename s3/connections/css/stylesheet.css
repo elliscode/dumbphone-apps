@@ -11,9 +11,10 @@
   justify-content: center;
   align-items: center;
   display: none;
-  z-index: -1;
+  z-index: 10;
   user-select: none;
   -webkit-user-select: none;
+  pointer-events:none;
 }
 
 #comment-span {
@@ -50,7 +51,7 @@
 }
 
 #display-text {
-  font-size: xx-large;
+  font-size: calc(0.1 * min(100vw, 100vh));
   line-height: 1;
   margin-top: 0px;
   margin-bottom: 24px;
@@ -59,7 +60,7 @@
 }
 
 #date-text {
-  font-size: 16px;
+  font-size: calc(0.05 * min(100vw, 100vh));
   margin-top: 24px;
   margin-bottom: 0px;
   font-weight: normal;
@@ -83,8 +84,8 @@
 }
 
 .result-cell {
-  width: 40px;
-  height: 40px;
+  width: calc(0.08 * 100vh);
+  height: calc(0.08 * 100vh);
   border-radius: 5px;
   margin: 1px;
 }
@@ -92,8 +93,8 @@
 #puzzle {
   display: flex;
   flex-wrap: wrap;
-  min-width: 316px;
-  width: calc(100vw - 20px);
+  min-width: 224px;
+  width: calc(100vw - 16px);
 }
 
 #answers {
@@ -111,8 +112,8 @@
 }
 
 .card>div {
-  min-width: 77px;
-  min-height: 77px;
+  min-width: 53px;
+  min-height: 53px;
   width: calc(((100vw - 20px) / 4) - 2px);
   height: calc(((100vw - 20px) / 4) - 2px);
   border-radius: 5px;
@@ -125,6 +126,7 @@
   padding: 5px;
   font-family: "Libre Franklin", serif;
   font-weight: bold;
+  font-size: calc(0.05 * min(100vw, 100vh));
 }
 
 .card>div>object {
@@ -142,8 +144,8 @@
 }
 
 .answer>div {
-  min-width: 314px;
-  min-height: 77px;
+  min-width: 218px;
+  min-height: 53px;
   width: calc((100vw - 20px) - 2px);
   height: calc(((100vw - 20px) / 4) - 2px);
   border-radius: 5px;
@@ -163,11 +165,12 @@
 }
 
 .answer>div>p:first-child {
+  font-size: calc(0.06 * min(100vw, 100vh));
   margin-bottom: 10px;
 }
 
 .answer>div>p:last-child {
-  font-size: 10px;
+  font-size: calc(0.03 * min(100vw, 100vh));
 }
 
 #guesses {
@@ -180,6 +183,7 @@
 
 #guesses>span {
   margin-right: 8px;
+  font-size: calc(0.05 * min(100vw, 100vh));
 }
 
 .guess {
@@ -196,11 +200,12 @@
   margin: 1px;
   background-color: #fff;
   border: 1px solid #5a594e;
-  padding: 10px 20px;
+  padding: calc(0.025 * 100vw) calc(0.05 * 100vw);
   border-radius: 20px;
   user-select: none;
   -webkit-user-select: none;
   color: #000;
+  font-size: calc(0.05 * min(100vw, 100vh));
 }
 
 #game-controls>button:hover {
@@ -271,4 +276,31 @@
   animation-duration: 0.125s;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
+}
+
+#guess-spot{
+  display: flex;
+  align-items: center;
+}
+
+#content {
+  min-height: calc(100vh - 16px);
+}
+
+#results {
+  min-height: calc(100vh - 16px);
+}
+
+#puzzle {
+  max-width: calc(100vh - 150px);
+}
+
+.card>div {
+  max-width: calc(((100vh - 150px) / 4) - 2px);
+  max-height: calc(((100vh - 150px) / 4) - 2px);
+}
+
+.answer>div {
+  max-width: calc(100vh - 150px);
+  max-height: calc(((100vh - 150px) / 4) - 2px);
 }

@@ -1,0 +1,4 @@
+[
+  { "name": "AWS SAA-C03",       "file": "aws-cards.js",     "variable": "awsCards",     "filter": "SAA-C03",   "version": "100" },
+  { "name": "Angular Interview", "file": "angular-cards.js", "variable": "angularCards", "filter": "interview", "version": "1"   }
+]

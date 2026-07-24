@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flash Cards</title>
+    <link rel="icon" type="image/png" href="../img/flashcards.favicon.png?v=027" />
+    <style>
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  flex-direction: column;
+}
+#deck-selector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: min(3vw, 3vh);
+  padding: min(5vw, 5vh);
+  width: min(90vw, 90vh);
+}
+#deck-selector h1 {
+  font-size: min(8vw, 8vh);
+  margin: 0;
+}
+#deck-select {
+  font-size: min(6vw, 6vh);
+  padding: min(2vw, 2vh);
+  border-radius: min(5vw, 5vh);
+  width: 100%;
+  cursor: pointer;
+}
+#start-btn {
+  font-size: min(6vw, 6vh);
+  border-radius: min(5vw, 5vh);
+  padding: min(2vw, 2vh) min(6vw, 6vh);
+  cursor: pointer;
+  width: 100%;
+}
+.card {
+  box-sizing:border-box;
+  border: 1px solid black;
+  border-radius: min(10vw, 10vh);
+  cursor: pointer;
+  width: min(100vw, 100vh);
+  height: min(85vh);
+  overflow-y:scroll;
+}
+.card span {
+  padding: min(5vw, 5vh);
+  overflow-y:scroll;
+}
+.card * {
+  pointer-events: none;
+}
+#next {
+  width: min(100vw, 100vh);
+  height: min(12vh);
+  font-size: min(8vw, 8vh);
+  border-radius: min(10vw, 10vh);
+  line-height:1;
+}
+#change-deck {
+  font-size: min(3.5vw, 3.5vh);
+  border-radius: min(5vw, 5vh);
+  padding: min(1vw, 1vh) min(3vw, 3vh);
+  cursor: pointer;
+  background: none;
+  border: 1px solid #aaa;
+  color: #666;
+  margin-top: min(1vw, 1vh);
+  height: min(3vh);
+}
+ul {
+  padding:0;
+  margin:0;
+  padding-left:1em;
+}
+li {
+  padding:0;
+  margin:0;
+}
+code {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+    </style>
+  </head>
+
+  <body>
+    <div id="deck-selector">
+      <h1>Flash Cards</h1>
+      <select id="deck-select"></select>
+      <button id="start-btn">Start</button>
+    </div>
+    <div id="card-holder" style="display:none;"></div>
+    <button id="next" style="display:none;" onclick="displayCard(event);">Next</button>
+    <button id="change-deck" style="display:none;" onclick="showDeckSelector();">Change Deck</button>
+    <script>
+var activeDeck = null;
+var activeCards = [];
+var loadedScripts = {};
+
+var cardHolder = document.getElementById('card-holder');
+var deckSelector = document.getElementById('deck-selector');
+var nextBtn = document.getElementById('next');
+var changeDeckBtn = document.getElementById('change-deck');
+var allDecks = [];
+
+fetch('manifest.json')
+  .then(function(r) { return r.json(); })
+  .then(function(decks) {
+    allDecks = decks;
+    var select = document.getElementById('deck-select');
+    decks.forEach(function(deck, i) {
+      var opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = deck.name;
+      select.appendChild(opt);
+    });
+  });
+
+document.getElementById('start-btn').addEventListener('click', function() {
+  var select = document.getElementById('deck-select');
+  var deck = allDecks[parseInt(select.value)];
+  if (!deck) return;
+  loadDeck(deck);
+});
+
+function loadDeck(deck) {
+  if (loadedScripts[deck.file]) {
+    startGame(deck);
+    return;
+  }
+  var script = document.createElement('script');
+  script.src = deck.file + '?v=' + (deck.version || '1');
+  script.onload = function() {
+    loadedScripts[deck.file] = true;
+    startGame(deck);
+  };
+  document.head.appendChild(script);
+}
+
+function startGame(deck) {
+  activeDeck = deck;
+  activeCards = [];
+  deckSelector.style.display = 'none';
+  cardHolder.style.display = '';
+  nextBtn.style.display = '';
+  changeDeckBtn.style.display = '';
+  displayCard();
+}
+
+function showDeckSelector() {
+  var divsNodeList = document.getElementsByClassName('card');
+  var divs = Array.prototype.slice.call(divsNodeList);
+  divs.forEach(function(x) { x.remove(); });
+  cardHolder.style.display = 'none';
+  nextBtn.style.display = 'none';
+  changeDeckBtn.style.display = 'none';
+  deckSelector.style.display = '';
+}
+
+function displayCard() {
+  if (activeCards.length == 0) {
+    activeCards = window[activeDeck.variable].slice();
+    if (activeDeck.filter) {
+      activeCards = activeCards.filter(function(x) { return x.exam == activeDeck.filter; });
+    }
+    activeCards = shuffle(activeCards);
+  }
+  var card = activeCards.pop();
+  createDomCard(card);
+  resizeCardText(card);
+}
+function createDomCard(card) {
+  var divsNodeList = document.getElementsByClassName('card');
+  var divs = Array.prototype.slice.call(divsNodeList);
+  divs.forEach(function(x) { x.remove(); });
+
+  var cardDom = document.createElement('div');
+  cardDom.classList.add('card');
+  cardDom.addEventListener('click', toggleCard);
+
+  var front = document.createElement('span');
+  front.classList.add('front');
+  front.innerHTML = card.front;
+  front.style.display = 'block';
+  front.style.fontSize = Math.min(window.innerWidth, window.innerHeight) * 0.08 + 'px';
+  cardDom.appendChild(front);
+
+  var list = front.querySelector('ul');
+  if (list) {
+    shuffleList(list);
+  }
+
+  var back = document.createElement('span');
+  back.classList.add('back');
+  back.innerHTML = card.back;
+  back.style.display = 'none';
+  back.style.fontSize = Math.min(window.innerWidth, window.innerHeight) * 0.08 + 'px';
+  cardDom.appendChild(back);
+
+  cardHolder.appendChild(cardDom);
+}
+function shuffleList(listDom) {
+  if (!listDom) return;
+  var items = Array.from(listDom.children).filter(function(el) { return el.tagName === 'LI'; });
+  for (var i = items.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = items[i]; items[i] = items[j]; items[j] = tmp;
+  }
+  var frag = document.createDocumentFragment();
+  items.forEach(function(item) { frag.appendChild(item); });
+  listDom.appendChild(frag);
+}
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+  while (0 !== currentIndex) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+  return array;
+}
+function toggleCard(event) {
+  var card = document.querySelector('.card');
+  var front = card.querySelector('.front');
+  var back = card.querySelector('.back');
+  if (front.style.display == 'none') {
+    front.style.display = 'block';
+    back.style.display = 'none';
+  } else if (back.style.display == 'none') {
+    back.style.display = 'block';
+    front.style.display = 'none';
+  }
+  resizeCardText(event);
+}
+function resizeCardText(event) {
+  var card = document.querySelector('.card');
+  if (!card) return;
+  var front = card.querySelector('.front');
+  var back = card.querySelector('.back');
+  var limit = 0;
+  if (front.style.display == 'none') {
+    while (back.getBoundingClientRect().height > back.parentElement.getBoundingClientRect().height && limit < 100) {
+      back.style.fontSize = (parseInt(back.style.fontSize) - 1) + 'px';
+      limit = limit + 1;
+    }
+  } else if (back.style.display == 'none') {
+    while (front.getBoundingClientRect().height > front.parentElement.getBoundingClientRect().height && limit < 100) {
+      front.style.fontSize = (parseInt(front.style.fontSize) - 1) + 'px';
+      limit = limit + 1;
+    }
+  }
+}
+document.addEventListener('keydown', function(event) {
+  if (activeDeck == null) return;
+  if (event.key == '4' || event.key == '6') {
+    toggleCard(event);
+  }
+  if (event.key == '7' || event.key == '8' || event.key == '9') {
+    displayCard();
+  }
+});
+    </script>
+  </body>
+</html>

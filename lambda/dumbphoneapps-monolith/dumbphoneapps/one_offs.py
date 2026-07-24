@@ -34,6 +34,7 @@ sts_connection = boto3.client("sts")
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 PRESIGNED_AWS_ACCESS_KEY_ID = os.environ.get("PRESIGNED_AWS_ACCESS_KEY_ID")
 PRESIGNED_AWS_SECRET_ACCESS_KEY = os.environ.get("PRESIGNED_AWS_SECRET_ACCESS_KEY")
+LOCATION_TABLE_NAME = os.environ.get("LOCATION_TABLE_NAME", TABLE_NAME)
 
 CONTENT_TYPES = {
     "mov": "video/quicktime",
@@ -64,8 +65,8 @@ def get_maps_key_route(event):
         )
 
     response = dynamo.get_item(
-        TableName=TABLE_NAME,
-        Key=python_obj_to_dynamo_obj({"key1": "location", "key2": location_token}),
+        TableName=LOCATION_TABLE_NAME,
+        Key=python_obj_to_dynamo_obj({"key1": location_token, "key2": "location"}),
     )
 
     if "Item" not in response:
@@ -79,6 +80,16 @@ def get_maps_key_route(event):
         event=event,
         http_code=200,
         body={"key": GOOGLE_API_KEY},
+    )
+
+
+@authenticate
+def get_authenticated_maps_key_route(event, user_data, body):
+    return format_response(
+        event=event,
+        http_code=200,
+        body={"key": GOOGLE_API_KEY},
+        user_data=user_data,
     )
 
 
@@ -96,8 +107,8 @@ def get_location_route(event):
         )
 
     response = dynamo.get_item(
-        TableName=TABLE_NAME,
-        Key=python_obj_to_dynamo_obj({"key1": "location", "key2": location_token}),
+        TableName=LOCATION_TABLE_NAME,
+        Key=python_obj_to_dynamo_obj({"key1": location_token, "key2": "location"}),
     )
 
     if "Item" not in response:
@@ -138,11 +149,11 @@ def share_location_route(event, user_data, body):
         location_token = create_id(10)
 
     dynamo.put_item(
-        TableName=TABLE_NAME,
+        TableName=LOCATION_TABLE_NAME,
         Item=python_obj_to_dynamo_obj(
             {
-                "key1": "location",
-                "key2": location_token,
+                "key1": location_token,
+                "key2": "location",
                 "lat": str(body["lat"]),
                 "lon": str(body["lon"]),
                 "expiration": int(time.time()) + (60 * 60),
@@ -408,4 +419,82 @@ def generate_presigned_get(event):
         event=event,
         http_code=500,
         body="Could not create a presigned url",
+    )
+
+
+BOOKMARK_TOMBSTONE_MAX_AGE_MS = 60 * 24 * 60 * 60 * 1000  # 60 days
+
+
+def get_bookmarks_data(phone):
+    user_data_boto = dynamo.get_item(
+        Key=python_obj_to_dynamo_obj({"key1": "bookmarks", "key2": phone}),
+        TableName=TABLE_NAME,
+    )
+    if "Item" in user_data_boto:
+        return dynamo_obj_to_python_obj(user_data_boto["Item"])
+    return {"key1": "bookmarks", "key2": phone, "bookmarks": []}
+
+
+def set_bookmarks_data(phone, bookmarks):
+    python_data = {"key1": "bookmarks", "key2": phone, "bookmarks": bookmarks}
+    dynamo.put_item(
+        TableName=TABLE_NAME,
+        Item=python_obj_to_dynamo_obj(python_data),
+    )
+    return python_data
+
+
+def merge_bookmarks(server_bookmarks, client_bookmarks):
+    merged_by_id = {}
+    for bookmark in server_bookmarks:
+        if isinstance(bookmark, dict) and bookmark.get("id"):
+            merged_by_id[bookmark["id"]] = bookmark
+    for bookmark in client_bookmarks:
+        if not isinstance(bookmark, dict) or not bookmark.get("id"):
+            continue
+        existing = merged_by_id.get(bookmark["id"])
+        if existing is None or int(bookmark.get("updatedTime", 0)) > int(existing.get("updatedTime", 0)):
+            merged_by_id[bookmark["id"]] = bookmark
+    return list(merged_by_id.values())
+
+
+def purge_expired_tombstones(bookmarks):
+    cutoff_ms = int(time.time() * 1000) - BOOKMARK_TOMBSTONE_MAX_AGE_MS
+    output = []
+    for bookmark in bookmarks:
+        if bookmark.get("status") == "Deleted" and int(bookmark.get("updatedTime", 0)) < cutoff_ms:
+            continue
+        output.append(bookmark)
+    return output
+
+
+@authenticate
+def bookmarks_sync_route(event, user_data, body):
+    phone = user_data["key2"]
+    client_bookmarks = body.get("bookmarks", [])
+    if not isinstance(client_bookmarks, list):
+        return format_response(
+            event=event,
+            http_code=400,
+            body="bookmarks must be a list",
+            user_data=user_data,
+        )
+
+    server_data = get_bookmarks_data(phone)
+    merged = merge_bookmarks(server_data.get("bookmarks", []), client_bookmarks)
+    purged = purge_expired_tombstones(merged)
+
+    # dynamo_obj_to_python_obj deserializes numeric attributes as Decimal,
+    # which json.dumps can't serialize -- normalize back to int before responding
+    for bookmark in purged:
+        bookmark["updatedTime"] = int(bookmark.get("updatedTime", 0))
+        bookmark["status"] = bookmark.get("status", "Active")
+
+    set_bookmarks_data(phone, purged)
+
+    return format_response(
+        event=event,
+        http_code=200,
+        body={"bookmarks": purged},
+        user_data=user_data,
     )
