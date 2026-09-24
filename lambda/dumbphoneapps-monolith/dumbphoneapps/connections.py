@@ -117,17 +117,18 @@ def get_connections(event, user_data, body, connections_type):
 
     log("connections db miss", user_data)
     if connections_type == "_sports":
-        connections_uri = f"https://api.theathletic.com/graphql"
+        connections_uri = f"https://api-prd-nyt.theathletic.com/graphql"
 
         response = http.request(
             method="POST",
             url=connections_uri,
             body=json.dumps({
-                "query": "query GetPuzzleById($puzzleId: String\u0021) { getPuzzleById(puzzleId: $puzzleId) { categories { title cards { content position img } } printDate id hint_url editor } }",
-                "variables": {"puzzleId": date_value}
+                "operationName": "GetPuzzleByIdOrDate",
+                "query": "query GetPuzzleByIdOrDate($puzzleId: String, $date: String, $puzzleType: String) { getPuzzleByIdOrDate(puzzle_id: $puzzleId, date: $date, puzzle_type: $puzzleType) { categories { title cards { content position img } } printDate: print_date id hint_url editor } }",
+                "variables": {"date": date_value, "puzzleType": "sports-connections"}
             }),
             headers={
-                "accept": "*/*",
+                "accept": "application/graphql-response+json,application/json;q=0.9",
                 "accept-language": "en-US,en;q=0.9",
                 "cache-control": "no-cache",
                 "content-type": "application/json",
@@ -175,8 +176,8 @@ def get_connections(event, user_data, body, connections_type):
             user_data=user_data,
         )
 
-    if response_json.get('data') and response_json.get('data').get('getPuzzleById'):
-        response_json = response_json['data']['getPuzzleById']
+    if response_json.get('data') and response_json.get('data').get('getPuzzleByIdOrDate'):
+        response_json = response_json['data']['getPuzzleByIdOrDate']
 
     token_data = {
         "key1": f"connections{connections_type}",
