@@ -25,14 +25,13 @@
     <div id="comment"><span id="comment-span"></span></div>
 
     <div class="panel" id="content">
-      <div>
+      <div id="top-bar">
         <input onchange="setDate(event)" id="date-picker" type="date" />
+        <div id="guesses"><span>Chances:</span><div id="guess-spot"></div></div>
       </div>
 
       <div class="game-div">
         <div id="puzzle"><div id="answers"></div></div>
-
-        <div id="guesses"><span>Chances:</span><div id="guess-spot"></div></div>
 
         <div id="game-controls"><button onclick="shuffleTiles(event);">Shuffle</button><button onclick="deselectAll(event);">Deselect All</button><button onclick="checkGuessCallback(event);">Submit</button></div>
       </div>

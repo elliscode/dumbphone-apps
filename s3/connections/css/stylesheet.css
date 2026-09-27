@@ -173,9 +173,16 @@
   font-size: calc(0.03 * min(100vw, 100vh));
 }
 
+#top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 #guesses {
   display: flex;
-  margin: 5px 0px;
+  align-items: center;
+  margin: 0px;
   font-family: "Libre Franklin", serif;
   user-select: none;
   -webkit-user-select: none;
