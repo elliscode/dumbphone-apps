@@ -4,14 +4,14 @@ import os
 import re
 import secrets
 import time
-import urllib
+import urllib.parse
 
 import boto3
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 
 ADMIN_PHONE = os.environ.get("ADMIN_PHONE")
-DOMAIN_NAME = os.environ.get("DOMAIN_NAME")
-DOMAIN_NAME_WWW = os.environ.get("DOMAIN_NAME_WWW")
+DOMAIN_NAMES = [d.strip().rstrip("/") for d in os.environ.get("DOMAIN_NAMES", "").split(",") if d.strip()]
+PRIMARY_DOMAIN_NAME = DOMAIN_NAMES[0] if DOMAIN_NAMES else None
 TABLE_NAME = os.environ.get("DYNAMODB_TABLE_NAME")
 SMS_SQS_QUEUE_URL = os.environ.get("SMS_SQS_QUEUE_URL")
 SMS_SQS_QUEUE_ARN = os.environ.get("SMS_SQS_QUEUE_ARN")
@@ -29,12 +29,11 @@ scheduler = boto3.client("scheduler")
 def format_response(event, http_code, body, headers=None, user_data=None, log_this=True):
     if isinstance(body, str):
         body = {"message": body}
-    if "origin" in event["headers"] and event["headers"]["origin"].startswith(DOMAIN_NAME_WWW):
-        domain_name = DOMAIN_NAME_WWW
-    elif "origin" in event["headers"] and event["headers"]["origin"].startswith(DOMAIN_NAME):
-        domain_name = DOMAIN_NAME
+    origin = event["headers"].get("origin")
+    if origin in DOMAIN_NAMES:
+        domain_name = origin
     else:
-        log(f'Invalid origin {event["headers"].get("origin")}')
+        log(f"Invalid origin {origin}")
         http_code = 403
         body = {"message": "Forbidden"}
         domain_name = "*"
@@ -54,6 +53,16 @@ def format_response(event, http_code, body, headers=None, user_data=None, log_th
         "body": json.dumps(body),
         "headers": all_headers,
     }
+
+
+def get_cookie_domain(event):
+    origin = event["headers"].get("origin")
+    if origin not in DOMAIN_NAMES:
+        origin = PRIMARY_DOMAIN_NAME
+    host = urllib.parse.urlparse(origin).hostname
+    if host.startswith("www."):
+        host = host[len("www."):]
+    return f".{host}"
 
 
 def parse_cookie(input):
@@ -197,7 +206,7 @@ def ios_cookie_refresh_route(event, user_data, body):
         http_code=200,
         body="successfully refreshed cookie",
         headers={
-            "Set-Cookie": f'dumbphoneapps-auth-token={token_data["key2"]}; Domain=.dumbphoneapps.com; Expires={date_string}; Secure; HttpOnly',
+            "Set-Cookie": f'dumbphoneapps-auth-token={token_data["key2"]}; Domain={get_cookie_domain(event)}; Expires={date_string}; Secure; HttpOnly',
         },
         user_data=user_data,
     )
@@ -264,7 +273,7 @@ def login_route(event):
         body="successfully logged in",
         headers={
             "x-csrf-token": token_data["csrf"],
-            "Set-Cookie": f'dumbphoneapps-auth-token={token_data["key2"]}; Domain=.dumbphoneapps.com; Expires={date_string}; Secure; HttpOnly',
+            "Set-Cookie": f'dumbphoneapps-auth-token={token_data["key2"]}; Domain={get_cookie_domain(event)}; Expires={date_string}; Secure; HttpOnly',
         },
         user_data=user_data,
     )

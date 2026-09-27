@@ -2,7 +2,8 @@ import json
 import urllib3
 import os
 from .utils import (
-    DOMAIN_NAME_WWW,
+    DOMAIN_NAMES,
+    PRIMARY_DOMAIN_NAME,
     format_response,
     authenticate,
     python_obj_to_dynamo_obj,
@@ -31,10 +32,13 @@ def get_token_from_code_route(event, user_data, body):
         )
 
     auth_code = body["code"]
+    # the redirect_uri must match the one the frontend sent to Google, which is based on the page's origin
+    origin = event["headers"].get("origin")
+    ui_domain = origin if origin in DOMAIN_NAMES else PRIMARY_DOMAIN_NAME
 
     google_token_response = http.request(
         "POST",
-        f"https://www.googleapis.com/oauth2/v4/token?client_id={NEST_CLIENT_ID}&client_secret={NEST_CLIENT_SECRET}&code={auth_code}&grant_type=authorization_code&redirect_uri={DOMAIN_NAME_WWW}/thermostat/index.html",
+        f"https://www.googleapis.com/oauth2/v4/token?client_id={NEST_CLIENT_ID}&client_secret={NEST_CLIENT_SECRET}&code={auth_code}&grant_type=authorization_code&redirect_uri={ui_domain}/thermostat/index.html",
     )
     google_token_response_text = google_token_response.data.decode("utf-8")
     if google_token_response.status == 200:

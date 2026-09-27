@@ -2,7 +2,6 @@ import json
 import time
 
 from .utils import (
-    DOMAIN_NAME,
     get_user_data,
     format_response,
     sqs,
