@@ -8,7 +8,7 @@
             "Resource": "execute-api:/*/*/*",
             "Condition": {
                 "IpAddress": {
-                    "aws:SourceIp": "0.0.0.0/0"
+                    "aws:SourceIp": ["0.0.0.0/0", "::/0"]
                 }
             }
         }
