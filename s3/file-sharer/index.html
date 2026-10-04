@@ -129,13 +129,13 @@ function handleUpload(event) {
     linkDiv.style.display = "block";
 
     const link = document.getElementById("link");
-    link.innerText = UI_DOMAIN.substring(8) + "/fs/?id=" + fileName;
+    link.innerText = UI_DOMAIN.substring(8) + "/share/" + fileName;
 
     const smsLink = document.getElementById("sms-link");
     smsLink.style.display = "block";
     smsLink.href =
       "sms://?&body=" +
-      encodeURIComponent(UI_DOMAIN.substring(8) + "/fs/?id=" + fileName);
+      encodeURIComponent(UI_DOMAIN.substring(8) + "/share/" + fileName);
 
     statusText.innerText =
       "Share your file!";
@@ -195,7 +195,7 @@ function createUploadEntry(name, date) {
   spaceSpan.innerHTML = " &mdash; ";
   paragraph.appendChild(spaceSpan);
   let link = document.createElement("a");
-  link.href = UI_DOMAIN + "/fs/?id=" + name;
+  link.href = UI_DOMAIN + "/share/" + name;
   link.innerText = name;
   paragraph.appendChild(link);
   uploadLinksDiv.insertBefore(paragraph, uploadLinksDiv.firstElementChild);

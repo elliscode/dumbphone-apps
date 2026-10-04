@@ -3,6 +3,7 @@ from .dumbphoneapps_logger import log
 import json
 import os
 import re
+import subprocess
 import time
 import urllib
 import urllib3
@@ -35,6 +36,19 @@ GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 PRESIGNED_AWS_ACCESS_KEY_ID = os.environ.get("PRESIGNED_AWS_ACCESS_KEY_ID")
 PRESIGNED_AWS_SECRET_ACCESS_KEY = os.environ.get("PRESIGNED_AWS_SECRET_ACCESS_KEY")
 LOCATION_TABLE_NAME = os.environ.get("LOCATION_TABLE_NAME", TABLE_NAME)
+
+USER_SPACE_BUCKET = "dumbphoneapps-user-space"
+PUBLIC_BUCKET = "daniel-townsend-dumbphoneapps"
+NOT_AVAILABLE_THUMBNAIL_KEY = "defaults/not-available.jpg"
+FFMPEG_PATH = "/opt/bin/ffmpeg"
+# Matches the ids handed out by generate_presigned_post, these become public paths under /thumbs/
+UPLOADED_FILE_NAME_PATTERN = re.compile(r"^[A-Za-z0-9]{10}\.(jpg|jpeg|png|gif|3gp|mp4|mov)$")
+# Center crop to 1200x630, shrink to 120x63 so nothing in it is readable, then blur it back up to 1200x630
+THUMBNAIL_FILTER = (
+    "crop='min(iw,ih*1200/630)':'min(ih,iw*630/1200)',"
+    "scale=120:63:flags=area,"
+    "scale=1200:630:flags=bicubic"
+)
 
 CONTENT_TYPES = {
     "mov": "video/quicktime",
@@ -354,6 +368,14 @@ def acknowledge_presigned_post_success_route(event, user_data, body):
             user_data=user_data,
         )
 
+    if not UPLOADED_FILE_NAME_PATTERN.match(file_name):
+        return format_response(
+            event=event,
+            http_code=400,
+            body=f"Invalid fullFileName supplied {file_name}",
+            user_data=user_data,
+        )
+
     acknowledge_time = int(time.time())
     expiration_time = acknowledge_time + (7 * 24 * 60 * 60)
 
@@ -369,12 +391,85 @@ def acknowledge_presigned_post_success_route(event, user_data, body):
         Item=python_obj_to_dynamo_obj(uploaded_file_entry),
     )
 
+    try:
+        generate_thumbnail(file_name, user_data)
+    except Exception as e:
+        log(e, user_data)
+        log(f"Couldn't create a thumbnail for {file_name}", user_data)
+
     return format_response(
         event=event,
         http_code=200,
         body="Successfully acknowledged the post",
         user_data=user_data,
     )
+
+
+def generate_thumbnail(file_name, user_data):
+    """Writes a blurred 1200x630 preview of the upload to the public bucket at
+    thumbs/<file_name>.jpg, falling back to a copy of the not-available image"""
+    thumbnail_key = f"thumbs/{file_name}.jpg"
+    input_path = f"/tmp/{file_name}"
+    output_path = f"/tmp/{file_name}.jpg"
+    s3 = boto3.client("s3")
+    presigned_s3 = boto3.client(
+        "s3",
+        aws_access_key_id=PRESIGNED_AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=PRESIGNED_AWS_SECRET_ACCESS_KEY,
+    )
+
+    try:
+        # The static ffmpeg build can't resolve DNS, so it can't read from S3 URLs directly
+        presigned_s3.download_file(USER_SPACE_BUCKET, file_name, input_path)
+        result = subprocess.run(
+            [
+                FFMPEG_PATH,
+                "-y",
+                "-loglevel",
+                "error",
+                "-i",
+                input_path,
+                "-frames:v",
+                "1",
+                "-vf",
+                THUMBNAIL_FILTER,
+                # JPEG quality (2 best - 31 worst), the blur hides artifacts so this keeps thumbs ~50KB
+                "-q:v",
+                "5",
+                output_path,
+            ],
+            capture_output=True,
+            timeout=20,
+        )
+        if result.returncode == 0 and os.path.exists(output_path):
+            with open(output_path, "rb") as thumbnail:
+                s3.put_object(
+                    Bucket=PUBLIC_BUCKET,
+                    Key=thumbnail_key,
+                    Body=thumbnail,
+                    ContentType="image/jpeg",
+                    CacheControl="public, max-age=604800, immutable",
+                )
+            log(f"Created thumbnail {thumbnail_key}", user_data)
+            return
+        log(f"ffmpeg failed for {file_name}: {result.stderr.decode(errors='replace')[-1000:]}", user_data)
+    except Exception as e:
+        log(e, user_data)
+        log(f"Could not download or run ffmpeg for {file_name}", user_data)
+    finally:
+        for path in (input_path, output_path):
+            if os.path.exists(path):
+                os.remove(path)
+
+    s3.copy_object(
+        Bucket=PUBLIC_BUCKET,
+        Key=thumbnail_key,
+        CopySource={"Bucket": PUBLIC_BUCKET, "Key": NOT_AVAILABLE_THUMBNAIL_KEY},
+        ContentType="image/jpeg",
+        CacheControl="public, max-age=604800, immutable",
+        MetadataDirective="REPLACE",
+    )
+    log(f"Used the not-available image for {thumbnail_key}", user_data)
 
 
 def generate_presigned_get(event):
