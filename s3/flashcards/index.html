@@ -107,6 +107,8 @@ var deckSelector = document.getElementById('deck-selector');
 var nextBtn = document.getElementById('next');
 var changeDeckBtn = document.getElementById('change-deck');
 var allDecks = [];
+// Stores the selected deck's file name, so reordering manifest.json doesn't change the selection
+var SELECTED_DECK_KEY = 'dumbphoneapps-flashcards-selected-deck';
 
 fetch('manifest.json')
   .then(function(r) { return r.json(); })
@@ -119,12 +121,22 @@ fetch('manifest.json')
       opt.textContent = deck.name;
       select.appendChild(opt);
     });
+    // Restore the last selected deck, falling back to the first if it no longer exists
+    var savedFile = localStorage.getItem(SELECTED_DECK_KEY);
+    var savedIndex = decks.findIndex(function(deck) { return deck.file === savedFile; });
+    select.value = savedIndex >= 0 ? savedIndex : 0;
   });
+
+document.getElementById('deck-select').addEventListener('change', function(event) {
+  var deck = allDecks[parseInt(event.target.value)];
+  if (deck) localStorage.setItem(SELECTED_DECK_KEY, deck.file);
+});
 
 document.getElementById('start-btn').addEventListener('click', function() {
   var select = document.getElementById('deck-select');
   var deck = allDecks[parseInt(select.value)];
   if (!deck) return;
+  localStorage.setItem(SELECTED_DECK_KEY, deck.file);
   loadDeck(deck);
 });
 

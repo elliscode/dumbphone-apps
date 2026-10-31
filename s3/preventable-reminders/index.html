@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Preventable Reminders</title>
+    <link rel="stylesheet" href="../css/stylesheet.css?v=027" />
+    <link rel="stylesheet" href="../css/loader.css?v=027" />
+    <link rel="icon" type="image/png" href="../img/alarm.favicon.png?v=027" />
+    <style>
+.form-body, .reminder-line {
+  display: block !important;
+}
+.field {
+  margin-bottom: 10px;
+}
+.field label {
+  display: block;
+  margin-bottom: 3px;
+}
+.field textarea, .field input, .field select {
+  box-sizing: border-box;
+  width: 100%;
+}
+.reminder-text {
+  font-weight: bold;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.reminder-actions {
+  display: flex !important;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px !important;
+}
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <b><a href="../index.html">Home</a></b> &gt; <b>preventable-reminders</b>
+    </div>
+
+    <div class="rounded-block">
+      <div class="rounded-title">How it works</div>
+      <p>Schedule an SMS reminder. If you remember on your own, press SKIP and the next text won't be sent. DEFER also pushes it back, but doesn't count against the number of reminders, so a daily reminder limited to 1 works as a "send this if I stop checking in" switch. Times are Eastern (America/New_York).</p>
+    </div>
+
+    <div class="rounded-block">
+      <div class="rounded-title">Create Reminder</div>
+      <div class="form-body">
+        <div class="field">
+          <label for="reminder-text">Reminder text</label>
+          <textarea input-group-name="reminders" oninput="checkIfValid()" id="reminder-text" rows="3" maxlength="500"></textarea>
+        </div>
+        <div class="field">
+          <label for="reminder-recipient">Reminder recipient</label>
+          <input input-group-name="reminders" oninput="checkIfValid()" id="reminder-recipient" type="tel" placeholder="10 digit phone number" />
+        </div>
+        <div class="field">
+          <label for="reminder-frequency">Reminder Frequency</label>
+          <div>
+            <select input-group-name="reminders" onchange="frequencyChanged()" id="reminder-frequency">
+              <option value="once">Once</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" id="remaining-field" style="display:none;">
+          <label for="reminder-remaining">Number of reminders</label>
+          <input input-group-name="reminders" oninput="checkIfValid()" id="reminder-remaining" type="number" min="1" max="1000" step="1" placeholder="Leave blank to repeat forever" />
+        </div>
+        <div class="field">
+          <label for="reminder-date">Reminder start date</label>
+          <div><input input-group-name="reminders" onchange="checkIfValid()" id="reminder-date" type="date" /></div>
+        </div>
+        <div class="field">
+          <label for="reminder-time">Reminder time</label>
+          <div><input input-group-name="reminders" onchange="checkIfValid()" id="reminder-time" type="time" /></div>
+        </div>
+        <p id="validation-message" style="margin:0px;"></p>
+        <div style="display:flex; justify-content: flex-start;">
+          <button input-group-name="reminders" id="create-button" disabled onclick="createReminder(event)" class="rounded-button">Create Reminder</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-block without-title" style="display:none;">
+      <p style="margin:0px;" id="status"></p>
+    </div>
+
+    <div class="rounded-block">
+      <div class="rounded-title">Scheduled Reminders</div>
+      <div class="form-body" id="reminders">
+        <p>Loading...</p>
+      </div>
+    </div>
+
+    <div class="logout">
+      <button onclick="logOut(event)">Log out</button>
+    </div>
+    <script src="../js/utils.js?v=027"></script>
+    <script src="../js/env.js"></script>
+    <script>
+const FREQUENCY_LABELS = {once: 'Once', daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', yearly: 'Yearly'};
+const ACTION_COOLDOWN_MS = 1000;
+const MAX_DESCRIPTION_LENGTH = 500;
+const MAX_EXECUTIONS = 1000;
+
+const createButton = document.getElementById('create-button');
+const reminderText = document.getElementById('reminder-text');
+const reminderRecipient = document.getElementById('reminder-recipient');
+const reminderFrequency = document.getElementById('reminder-frequency');
+const reminderRemaining = document.getElementById('reminder-remaining');
+const remainingField = document.getElementById('remaining-field');
+const reminderDate = document.getElementById('reminder-date');
+const reminderTime = document.getElementById('reminder-time');
+const validationMessage = document.getElementById('validation-message');
+const remindersDiv = document.getElementById('reminders');
+const status = document.getElementById('status');
+
+// reminder_id -> true while a skip or delete request is pending for it
+const inFlight = {};
+let cooldownActive = false;
+
+applyEmulators();
+loadReminders();
+
+function showStatus(text, success) {
+  status.innerText = text;
+  status.parentElement.style.display = 'block';
+  status.parentElement.classList.remove('error');
+  status.parentElement.classList.remove('success');
+  status.parentElement.classList.add(success ? 'success' : 'error');
+}
+
+function messageFrom(result, fallback) {
+  if (result && result.responseJson && result.responseJson.message) {
+    return result.responseJson.message;
+  }
+  return fallback;
+}
+
+function normalizeRecipient(value) {
+  let digits = value.replace(/\D/g, '');
+  if (digits.length == 11 && digits.charAt(0) == '1') {
+    digits = digits.substring(1);
+  }
+  return /^[2-9]\d{9}$/.test(digits) ? digits : undefined;
+}
+
+// Current wall-clock time in New York as yyyy-mm-ddThh:mm, so it compares
+// directly against the date and time inputs. Older browsers without
+// formatToParts skip this check and rely on the backend.
+function nowInNewYork() {
+  try {
+    const parts = {};
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York', hourCycle: 'h23',
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+    }).formatToParts(new Date()).forEach(function (part) { parts[part.type] = part.value; });
+    return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
+  } catch (e) {
+    return undefined;
+  }
+}
+
+function frequencyChanged() {
+  // One-time reminders only send once, so a limit doesn't apply
+  remainingField.style.display = reminderFrequency.value == 'once' ? 'none' : 'block';
+  checkIfValid();
+}
+
+function remainingValue() {
+  if (reminderFrequency.value == 'once') {
+    return null;
+  }
+  // A number input reports '' for unparseable text, which would otherwise
+  // look like "repeat forever"
+  if (reminderRemaining.validity && reminderRemaining.validity.badInput) {
+    return undefined;
+  }
+  if (!reminderRemaining.value.trim()) {
+    return null;
+  }
+  const value = reminderRemaining.value.trim();
+  if (!/^\d+$/.test(value) || parseInt(value, 10) < 1 || parseInt(value, 10) > MAX_EXECUTIONS) {
+    return undefined;
+  }
+  return parseInt(value, 10);
+}
+
+function validationError() {
+  if (!reminderText.value.trim()) {
+    return 'Enter the reminder text';
+  }
+  if (reminderText.value.trim().length > MAX_DESCRIPTION_LENGTH) {
+    return `Reminder text must be ${MAX_DESCRIPTION_LENGTH} characters or fewer`;
+  }
+  if (!normalizeRecipient(reminderRecipient.value)) {
+    return 'Recipient must be a 10 digit US phone number';
+  }
+  if (!FREQUENCY_LABELS[reminderFrequency.value]) {
+    return 'Choose a frequency';
+  }
+  if (remainingValue() === undefined) {
+    return `Number of reminders must be a whole number from 1 to ${MAX_EXECUTIONS}, or blank`;
+  }
+  if (!reminderDate.value || !reminderTime.value) {
+    return 'Choose a start date and time';
+  }
+  const now = nowInNewYork();
+  if (now && `${reminderDate.value}T${reminderTime.value.substring(0, 5)}` <= now) {
+    return 'The start date and time must be in the future (Eastern time)';
+  }
+  return undefined;
+}
+
+function checkIfValid() {
+  const error = validationError();
+  // Only nag about fields once the user has started filling the form in
+  const started = reminderText.value || reminderRecipient.value || reminderDate.value || reminderTime.value;
+  validationMessage.innerText = started && error ? error : '';
+  if (error) {
+    createButton.setAttribute('disabled', 'true');
+    return false;
+  }
+  createButton.removeAttribute('disabled');
+  return true;
+}
+
+function createReminder(event) {
+  if (!checkIfValid()) {
+    return;
+  }
+  createButton.setAttribute('disabled', 'true');
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/preventable-reminders/create", true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleCreateReminder;
+  xmlHttp.onerror = function () { showStatus('Could not reach the server, please try again', false); checkIfValid(); };
+  xmlHttp.send(
+    JSON.stringify({
+      csrf: csrfToken,
+      description: reminderText.value.trim(),
+      recipient: normalizeRecipient(reminderRecipient.value),
+      frequency: reminderFrequency.value,
+      remaining: remainingValue(),
+      start_date: reminderDate.value,
+      start_time: reminderTime.value.substring(0, 5),
+    })
+  );
+}
+
+function handleCreateReminder(event) {
+  let result = defaultHandler(event);
+  if (result.statusCode == 200) {
+    const reminder = result.responseJson.reminder;
+    showStatus(`Reminder created, first send ${reminder.next_send_local}`, true);
+    reminderText.value = '';
+    reminderRecipient.value = '';
+    reminderFrequency.value = 'once';
+    reminderRemaining.value = '';
+    remainingField.style.display = 'none';
+    reminderDate.value = '';
+    reminderTime.value = '';
+    loadReminders();
+  } else {
+    showStatus(messageFrom(result, 'Failed to create the reminder'), false);
+  }
+  checkIfValid();
+}
+
+function loadReminders() {
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + "/preventable-reminders/get", true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = handleLoadReminders;
+  xmlHttp.send(JSON.stringify({ csrf: csrfToken }));
+}
+
+function handleLoadReminders(event) {
+  let result = defaultHandler(event);
+  if (result.statusCode != 200) {
+    showStatus(messageFrom(result, 'Failed to load reminders'), false);
+    return;
+  }
+  renderReminders(result.responseJson.reminders);
+}
+
+function addLine(card, text, className) {
+  const line = document.createElement('div');
+  line.classList.add('reminder-line');
+  if (className) {
+    line.classList.add(className);
+  }
+  line.innerText = text;
+  card.appendChild(line);
+}
+
+function addActionButton(actions, reminder, action, label) {
+  // Each button gets its own wrapper because applyEmulators attaches the
+  // keypad helper to the button's parent element
+  const wrapper = document.createElement('div');
+  const button = document.createElement('button');
+  button.classList.add('rounded-button');
+  button.classList.add('reminder-action');
+  button.setAttribute('input-group-name', 'reminders');
+  button.setAttribute('data-reminder-id', reminder.reminder_id);
+  button.setAttribute('data-sending', reminder.status == 'sending');
+  button.innerText = reminder.status == 'sending' ? 'Sending...' : label;
+  button.addEventListener('click', function () { runAction(reminder, action, button); });
+  wrapper.appendChild(button);
+  actions.appendChild(wrapper);
+}
+
+function renderReminders(reminders) {
+  remindersDiv.innerHTML = '';
+  if (reminders.length == 0) {
+    addLine(remindersDiv, 'No scheduled reminders');
+    return;
+  }
+  for (let i = 0; i < reminders.length; i++) {
+    const reminder = reminders[i];
+    const card = document.createElement('div');
+    card.classList.add('rounded-block');
+    card.classList.add('without-title');
+    addLine(card, reminder.description, 'reminder-text');
+    addLine(card, `Recipient: ${reminder.recipient}`);
+    addLine(card, `Frequency: ${FREQUENCY_LABELS[reminder.frequency] || reminder.frequency}`);
+    if (reminder.remaining !== null && reminder.remaining !== undefined) {
+      addLine(card, `Remaining: ${reminder.remaining} of ${reminder.executions_total}`);
+    }
+    addLine(card, `Next send: ${reminder.next_send_local}`);
+    const actions = document.createElement('div');
+    actions.classList.add('reminder-actions');
+    addActionButton(actions, reminder, 'delete', 'DELETE');
+    // A one-time reminder has no later occurrence to defer to
+    if (reminder.frequency != 'once') {
+      addActionButton(actions, reminder, 'defer', 'DEFER');
+    }
+    addActionButton(actions, reminder, 'skip', 'SKIP');
+    card.appendChild(actions);
+    remindersDiv.appendChild(card);
+  }
+  updateActionButtons();
+  applyEmulators();
+}
+
+function updateActionButtons() {
+  const buttons = Array.from(document.getElementsByClassName('reminder-action'));
+  for (let i = 0; i < buttons.length; i++) {
+    const button = buttons[i];
+    const busy = cooldownActive
+      || inFlight[button.getAttribute('data-reminder-id')]
+      || button.getAttribute('data-sending') == 'true';
+    button.disabled = !!busy;
+  }
+}
+
+function startCooldown() {
+  cooldownActive = true;
+  updateActionButtons();
+  setTimeout(function () {
+    cooldownActive = false;
+    updateActionButtons();
+  }, ACTION_COOLDOWN_MS);
+}
+
+function runAction(reminder, action, button) {
+  const id = reminder.reminder_id;
+  if (cooldownActive || inFlight[id]) {
+    return;
+  }
+  if (action == 'delete' && !confirm('Delete this reminder?')) {
+    return;
+  }
+  inFlight[id] = true;
+  startCooldown();
+  button.innerText = {skip: 'Skipping...', defer: 'Deferring...', delete: 'Deleting...'}[action];
+
+  let xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("POST", API_DOMAIN + `/preventable-reminders/${action}`, true);
+  xmlHttp.withCredentials = true;
+  xmlHttp.onload = function (event) {
+    delete inFlight[id];
+    handleAction(event, action);
+  };
+  xmlHttp.onerror = function () {
+    delete inFlight[id];
+    showStatus('Could not reach the server, please try again', false);
+    loadReminders();
+  };
+  const body = { csrf: csrfToken, reminder_id: id };
+  if (action == 'skip' || action == 'defer') {
+    // Lets the backend reject a repeated skip or defer instead of advancing twice
+    body.next_send_at = reminder.next_send_at;
+  }
+  xmlHttp.send(JSON.stringify(body));
+}
+
+function handleAction(event, action) {
+  let result = defaultHandler(event);
+  if (result.statusCode == 200) {
+    const json = result.responseJson;
+    if (action == 'delete') {
+      showStatus('Reminder deleted', true);
+    } else if (action == 'defer') {
+      showStatus(`Deferred, next send ${json.reminder.next_send_local}`, true);
+    } else if (json.deleted) {
+      showStatus('Skipped, that was the last one', true);
+    } else {
+      showStatus(`Skipped, next send ${json.reminder.next_send_local}`, true);
+    }
+  } else {
+    showStatus(messageFrom(result, `Failed to ${action} the reminder`), false);
+  }
+  loadReminders();
+}
+    </script>
+  </body>
+</html>

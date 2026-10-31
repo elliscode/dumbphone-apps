@@ -80,6 +80,14 @@ from dumbphoneapps.tenor import (
 from dumbphoneapps.sms_scheduler import (
     schedule_sms_route,
 )
+from dumbphoneapps.reminders import (
+    create_reminder_route,
+    get_reminders_route,
+    skip_reminder_route,
+    defer_reminder_route,
+    delete_reminder_route,
+    dispatch_reminder_event,
+)
 from dumbphoneapps.thermostat import (
     get_token_from_code_route,
     get_token_from_existing_refresh_token_route,
@@ -95,6 +103,11 @@ from dumbphoneapps.timestamp_logger import (
 
 
 def lambda_handler(event, context):
+    # Invoked directly by EventBridge Scheduler rather than API Gateway. Kept
+    # outside the try below so failures raise and Lambda retries the dispatch
+    if "reminder_dispatch" in event:
+        print(json.dumps(event))
+        return dispatch_reminder_event(event["reminder_dispatch"], context.aws_request_id)
     try:
         if not path_equals(event=event, method="POST", path="/one-offs/share-location"):
             print(json.dumps(event))
@@ -206,6 +219,16 @@ def route(event):
         return tenor_search_route(event)
     if path_equals(event=event, method="POST", path="/scheduler/set"):
         return schedule_sms_route(event)
+    if path_equals(event=event, method="POST", path="/preventable-reminders/create"):
+        return create_reminder_route(event)
+    if path_equals(event=event, method="POST", path="/preventable-reminders/get"):
+        return get_reminders_route(event)
+    if path_equals(event=event, method="POST", path="/preventable-reminders/skip"):
+        return skip_reminder_route(event)
+    if path_equals(event=event, method="POST", path="/preventable-reminders/defer"):
+        return defer_reminder_route(event)
+    if path_equals(event=event, method="POST", path="/preventable-reminders/delete"):
+        return delete_reminder_route(event)
     if path_equals(event=event, method="POST", path="/thermostat/get-token-from-code"):
         return get_token_from_code_route(event)
     if path_equals(event=event, method="POST", path="/thermostat/get-token-from-existing-refresh-token"):
