@@ -54,6 +54,7 @@ from dumbphoneapps.connections import (
     get_connections_sports_route,
     get_guesses_sports_route,
     set_guesses_sports_route,
+    run_connections_backfill,
 )
 from dumbphoneapps.quiz_diary import (
     get_questions_route,
@@ -108,6 +109,10 @@ def lambda_handler(event, context):
     if "reminder_dispatch" in event:
         print(json.dumps(event))
         return dispatch_reminder_event(event["reminder_dispatch"], context.aws_request_id)
+    # Also invoked directly by EventBridge Scheduler, see docs/connections-backfill.md
+    if "connections_backfill" in event:
+        print(json.dumps(event))
+        return run_connections_backfill(event["connections_backfill"])
     try:
         if not path_equals(event=event, method="POST", path="/one-offs/share-location"):
             print(json.dumps(event))

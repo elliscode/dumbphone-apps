@@ -172,3 +172,6 @@ logfile
 Pipfile.lock
 
 *.test.py
+
+# aws lambda invoke output
+out.json
